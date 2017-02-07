@@ -1,0 +1,40 @@
+/** A wrapper class for booleans
+  * @author: Marc Corliss
+  * */
+class Boolean {
+    boolean bool;
+
+    boolean booleanValue() {
+	return bool;
+    }
+
+    Boolean init(boolean b) {
+	bool = b;
+	return this;
+    }
+
+    String toString() {
+	String s = "false";
+	if (bool)
+	    s = "true";
+	return s;
+    }
+
+    boolean equals(Object o) {
+	boolean ret = false;
+
+	if (o == null) {
+	    (new TextIO()).putString("Boolean.equals called with null object\n");
+	    (new Sys()).exit(-1);
+	}
+
+	if (o instanceof Boolean) {
+	    Boolean b = (Boolean)(o);
+	    if (bool == b.booleanValue())
+		ret = true;
+	}
+
+	return ret;
+    }
+}
+

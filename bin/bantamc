@@ -1,0 +1,3 @@
+#!/bin/sh
+      java -classpath /Users/djskrien/Documents/CS461Spring2017/BantamJavaStudentPkg/out/production/BantamJavaStudentPkg:/Users/djskrien/Documents/CS461Spring2017/BantamJavaStudentPkg/bin bantam.Main $*
+    

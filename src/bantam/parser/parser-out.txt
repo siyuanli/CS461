@@ -1,0 +1,246 @@
+Opening files...
+Parsing specification from standard input...
+Checking specification...
+Warning: Terminal "DIVIDE" was declared but never used
+Warning: Terminal "SEMI" was declared but never used
+Warning: Terminal "LPAREN" was declared but never used
+Warning: Terminal "DECR" was declared but never used
+Warning: Terminal "INCR" was declared but never used
+Warning: Terminal "FOR" was declared but never used
+Warning: Terminal "MINUS" was declared but never used
+Warning: Terminal "INSTANCEOF" was declared but never used
+Warning: Terminal "RPAREN" was declared but never used
+Warning: Terminal "NOT" was declared but never used
+Warning: Terminal "AND" was declared but never used
+Warning: Terminal "LT" was declared but never used
+Warning: Terminal "OR" was declared but never used
+Warning: Terminal "COMMA" was declared but never used
+Warning: Terminal "GEQ" was declared but never used
+Warning: Terminal "PLUS" was declared but never used
+Warning: Terminal "ASSIGN" was declared but never used
+Warning: Terminal "IF" was declared but never used
+Warning: Terminal "LSQBRACE" was declared but never used
+Warning: Terminal "DOT" was declared but never used
+Warning: Terminal "RETURN" was declared but never used
+Warning: Terminal "INT_CONST" was declared but never used
+Warning: Terminal "NEW" was declared but never used
+Warning: Terminal "BREAK" was declared but never used
+Warning: Terminal "EQ" was declared but never used
+Warning: Terminal "LEX_ERROR" was declared but never used
+Warning: Terminal "TIMES" was declared but never used
+Warning: Terminal "ELSE" was declared but never used
+Warning: Terminal "WHILE" was declared but never used
+Warning: Terminal "MODULUS" was declared but never used
+Warning: Terminal "NE" was declared but never used
+Warning: Terminal "LEQ" was declared but never used
+Warning: Terminal "BOOLEAN_CONST" was declared but never used
+Warning: Terminal "RSQBRACE" was declared but never used
+Warning: Terminal "STRING_CONST" was declared but never used
+Warning: Terminal "GT" was declared but never used
+Building parse tables...
+  Computing non-terminal nullability...
+  Computing first sets...
+  Building state machine...
+  Filling in tables...
+  Checking for non-reduced productions...
+Writing parser...
+===== Terminals =====
+[0]EOF [1]error [2]LEX_ERROR [3]CLASS [4]EXTENDS 
+[5]IF [6]ELSE [7]WHILE [8]FOR [9]BREAK 
+[10]NEW [11]RETURN [12]INSTANCEOF [13]PLUS [14]MINUS 
+[15]TIMES [16]DIVIDE [17]MODULUS [18]NOT [19]AND 
+[20]OR [21]EQ [22]NE [23]LT [24]LEQ 
+[25]GT [26]GEQ [27]ASSIGN [28]INCR [29]DECR 
+[30]LPAREN [31]RPAREN [32]LBRACE [33]RBRACE [34]LSQBRACE 
+[35]RSQBRACE [36]SEMI [37]COMMA [38]DOT [39]ID 
+[40]INT_CONST [41]BOOLEAN_CONST [42]STRING_CONST 
+
+===== Non terminals =====
+[0]$START [1]program [2]class_list [3]class [4]member_list 
+
+
+===== Productions =====
+[0] program ::= class_list 
+[1] $START ::= program EOF 
+[2] class_list ::= class 
+[3] class_list ::= class_list class 
+[4] class ::= CLASS ID LBRACE member_list RBRACE 
+[5] class ::= CLASS ID EXTENDS ID LBRACE member_list RBRACE 
+[6] member_list ::= 
+
+===== Viable Prefix Recognizer =====
+START lalr_state [0]: {
+  [class ::= (*) CLASS ID EXTENDS ID LBRACE member_list RBRACE , {EOF CLASS }]
+  [class_list ::= (*) class , {EOF CLASS }]
+  [class ::= (*) CLASS ID LBRACE member_list RBRACE , {EOF CLASS }]
+  [$START ::= (*) program EOF , {EOF }]
+  [class_list ::= (*) class_list class , {EOF CLASS }]
+  [program ::= (*) class_list , {EOF }]
+}
+transition on CLASS to state [4]
+transition on class to state [3]
+transition on program to state [2]
+transition on class_list to state [1]
+
+-------------------
+lalr_state [1]: {
+  [class ::= (*) CLASS ID EXTENDS ID LBRACE member_list RBRACE , {EOF CLASS }]
+  [class ::= (*) CLASS ID LBRACE member_list RBRACE , {EOF CLASS }]
+  [class_list ::= class_list (*) class , {EOF CLASS }]
+  [program ::= class_list (*) , {EOF }]
+}
+transition on CLASS to state [4]
+transition on class to state [15]
+
+-------------------
+lalr_state [2]: {
+  [$START ::= program (*) EOF , {EOF }]
+}
+transition on EOF to state [14]
+
+-------------------
+lalr_state [3]: {
+  [class_list ::= class (*) , {EOF CLASS }]
+}
+
+-------------------
+lalr_state [4]: {
+  [class ::= CLASS (*) ID EXTENDS ID LBRACE member_list RBRACE , {EOF CLASS }]
+  [class ::= CLASS (*) ID LBRACE member_list RBRACE , {EOF CLASS }]
+}
+transition on ID to state [5]
+
+-------------------
+lalr_state [5]: {
+  [class ::= CLASS ID (*) LBRACE member_list RBRACE , {EOF CLASS }]
+  [class ::= CLASS ID (*) EXTENDS ID LBRACE member_list RBRACE , {EOF CLASS }]
+}
+transition on EXTENDS to state [7]
+transition on LBRACE to state [6]
+
+-------------------
+lalr_state [6]: {
+  [class ::= CLASS ID LBRACE (*) member_list RBRACE , {EOF CLASS }]
+  [member_list ::= (*) , {RBRACE }]
+}
+transition on member_list to state [12]
+
+-------------------
+lalr_state [7]: {
+  [class ::= CLASS ID EXTENDS (*) ID LBRACE member_list RBRACE , {EOF CLASS }]
+}
+transition on ID to state [8]
+
+-------------------
+lalr_state [8]: {
+  [class ::= CLASS ID EXTENDS ID (*) LBRACE member_list RBRACE , {EOF CLASS }]
+}
+transition on LBRACE to state [9]
+
+-------------------
+lalr_state [9]: {
+  [class ::= CLASS ID EXTENDS ID LBRACE (*) member_list RBRACE , {EOF CLASS }]
+  [member_list ::= (*) , {RBRACE }]
+}
+transition on member_list to state [10]
+
+-------------------
+lalr_state [10]: {
+  [class ::= CLASS ID EXTENDS ID LBRACE member_list (*) RBRACE , {EOF CLASS }]
+}
+transition on RBRACE to state [11]
+
+-------------------
+lalr_state [11]: {
+  [class ::= CLASS ID EXTENDS ID LBRACE member_list RBRACE (*) , {EOF CLASS }]
+}
+
+-------------------
+lalr_state [12]: {
+  [class ::= CLASS ID LBRACE member_list (*) RBRACE , {EOF CLASS }]
+}
+transition on RBRACE to state [13]
+
+-------------------
+lalr_state [13]: {
+  [class ::= CLASS ID LBRACE member_list RBRACE (*) , {EOF CLASS }]
+}
+
+-------------------
+lalr_state [14]: {
+  [$START ::= program EOF (*) , {EOF }]
+}
+
+-------------------
+lalr_state [15]: {
+  [class_list ::= class_list class (*) , {EOF CLASS }]
+}
+
+-------------------
+-------- ACTION_TABLE --------
+From state #0
+ [term 3:SHIFT(to state 4)]
+From state #1
+ [term 0:REDUCE(with prod 0)] [term 3:SHIFT(to state 4)]
+From state #2
+ [term 0:SHIFT(to state 14)]
+From state #3
+ [term 0:REDUCE(with prod 2)] [term 3:REDUCE(with prod 2)]
+From state #4
+ [term 39:SHIFT(to state 5)]
+From state #5
+ [term 4:SHIFT(to state 7)] [term 32:SHIFT(to state 6)]
+From state #6
+ [term 33:REDUCE(with prod 6)]
+From state #7
+ [term 39:SHIFT(to state 8)]
+From state #8
+ [term 32:SHIFT(to state 9)]
+From state #9
+ [term 33:REDUCE(with prod 6)]
+From state #10
+ [term 33:SHIFT(to state 11)]
+From state #11
+ [term 0:REDUCE(with prod 5)] [term 3:REDUCE(with prod 5)]
+From state #12
+ [term 33:SHIFT(to state 13)]
+From state #13
+ [term 0:REDUCE(with prod 4)] [term 3:REDUCE(with prod 4)]
+From state #14
+ [term 0:REDUCE(with prod 1)]
+From state #15
+ [term 0:REDUCE(with prod 3)] [term 3:REDUCE(with prod 3)]
+------------------------------
+-------- REDUCE_TABLE --------
+From state #0
+ [non term 1->state 2] [non term 2->state 1] [non term 3->state 3]
+From state #1
+ [non term 3->state 15]
+From state #2
+From state #3
+From state #4
+From state #5
+From state #6
+ [non term 4->state 12]
+From state #7
+From state #8
+From state #9
+ [non term 4->state 10]
+From state #10
+From state #11
+From state #12
+From state #13
+From state #14
+From state #15
+-----------------------------
+Closing files...
+------- CUP v0.10k Parser Generation Summary -------
+  0 errors and 36 warnings
+  43 terminals, 5 non-terminals, and 7 productions declared, 
+  producing 16 unique parse states.
+  36 terminals declared but not used.
+  0 non-terminals declared but not used.
+  0 productions never reduced.
+  0 conflicts detected (100 expected).
+  Code written to "Parser.java", and "TokenIds.java".
+---------------------------------------------------- (v0.10k)

@@ -1,0 +1,168 @@
+/* Bantam Java Compiler and Language Toolset.
+
+   Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
+                         David Furcy (furcyd@uwosh.edu) and
+                         E Christopher Lewis (lewis@vmware.com).
+   ALL RIGHTS RESERVED.
+
+   The Bantam Java toolset is distributed under the following 
+   conditions:
+
+     You may make copies of the toolset for your own use and 
+     modify those copies.
+
+     All copies of the toolset must retain the author names and 
+     copyright notice.
+
+     You may not sell the toolset or distribute it in 
+     conjunction with a commerical product or service without 
+     the expressed written consent of the authors.
+
+   THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS 
+   OR IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE 
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
+   PARTICULAR PURPOSE. 
+*/
+
+/* code below is copied to the file containing the bantam.parser */
+
+package bantam.parser;
+
+/* import the AST and utility class files */
+import bantam.lexer.*;
+import bantam.ast.*;
+import bantam.util.ErrorHandler;
+/* import Symbol class, which represents the type of token passed
+   from the bantam.lexer to the bantam.parser.  Note: in the bantam.lexer package there is
+   a file Token.java that  defines a subclass of Symbol called Token,
+   which is what is actually passed to the bantam.parser */
+import java_cup.runtime.Symbol;
+
+/* the code below is copied to the class containing the context-free
+   grammar productions */
+action code {: 
+    /** object for error handling */
+    private ErrorHandler errorHandler = new ErrorHandler();
+
+    /* sets the error handler */
+    public ErrorHandler getErrorHandler() {
+	return errorHandler;
+    }
+
+    /* returns the current line number from the scanner */
+    public int getCurrLineNum() {
+	return ((Lexer)parser.getScanner()).getCurrLineNum();
+    }
+
+    /* returns the current file name from the scanner */
+    public String getCurrFilename() {
+	return ((Lexer)parser.getScanner()).getCurrFilename();
+    }
+:} 
+
+/* code below is copied to the Parser class, which drives parsing */
+parser code {:
+    /** overrides done_parsing in inherited class, called when parsing finishes
+      * either after accepting or because of errors
+      * */
+    public void done_parsing() {
+	super.done_parsing();
+	// if lexing and/or parsing errors then exit
+	action_obj.getErrorHandler().checkErrors();
+    }
+
+    /** overrides syntax_error in inherited class and handles syntax errors 
+      * @param curr current symbol from the bantam.lexer
+      * */
+    public void syntax_error(Symbol curr) {
+	// get token value from the symbol
+	Token t = (Token)curr.value;
+	
+	// get the error handler object
+	ErrorHandler errorHandler = action_obj.getErrorHandler();
+
+	// may want to modify and augment the code below for more
+	// accurate error reporting
+	errorHandler.register(errorHandler.PARSE_ERROR, action_obj.getCurrFilename(), 
+			      action_obj.getCurrLineNum(), 
+			      "unexpected input near '" + t.getLexeme() + "'");
+    }
+
+    /** override error_sync_size in inherited class and
+      * change the minimum number of tokens to skip on an error from 3 to 2
+      * @return minimum number of tokens to skip on an error
+      * */
+    protected int error_sync_size() {
+	return 2;
+    }
+:}
+
+/* list of terminals, which correspond to tokens returned by the bantam.lexer
+ */
+terminal Token LEX_ERROR;
+terminal Token CLASS, EXTENDS, IF, ELSE, WHILE, FOR, BREAK, NEW, RETURN, INSTANCEOF;
+terminal Token PLUS, MINUS, TIMES, DIVIDE, MODULUS, NOT, AND, OR;
+terminal Token EQ, NE, LT, LEQ, GT, GEQ, ASSIGN, INCR, DECR;
+terminal Token LPAREN, RPAREN, LBRACE, RBRACE, LSQBRACE, RSQBRACE;
+terminal Token SEMI, COMMA, DOT;
+terminal Token ID, INT_CONST, BOOLEAN_CONST, STRING_CONST;
+
+/* list of non-terminals used in context-free grammar
+   format: nonterminal <type> <list of nonterminal names>
+   example: nonterminal Expr expr1, expr2
+   The type specifies what type of result the non-terminal will return
+   The type should correspond to a class name from the AST
+*/
+nonterminal Program program;
+nonterminal ClassList class_list;
+nonterminal Class_ class;
+nonterminal MemberList member_list;
+/* add other non-terminals... */
+
+/* precedence/associativity rules
+   format: precedence <associativity> <list of terminals>
+   example: precedence right ASSIGN
+   precedence specified by order (from lowest to highest)
+   note: use a single precedence rule for terminals with same precedence
+   associativity specfied by middle operand (left, right, none)
+*/
+/* add precedence rules... */
+
+/* program, which is simply a list of classes */
+program	
+	::= class_list:cl
+	    {: RESULT = new Program(0, cl); :}
+        ;
+
+/* list of classes (must be at least one class in program) */
+class_list
+	/* single class */
+        ::= class:c
+            {: RESULT = (ClassList)(new ClassList(0)).addElement(c); :}
+	/* several classes */
+	| class_list:cl class:c
+	    {: RESULT = (ClassList)cl.addElement(c); :}
+	;
+
+/* a single class */
+class
+        ::= 
+        /* class with no specified parent - uses Object class */
+        CLASS:t ID:name LBRACE member_list:ml RBRACE
+	    {: RESULT = new Class_(t.getLineNum(), getCurrFilename(), 
+				   name.getAttribute(), "Object", ml); :}
+        /* class with a specified parent */
+	| CLASS:t ID:name EXTENDS ID:parent LBRACE member_list:ml RBRACE
+	    {: RESULT = new Class_(t.getLineNum(), getCurrFilename(), 
+				   name.getAttribute(), 
+				   parent.getAttribute(), ml); :}
+	;
+
+/* member list (FIXE: only allows empty member lists) */
+member_list
+	::= 
+        /* empty list */
+	    {: RESULT = new MemberList(getCurrLineNum()); :}
+	;
+
+/* add more productions... */

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<project name="tools" default="create-tools" basedir=".">
+
+  <condition property="this.is.unix">
+    <os family="unix"/>
+  </condition>
+
+  <condition property="this.is.windows">
+    <os family="windows"/>
+  </condition>
+
+  <condition property="BTMC" value="../bin/bantamc-ref">
+    <isset property="this.is.unix"/>
+  </condition>
+  <condition property="BTMC" value="..\bin\bantamc-ref.bat">
+    <isset property="this.is.windows"/>
+  </condition>
+
+  <condition property="BTMCJJ" value="../bin/bantamc-jj-ref">
+    <isset property="this.is.unix"/>
+  </condition>
+  <condition property="BTMCJJ" value="..\bin\bantamc-jj-ref.bat">
+    <isset property="this.is.windows"/>
+  </condition>
+
+  <target name="create-tools" depends="create-jasmin,create-bantamc-refs,create-libs"/>
+
+  <target name="create-jasmin">
+    <copy file="${basedir}/lib/jasmin.jar" tofile="${basedir}/../lib/jasmin.jar"/>
+  </target>
+
+  <target name="create-bantamc-refs">
+    <copy file="${basedir}/lib/bantamc-ref.jar" tofile="${basedir}/../lib/bantamc-ref.jar"/>
+    <copy file="${basedir}/lib/bantamc-jj-ref.jar" tofile="${basedir}/../lib/bantamc-jj-ref.jar"/>
+    <antcall target="create-bantamc-ref-on-unix"/>
+    <antcall target="create-bantamc-ref-on-windows"/>
+  </target>
+
+  <target name="create-bantamc-ref-on-unix"  if="this.is.unix">
+    <!-- create the script that runs the compiler -->
+    <echo file="${BTMC}" >#!/bin/sh
+      java -jar ${basedir}/../lib/bantamc-ref.jar $$*
+    </echo>
+    <chmod file="${BTMC}" perm="ugo+rx"/>
+    <echo file="${BTMCJJ}" >#!/bin/sh
+      java -jar ${basedir}/../lib/bantamc-jj-ref.jar $$*
+    </echo>
+    <chmod file="${BTMCJJ}" perm="ugo+rx"/>
+  </target>
+
+  <target name="create-bantamc-ref-on-windows" if="this.is.windows">
+    <!-- create the script that runs the compiler -->
+    <echo file="${BTMC}">java -jar "${basedir}\..\lib\bantamc-ref.jar" $$*
+    </echo>
+    <chmod file="${BTMC}" perm="ugo+rx"/>
+    <echo file="${BTMCJJ}">java -jar "${basedir}\..\lib\bantamc-jj-ref.jar" $$*
+    </echo>
+    <chmod file="${BTMCJJ}" perm="ugo+rx"/>
+  </target>
+
+  <target name="create-libs">
+    <copy file="${basedir}/lib/exceptions.s" tofile="${basedir}/../lib/exceptions.s"/>
+    <copy file="${basedir}/lib/runtime.s" tofile="${basedir}/../lib/runtime.s"/>
+    <copy file="${basedir}/lib/TextIO.class" tofile="${basedir}/../lib/TextIO.class"/>
+    <copy file="${basedir}/lib/Sys.class" tofile="${basedir}/../lib/Sys.class"/>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="${basedir}/../lib"/>
+    </delete>
+  </target>
+</project>

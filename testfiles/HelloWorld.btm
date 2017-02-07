@@ -1,0 +1,6 @@
+class bantam.Main {
+    void main() {
+	(new TextIO()).putString("Hello, World!\n");
+	return;
+    }
+}

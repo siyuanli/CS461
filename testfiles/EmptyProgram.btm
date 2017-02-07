@@ -1,0 +1,5 @@
+class bantam.Main {
+    void main() {
+	return;
+    }
+}

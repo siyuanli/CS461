@@ -1,0 +1,87 @@
+class bantam.Main {
+    void main() {
+	TextIO io = new TextIO();
+
+	Integer i1 = (new Integer()).init(2);
+	Integer i2 = (new Integer()).init(2);
+	Integer i3 = (new Integer()).init(5);
+	Boolean b1 = (new Boolean()).init(true);
+	Boolean b2 = (new Boolean()).init(true);
+	Boolean b3 = (new Boolean()).init(false);
+	String s1 = "abc";
+	String s2 = "a".concat("b").concat("c");
+	String s3 = "def";
+
+	if (i1.equals(i2))
+	    io.putString("OK: Integer 2 equals Integer 2\n");
+	else
+	    io.putString("ERROR: Integer 2 does not equal Integer 2\n");
+
+	if (i1.equals(i3))
+	    io.putString("ERROR: Integer 2 equals Integer 5\n");
+	else
+	    io.putString("OK: Integer 2 does not equal Integer 5\n");
+
+	if (i1.equals(b1))
+	    io.putString("ERROR: Integer 2 equals Boolean true\n");
+	else
+	    io.putString("OK: Integer 2 does not equal Boolean true\n");
+
+	if (i1.equals(b3))
+	    io.putString("ERROR: Integer 2 equals Boolean false\n");
+	else
+	    io.putString("OK: Integer 2 does not equal Boolean false\n");
+
+	if (i1.equals(s1))
+	    io.putString("ERROR: Integer 2 equals String \"abc\"\n");
+	else
+	    io.putString("OK: Integer 2 does not equal String \"abc\"\n");
+
+	if (b1.equals(b2))
+	    io.putString("OK: Boolean true equals Boolean true\n");
+	else
+	    io.putString("OK: Boolean true does not equal Boolean true\n");
+
+	if (b1.equals(b3))
+	    io.putString("ERROR: Boolean true equals Boolean false\n");
+	else
+	    io.putString("OK: Boolean true does not equal Boolean false\n");
+
+	if (b1.equals(i1))
+	    io.putString("ERROR: Boolean true equals Integer 2\n");
+	else
+	    io.putString("OK: Boolean true does not equal Integer 2\n");
+
+	if (b1.equals(s1))
+	    io.putString("ERROR: Boolean true equals String \"abc\"\n");
+	else
+	    io.putString("OK: Boolean true does not equal String \"abc\"\n");
+
+	if (s1.equals(s2))
+	    io.putString("OK: String \"abc\" equals String \"abc\"\n");
+	else
+	    io.putString("ERROR: String \"abc\" does not equal String \"abc\"\n");
+
+	if (s1.equals(s3))
+	    io.putString("ERROR: String \"abc\" equals String \"def\"\n");
+	else
+	    io.putString("OK: String \"abc\" does not equal String \"def\"\n");
+
+	if (s1.equals(i1))
+	    io.putString("ERROR: String \"abc\" equals Integer 2\n");
+	else
+	    io.putString("OK: String \"abc\" does not equal Integer 2\n");
+
+	if (s1.equals(b1))
+	    io.putString("ERROR: String \"abc\" equals Boolean true\n");
+	else
+	    io.putString("OK: String \"abc\" does not equal Boolean true\n");
+
+	if (s1.equals(b1))
+	    io.putString("ERROR: String \"abc\" equals Boolean false\n");
+	else
+	    io.putString("OK: String \"abc\" does not equal Boolean false\n");
+
+	return;
+    }
+}

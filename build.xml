@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<project name="root" default="all" basedir=".">
+
+  <!-- the student should customize the following two properties -->
+
+  <property name="VERSION"  value="bantam"/>  <!-- bantam or bantam-jj -->
+  <property name="TARGET"   value="mips"/>        <!-- mips, x86 or jvm    -->
+
+  <!-- build the compiler, build the API, and compile all test files -->
+
+  <target name="all" depends="src,api,tests"/>
+
+  <!-- build the auxiliary tools -->
+
+  <target name="tools">
+    <ant dir="tools"/>
+  </target>
+
+  <!-- build the compiler -->
+
+  <target name="src" depends="tools">
+    <ant dir="src/${VERSION}" inheritAll="false"/>
+  </target>
+
+  <!-- build the API documentation -->
+
+  <target name="api" depends="src">
+    <ant dir="api" inheritAll="false">
+      <property name="version" value="${VERSION}"/>
+    </ant>
+  </target>
+
+  <!-- run all the test files through the compiler -->
+
+  <target name="tests" depends="src">
+    <ant dir="tests"/>
+  </target>
+
+  <!-- clean up the all project -->
+  <target name="cleanall">
+    <ant dir="api" target="clean"/>
+    <ant dir="src/bantam" target="clean"/>
+    <ant dir="src/bantam-jj" target="clean"/>
+    <ant dir="tests" target="clean"/>
+    <ant dir="tools" target="clean"/>
+
+    <delete>
+      <fileset dir ="." defaultexcludes="no">
+	<include name="*.asm"/>
+	<include name="*.s"/>
+	<include name="*.bin"/>
+	<include name="*.class"/>
+	<include name="*.jar"/>
+	<include name="*.j"/>
+	<include name="*~"/>
+	<include name="*.o"/>
+	<include name="*#*"/>
+	<include name="a.out"/>
+      </fileset>
+    </delete>  
+  </target>
+
+</project>
+
+

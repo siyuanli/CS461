@@ -1,0 +1,23 @@
+class bantam.Main {
+    void main() {
+	TextIO io = new TextIO();
+	Object o = null;
+
+	io.putString("(new Object()).toString()=").
+	    putString((new Object()).toString()).putString("\n");
+	
+	io.putString("(new TextIO()).toString()=").
+	    putString((new TextIO()).toString()).putString("\n");
+
+	io.putString("\"abc\".toString()=").
+	    putString("abc".toString()).putString("\n");
+
+	io.putString("(new Integer()).init(5).toString()=").
+	    putString((new Integer()).init(5).toString()).putString("\n");
+
+	io.putString("(null object).toString()=").
+	    putString(o.toString()).putString("\n");
+
+	return;
+    }
+}

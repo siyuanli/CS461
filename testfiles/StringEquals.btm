@@ -1,0 +1,74 @@
+// This class tests the string equals method
+// Note: running this program should result in a null 
+// pointer error at the end
+class bantam.Main {
+    // With these fields, bantam.Main object will match "abc"
+    // representation exactly except in ID and dispatch pointer
+    int length = 3;
+    int characters = 1633837824;
+
+    // method for testing string equals method
+    void main() {
+	// several strings and objects for testing String.equals
+	String s1 = "abc";
+	Object o = s1;
+	String s2 = "abc";
+	String s3 = "abcd";
+	String s4 = "ab";
+	Object m = new bantam.Main();
+	String s5 = "";
+	String s6 = null;
+	// an io object for printing the results
+	TextIO io = new TextIO();
+
+	// should print: string object equals itself
+	if (s1.equals(s1))
+	    io.putString("String object equals itself\n");
+	else
+	    io.putString("String object does not equal itself\n");
+
+	// should print: string object equals itself casted to Object
+	if (s1.equals(o))
+	    io.putString("String object equals itself casted to Object\n");
+	else
+	    io.putString("String object does not equal itself casted to Object\n");
+
+	// should print: "abc" equals "abc"
+	if (s1.equals(s2)) 
+	    io.putString("\"abc\" equals \"abc\"\n");
+	else 
+	    io.putString("\"abc\" does not equal \"abc\"\n");
+
+	// should print: "abc" does not equal "abcd"
+	if (s1.equals(s3)) 
+	    io.putString("\"abc\" equals \"abcd\"\n");
+	else 
+	    io.putString("\"abc\" does not equal \"abcd\"\n");
+
+	// should print: "abc" does not equal "ab"
+	if (s1.equals(s4)) 
+	    io.putString("\"abc\" equals \"ab\"\n");
+	else 
+	    io.putString("\"abc\" does not equal \"ab\"\n");
+
+	// should print: "abc" does not equal bantam.Main object
+	if (s1.equals(m)) 
+	    io.putString("\"abc\" equals bantam.Main object\n");
+	else 
+	    io.putString("\"abc\" does not equal bantam.Main object\n");
+
+	// should print: "abc" does not equal ""
+	if (s1.equals(s5)) 
+	    io.putString("\"abc\" equals \"\"\n");
+	else 
+	    io.putString("\"abc\" does not equal \"\"\n");
+
+	// should result in a null pointer error
+	if (s1.equals(s6)) 
+	    io.putString("\"abc\" equals null\n");
+	else 
+	    io.putString("\"abc\" does not equal null\n");
+
+	return;
+    }
+}

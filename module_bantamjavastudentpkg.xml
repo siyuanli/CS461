@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_bantamjavastudentpkg" default="compile.module.bantamjavastudentpkg">
+  <dirname property="module.bantamjavastudentpkg.basedir" file="${ant.file.module_bantamjavastudentpkg}"/>
+  
+  <property name="module.jdk.home.bantamjavastudentpkg" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.bantamjavastudentpkg" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.bantamjavastudentpkg" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.bantamjavastudentpkg" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name="bantamjavastudentpkg.output.dir" value="${module.bantamjavastudentpkg.basedir}/out/production/BantamJavaStudentPkg"/>
+  <property name="bantamjavastudentpkg.testoutput.dir" value="${module.bantamjavastudentpkg.basedir}/out/test/BantamJavaStudentPkg"/>
+  
+  <path id="bantamjavastudentpkg.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="bantamjavastudentpkg.module.production.classpath">
+    <path refid="${module.jdk.classpath.bantamjavastudentpkg}"/>
+    <pathelement location="${basedir}/bin"/>
+  </path>
+  
+  <path id="bantamjavastudentpkg.runtime.production.module.classpath">
+    <pathelement location="${bantamjavastudentpkg.output.dir}"/>
+    <pathelement location="${basedir}/bin"/>
+  </path>
+  
+  <path id="bantamjavastudentpkg.module.classpath">
+    <path refid="${module.jdk.classpath.bantamjavastudentpkg}"/>
+    <pathelement location="${bantamjavastudentpkg.output.dir}"/>
+    <pathelement location="${idea.home}/lib/hamcrest-core-1.3.jar"/>
+    <pathelement location="${idea.home}/lib/junit-4.12.jar"/>
+    <pathelement location="${basedir}/bin"/>
+  </path>
+  
+  <path id="bantamjavastudentpkg.runtime.module.classpath">
+    <pathelement location="${bantamjavastudentpkg.testoutput.dir}"/>
+    <pathelement location="${bantamjavastudentpkg.output.dir}"/>
+    <pathelement location="${idea.home}/lib/hamcrest-core-1.3.jar"/>
+    <pathelement location="${idea.home}/lib/junit-4.12.jar"/>
+    <pathelement location="${basedir}/bin"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.bantamjavastudentpkg">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.bantamjavastudentpkg">
+    <patternset refid="excluded.from.module.bantamjavastudentpkg"/>
+  </patternset>
+  
+  <path id="bantamjavastudentpkg.module.sourcepath">
+    <dirset dir="${module.bantamjavastudentpkg.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  <path id="bantamjavastudentpkg.module.test.sourcepath">
+    <dirset dir="${module.bantamjavastudentpkg.basedir}">
+      <include name="test"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.bantamjavastudentpkg" depends="compile.module.bantamjavastudentpkg.production,compile.module.bantamjavastudentpkg.tests" description="Compile module BantamJavaStudentPkg"/>
+  
+  <target name="compile.module.bantamjavastudentpkg.production" depends="register.custom.compilers" description="Compile module BantamJavaStudentPkg; production classes">
+    <mkdir dir="${bantamjavastudentpkg.output.dir}"/>
+    <javac2 destdir="${bantamjavastudentpkg.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bantamjavastudentpkg}/javac">
+      <compilerarg line="${compiler.args.bantamjavastudentpkg}"/>
+      <bootclasspath refid="bantamjavastudentpkg.module.bootclasspath"/>
+      <classpath refid="bantamjavastudentpkg.module.production.classpath"/>
+      <src refid="bantamjavastudentpkg.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bantamjavastudentpkg"/>
+    </javac2>
+    
+    <copy todir="${bantamjavastudentpkg.output.dir}">
+      <fileset dir="${module.bantamjavastudentpkg.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.bantamjavastudentpkg.tests" depends="register.custom.compilers,compile.module.bantamjavastudentpkg.production" description="compile module BantamJavaStudentPkg; test classes" unless="skip.tests">
+    <mkdir dir="${bantamjavastudentpkg.testoutput.dir}"/>
+    <javac2 destdir="${bantamjavastudentpkg.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bantamjavastudentpkg}/javac">
+      <compilerarg line="${compiler.args.bantamjavastudentpkg}"/>
+      <bootclasspath refid="bantamjavastudentpkg.module.bootclasspath"/>
+      <classpath refid="bantamjavastudentpkg.module.classpath"/>
+      <src refid="bantamjavastudentpkg.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bantamjavastudentpkg"/>
+    </javac2>
+    
+    <copy todir="${bantamjavastudentpkg.testoutput.dir}">
+      <fileset dir="${module.bantamjavastudentpkg.basedir}/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.bantamjavastudentpkg" description="cleanup module">
+    <delete dir="${bantamjavastudentpkg.output.dir}"/>
+    <delete dir="${bantamjavastudentpkg.testoutput.dir}"/>
+  </target>
+</project>

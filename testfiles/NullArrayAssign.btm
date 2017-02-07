@@ -1,0 +1,7 @@
+class bantam.Main {
+    void main() {
+	int[] array = null;
+	array[0] = 0;
+	return;
+    }
+}

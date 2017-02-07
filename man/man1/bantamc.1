@@ -1,0 +1,203 @@
+.\" $Header: man/man1/bantamc.1 7	9/1/07 1:30p Corliss $
+
+.TH bantamc 1
+.SH NAME
+bantamc \- An Educational Compiler for the Bantam Java Language
+
+.SH SYNTAX
+.B bantamc
+\|[\fI-h] [\fI-o <output_file>] [\fI-t <architecture>] [\fI-gc] [\fI-int]
+.br
+        [\fI-bantam.opt <level>] [\fI-dl] [\fI-dp] [\fI-ds] [\fI-di] [\fI-do] [\fI-dc]
+.br
+        [\fI-sl] [\fI-sp] [\fI-ss] [\fI-so] <input_files>\|
+
+.SH DESCRIPTION
+bantamc is a compiler for the Bantam Java language, a simple, Java-like 
+language.  Both the Bantam Java compiler and the Bantam Java language were 
+designed specifically for use in an undergraduate compiler's course.  This 
+man page describes the usage of the compiler.  For more information on the 
+language and the compiler design and implementation, see the Bantam Compiler 
+Project website at: http://www.bantamjava.com/.
+.PP
+The compiler takes as input several Bantam Java program files (ending in ".btm")
+and produces a user-specified assembly file (or out.s if no output file is
+specified).  Note: separate compilation is not supported, so all the necessary
+Bantam Java program files must be specified.  The compiler supports three  
+targets: MIPS/SPIM, (AT&T-style) x86/Linux (32-bit), and the Java Virtual
+Machine (JVM).  The compiler is equipped with a simple, mark-and-sweep garbage 
+collector, which can be enabled and disabled by the user (by default it's 
+disabled) except when targeting the JVM (in which case it's automatically
+enabled).
+.PP
+The compiler is split into five phases: lexing, parsing, semantic analysis, 
+optimization, and code generation.  The compiler has support for enabling
+or disabling optimization as well as setting the optimization level (by
+default optimization is disabled).  The compiler has flags for debugging any 
+of the five phases.  The compiler also has support for prematurely stopping 
+compilation after any of the phases (except, of course, the last one).  In 
+these cases, the compiler will print an intermediate representation of the 
+program (the exact intermediate representation depends on the particular 
+cutoff phase).  Finally, the compiler can also act as a Bantam Java
+interpreter.  When interpreter mode is enabled (by default it is disabled),
+the compiler will execute the Bantam Java program rather than translating it.
+
+.SH OPTIONS
+\fIbantamc\fP options:
+
+.IP \fB-h\fP 10
+Print out help information.  No compilation is done when this flag is
+enabled.
+
+.IP "\fB-o <output_file>\fP" 10
+Specify the output file for the generated assembly code.  If the output file
+is not specified, then the assembly code is written to the file out.s.
+Note: with the JVM target the output file is ignored (instead an output
+file is produced for each user-defined class).
+
+.IP "\fB-t <architecture>\fP" 10
+Specify the target architecture.  There are three supported options: mips, 
+x86, and jvm.  The MIPS target must be used with the SPIM emulator.  The 
+x86 target must be used with a 32-bit processor and the Linux operating 
+system (or possibly another Unix-like operating system).  In both cases,
+the compiler produces an assembly file.  With x86, the generated assembly 
+file uses AT&T-style assembly language and must be assembled with an
+AT&T-style assembler (e.g., the assembler bundled with gcc).  With the JVM
+target, the compiler translates the program into a text-based Java bytecodes.
+It produces one per user-defined class in the source program.  These can then
+be assembled into Java class files with the Java assembler Jasmin.  For all
+three architectures, there are Bantam Java runtime support files in the lib/
+directory (once the toolset is built -- before that they are in tools/lib/)
+within the main installation directory of the Bantam Java compiler.  In
+particular, exceptions.s contains the runtime library code for the MIPS
+target, runtime.s contains the runtime library code for the x86 target,
+and TextIO.class and Sys.class contain library code for the JVM target.
+
+.IP \fB-gc\fP 10
+Enable garbage collection.  The garbage collector is a simple, mark-and-sweep
+collector.  By default, it is disabled.  With the JVM as the target this
+flag is ignored as garbage collection must be enabled.
+
+.IP \fB-dl\fP 10
+Debug the bantam.lexer phase.  This option will generate debugging information
+during lexical analysis assuming the compiler implementor has added this 
+support.  If the compiler implementor has not added support for bantam.lexer debugging
+then this flag will have no effect.  By default, this option is disabled.
+
+.IP \fB-dp\fP 10
+Debug the bantam.parser phase.  This option will generate debugging information
+during syntactic analysis assuming the compiler implementor has added this 
+support.  If the compiler is built using the Java Cup bantam.parser generator
+then this flag will enable debugging supplied by the bantam.parser generator.
+If using JavaCC, this flag will have an effect only if the compiler 
+implementor has added support for syntactic debugging. By default, this 
+option is disabled.
+
+.IP \fB-ds\fP 10
+Debug the semantic analysis phase.  This option will generate debugging information 
+during semantic analysis assuming the compiler implementor has added this 
+support.  If the compiler implementor has not added support for semantic analysis 
+debugging then this flag will have no effect.  By default, this option is disabled.
+
+.IP \fB-di\fP 10
+Debug interpretation mode.  This option will generate debugging information 
+if running the compiler in interpreter mode.  When not in interpreter mode, this
+flag is ignored.  If the compiler implementor has not added support for 
+interpreter debugging then this flag will have no effect.  By default, this 
+option is disabled.
+
+.IP \fB-do\fP 10
+Debug the optimizer phase.  This option will generate debugging information 
+during optimization assuming the compiler implementor has added this 
+support.  When optimization is disabled, this flag is ignored.  If the compiler 
+implementor has not added support for optimization debugging then this flag 
+will have no effect.  By default, this option is disabled.
+
+.IP \fB-dc\fP 10
+Debug the code generation phase.  This option will generate debugging information 
+during code generation assuming the compiler implementor has added this 
+support.  If the compiler implementor has not added support for code generation debugging,
+then this flag will have no effect.  By default, this option is disabled.
+
+.IP \fB-sl\fP 10
+Stop compilation after performing lexical analysis.  After lexing is finished 
+(assuming no errors were found), the compiler will print out the scanned tokens 
+to standard output and immediately exit.  By default, this option is disabled.
+
+.IP \fB-sp\fP 10
+Stop compilation after performing syntactic analysis.  After parsing is finished
+(assuming no errors were found), the compiler will print out the parsed program
+(as a Bantam source program) to standard output and immediately exit.  By 
+default, this option is disabled.
+
+.IP \fB-ss\fP 10
+Stop compilation after performing semantic analysis.  After semantic analysis is 
+finished (assuming no errors were found), the compiler will print out the compiled 
+program (as an annotated Bantam source program -- the annotations are written in
+comments) to standard output and immediately exit.  By default, this option is 
+disabled.
+
+.IP \fB-so\fP 10
+Stop compilation after performing optimization.  After optimization is 
+finished, the compiler will print out the compiled, optimized program (as a list 
+of basic blocks in a control flow graph) to standard output and immediately
+exit.  If optimization is disabled this flag is ignored.  By default, this 
+option is disabled.
+
+.SH "EXAMPLES"
+\fBbash$ bantamc -o foo.asm Foo.btm\fP
+.br
+\fBbash$ spim foo.asm\fP
+.br
+The first command above compiles Foo.btm and generate a MIPS/SPIM assembly file called foo.asm.
+The second command above runs foo.asm using the SPIM emulator.
+.P
+\fBbash$ bantamc -t x86 -o foo.s Foo.btm\fP
+.br
+\fBbash$ gcc -o foo ../lib/runtime.s foo.s\fP
+.br
+\fBbash$ ./foo\fP
+.br
+The first command above compiles Foo.btm and generates an x86/Linux assembly file called foo.s
+The second command above builds a binary called foo from foo.s and runtime.s (in lib/).  
+The third command runs the binary foo.  (Note: we use ".asm" with MIPS assembly files
+and ".s" with x86 assembly files to avoid confusion.)
+.P
+\fBbash$ bantamc -t jvm Foo.btm\fP
+.br
+\fBbash$ jasmin bantam.Main.j foo.j\fP
+.br
+\fBbash$ java bantam.Main\fP
+.br
+The first command above compiles Foo.btm and generates several Jasmin input files ending
+in ".j", one for each user-defined class.  The second command translates these Jasmin
+input files into Java class files.  The third command runs compiled program via the JVM.
+.P
+\fBbash$ bantamc -gc -t x86 Foo.btm\fP
+.br
+The command above compiles Foo.btm and generates an x86/Linux assembly file called out.s.
+Garbage collection is enabled in the compiled program.
+.P
+\fBbash$ bantamc -sl Foo.btm\fP
+.br
+The command above compiles Foo.btm but stops compilation after lexical analysis.  An
+output file is not generated, instead the lexical tokens are printed to standard output.
+.P
+\fBbash$ bantamc -dp -sp Foo.btm\fP
+.br
+The command above compiles Foo.btm but stops compilation after syntactic analysis.  Syntactic
+debugging is enabled.  An output file is not generated, instead the parsed program (a Bantam
+source program) is printed to standard output.
+
+.SH "BUGS"
+No known bugs.
+
+.SH "SEE ALSO"
+http://www.bantamjava.com/
+
+.SH AUTHOR
+Marc Corliss, Hobart and William Smith Colleges.
+.br
+David Furcy, University of Wisconsin, Oshkosh.
+.br
+E Christopher Lewis, VMWare.

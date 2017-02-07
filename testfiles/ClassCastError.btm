@@ -1,0 +1,8 @@
+class bantam.Main {
+    void main() {
+	String s = "abc";
+	Object o = (Object)(s);
+	TextIO io = (TextIO)(o);
+	return;
+    }
+}
