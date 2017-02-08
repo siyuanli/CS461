@@ -201,5 +201,8 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>class        { return new Symbol(TokenIds.CLASS, 
 						    new Token("CLASS", yyline)); }
 
+<YYINITIAL>new        { return new Symbol(TokenIds.NEW,
+						    new Token("NEW", yyline)); }
+
 .                      { throw new RuntimeException("Unmatched lexeme " +
                             yytext() + " at line " + yyline); }
