@@ -20,12 +20,21 @@ public class LexerTest
     public static void begin() {
         System.out.println("begin");
     }
+
     @Test
     public void classToken() throws Exception {
         Lexer lexer = new Lexer(new StringReader("class"));
         Symbol token = lexer.next_token();
         String s = ((Token)token.value).getName();
         assertEquals("CLASS",s);
+    }
+
+    @Test
+    public void extendsToken() throws Exception {
+        Lexer lexer = new Lexer(new StringReader("extends"));
+        Symbol token = lexer.next_token();
+        String s = ((Token)token.value).getName();
+        assertEquals("EXTENDS",s);
     }
 
     @Test

@@ -201,8 +201,56 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>class        { return new Symbol(TokenIds.CLASS, 
 						    new Token("CLASS", yyline)); }
 
-<YYINITIAL>new        { return new Symbol(TokenIds.NEW,
+<YYINITIAL>extends      { return new Symbol(TokenIds.EXTENDS,
+						    new Token("EXTENDS", yyline)); }
+
+<YYINITIAL>new          { return new Symbol(TokenIds.NEW,
 						    new Token("NEW", yyline)); }
 
-.                      { throw new RuntimeException("Unmatched lexeme " +
+<YYINITIAL>instanceof   { return new Symbol(TokenIds.INSTANCEOF,
+						    new Token("INSTANCEOF", yyline)); }
+
+<YYINITIAL>for          { return new Symbol(TokenIds.FOR,
+						    new Token("FOR", yyline)); }
+
+<YYINITIAL>while        { return new Symbol(TokenIds.WHILE,
+						    new Token("WHILE", yyline)); }
+
+<YYINITIAL>if           { return new Symbol(TokenIds.IF,
+						    new Token("IF", yyline)); }
+
+<YYINITIAL>else         { return new Symbol(TokenIds.ELSE,
+						    new Token("ELSE", yyline)); }
+
+<YYINITIAL>return       { return new Symbol(TokenIds.RETURN,
+						    new Token("RETURN", yyline)); }
+
+<YYINITIAL>break        { return new Symbol(TokenIds.BREAK,
+						    new Token("BREAK", yyline)); }
+
+<YYINITIAL>[;]            { return new Symbol(TokenIds.SEMI,
+						    new Token("SEMI", yyline)); }
+
+<YYINITIAL>[,]            { return new Symbol(TokenIds.COMMA,
+						    new Token("COMMA", yyline)); }
+
+<YYINITIAL>[(]            { return new Symbol(TokenIds.LPAREN,
+						    new Token("LPAREN", yyline)); }
+
+<YYINITIAL>[)]            { return new Symbol(TokenIds.RPAREN,
+						    new Token("RPAREN", yyline)); }
+
+<YYINITIAL>[{]            { return new Symbol(TokenIds.LSQBRACE,
+						    new Token("LSQBRACE", yyline)); }
+
+<YYINITIAL>[}]            { return new Symbol(TokenIds.RSQBRACE,
+						    new Token("RSQBRACE", yyline)); }
+
+<YYINITIAL>[-]            { return new Symbol(TokenIds.MINUS,
+						    new Token("MINUS", yyline)); }
+
+<YYINITIAL>[+]            { return new Symbol(TokenIds.PLUS,
+						    new Token("PLUS", yyline)); }
+
+.                       { throw new RuntimeException("Unmatched lexeme " +
                             yytext() + " at line " + yyline); }
