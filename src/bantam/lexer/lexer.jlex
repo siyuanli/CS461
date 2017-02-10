@@ -198,7 +198,13 @@ import java_cup.runtime.Symbol;
 
 %%
 
-<YYINITIAL>class        { return new Symbol(TokenIds.CLASS, 
+[ \t\n\f]*          {/*This is the regex for white spaces*/}
+
+/\*(\*[^/]|[^\*])*\*/   {/*Regex for block comments*/}
+
+//.*                    {/*Regex for inline comments*/}
+
+<YYINITIAL>class       { return new Symbol(TokenIds.CLASS,
 						    new Token("CLASS", yyline)); }
 
 <YYINITIAL>extends      { return new Symbol(TokenIds.EXTENDS,
@@ -228,29 +234,96 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>break        { return new Symbol(TokenIds.BREAK,
 						    new Token("BREAK", yyline)); }
 
-<YYINITIAL>[;]            { return new Symbol(TokenIds.SEMI,
+<YYINITIAL>;            { return new Symbol(TokenIds.SEMI,
 						    new Token("SEMI", yyline)); }
 
-<YYINITIAL>[,]            { return new Symbol(TokenIds.COMMA,
+<YYINITIAL>,            { return new Symbol(TokenIds.COMMA,
 						    new Token("COMMA", yyline)); }
 
-<YYINITIAL>[(]            { return new Symbol(TokenIds.LPAREN,
+<YYINITIAL>\(            { return new Symbol(TokenIds.LPAREN,
 						    new Token("LPAREN", yyline)); }
 
-<YYINITIAL>[)]            { return new Symbol(TokenIds.RPAREN,
+<YYINITIAL>\)            { return new Symbol(TokenIds.RPAREN,
 						    new Token("RPAREN", yyline)); }
 
-<YYINITIAL>[{]            { return new Symbol(TokenIds.LSQBRACE,
+<YYINITIAL>\[           { return new Symbol(TokenIds.LSQBRACE,
 						    new Token("LSQBRACE", yyline)); }
 
-<YYINITIAL>[}]            { return new Symbol(TokenIds.RSQBRACE,
+<YYINITIAL>\]           { return new Symbol(TokenIds.RSQBRACE,
 						    new Token("RSQBRACE", yyline)); }
 
-<YYINITIAL>[-]            { return new Symbol(TokenIds.MINUS,
+<YYINITIAL>\{           { return new Symbol(TokenIds.LBRACE,
+						    new Token("LBRACE", yyline)); }
+
+<YYINITIAL>\}           { return new Symbol(TokenIds.RBRACE,
+						    new Token("RBRACE", yyline)); }
+
+<YYINITIAL>-            { return new Symbol(TokenIds.MINUS,
 						    new Token("MINUS", yyline)); }
 
-<YYINITIAL>[+]            { return new Symbol(TokenIds.PLUS,
+<YYINITIAL>\+            { return new Symbol(TokenIds.PLUS,
 						    new Token("PLUS", yyline)); }
+
+<YYINITIAL>/            { return new Symbol(TokenIds.DIVIDE,
+						    new Token("DIVIDE", yyline)); }
+
+<YYINITIAL>\*            { return new Symbol(TokenIds.TIMES,
+						    new Token("TIMES", yyline)); }
+
+<YYINITIAL>%            { return new Symbol(TokenIds.MODULUS,
+						    new Token("MODULUS", yyline)); }
+
+<YYINITIAL>--            { return new Symbol(TokenIds.DECR,
+						    new Token("DECR", yyline)); }
+
+<YYINITIAL>\+\+            { return new Symbol(TokenIds.INCR,
+						    new Token("INCR", yyline)); }
+
+<YYINITIAL><            { return new Symbol(TokenIds.LT,
+						    new Token("LT", yyline)); }
+
+<YYINITIAL>>            { return new Symbol(TokenIds.GT,
+						    new Token("GT", yyline)); }
+
+<YYINITIAL><=            { return new Symbol(TokenIds.LEQ,
+						    new Token("LEQ", yyline)); }
+
+<YYINITIAL>>=            { return new Symbol(TokenIds.GEQ,
+						    new Token("GEQ", yyline)); }
+
+<YYINITIAL>=            { return new Symbol(TokenIds.ASSIGN,
+						    new Token("ASSIGN", yyline)); }
+
+<YYINITIAL>==            { return new Symbol(TokenIds.EQ,
+						    new Token("EQ", yyline)); }
+
+<YYINITIAL>!=            { return new Symbol(TokenIds.NE,
+						    new Token("NE", yyline)); }
+
+<YYINITIAL>true|false            { return new Symbol(TokenIds.BOOLEAN_CONST,
+						    new Token("BOOLEAN_CONST", yytext(), yyline)); }
+
+<YYINITIAL>[0-9]*         { if (Integer.parseInt(yytext()) <= Math.pow(2, 31) ){
+                               return new Symbol(TokenIds.INT_CONST, new Token("INT_CONST", yytext(), yyline));
+                            }else{
+                               return new Symbol(TokenIds.LEX_ERROR, new Token("LEX_ERROR", yyline));
+                            }
+                          }
+
+<YYINITIAL>\"([^\n\\\"]|\\[tfn\\\"])*\"           { if (yytext().length() <= 5000){
+                           return new Symbol(TokenIds.STRING_CONST, new Token("STRING_CONST", yytext(), yyline));
+                           }else{
+                            return new Symbol(TokenIds.LEX_ERROR, new Token("LEX_ERROR", yyline));
+                           }
+                         }
+
+
+/* two more cases for illegal strings 1. broken up on two lines 2. legal string with char as \s  */
+/* do we need to add more token IDs e.g. identifier token id */
+
+
+<YYINITIAL>[]            { return new Symbol(TokenIds.LEX_ERROR,
+						    new Token("LEX_ERROR", yyline)); }
 
 .                       { throw new RuntimeException("Unmatched lexeme " +
                             yytext() + " at line " + yyline); }

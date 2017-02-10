@@ -21,20 +21,41 @@ public class LexerTest
         System.out.println("begin");
     }
 
-    @Test
-    public void classToken() throws Exception {
-        Lexer lexer = new Lexer(new StringReader("class"));
+    public void checkToken(String str, String id) throws Exception {
+        Lexer lexer = new Lexer(new StringReader(str));
         Symbol token = lexer.next_token();
         String s = ((Token)token.value).getName();
-        assertEquals("CLASS",s);
+        assertEquals(id,s);
+    }
+
+    @Test
+    public void whiteSpaceToken() throws Exception {
+        checkToken("    \t\n\f\t", "EOF");
+    }
+
+    @Test
+    public void commentToken() throws Exception {
+        checkToken("/*class*/   // */ if // new \n class", "CLASS");
+    }
+
+    @Test
+    public void classToken() throws Exception {
+        checkToken(" class ", "CLASS");
     }
 
     @Test
     public void extendsToken() throws Exception {
-        Lexer lexer = new Lexer(new StringReader("extends"));
-        Symbol token = lexer.next_token();
-        String s = ((Token)token.value).getName();
-        assertEquals("EXTENDS",s);
+        checkToken(" extends ", "EXTENDS");
+    }
+
+    @Test
+    public void basicStringToken() throws Exception {
+        checkToken(" \"hi\" ", "STRING_CONST");
+    }
+
+    @Test
+    public void stringToken() throws Exception {
+        checkToken(" \" hi 890#$^&*^$  \\n  \\t \\f \\\\  \\\" \" ", "STRING_CONST");
     }
 
     @Test
