@@ -104,7 +104,7 @@ import java_cup.runtime.Symbol;
     }
 
     /** holds the current string constant
-      * note: we use StringBuffer so that appending does not require constructing a new object 
+      * note: we use StringBuffer so appending does not require constructing a new object
       * */
     private StringBuffer currStringConst;
 
@@ -313,52 +313,55 @@ import java_cup.runtime.Symbol;
 						    new Token("OR", yyline)); }
 
 
-<YYINITIAL>true|false                      { return new Symbol(TokenIds.BOOLEAN_CONST,
-						                       new Token("BOOLEAN_CONST", yytext(), yyline)); }
+<YYINITIAL>true|false               { return new Symbol(TokenIds.BOOLEAN_CONST,
+						                new Token("BOOLEAN_CONST", yytext(), yyline));}
 
-<YYINITIAL>[0-9]*                          { if (Integer.parseInt(yytext()) <= Math.pow(2, 31)){
-                                                return new Symbol(TokenIds.INT_CONST,
-                                                  new Token("INT_CONST", yytext(), yyline));
-                                             }
-                                             else{
-                                                return new Symbol(TokenIds.LEX_ERROR,
-                                                  new Token("LEX_ERROR", yyline));
-                                             }
-                                           }
+<YYINITIAL>[0-9]*                   { if (Integer.parseInt(yytext()) <= Math.pow(2, 31)){
+                                        return new Symbol(TokenIds.INT_CONST,
+                                          new Token("INT_CONST", yytext(), yyline));
+                                      }
+                                      else{
+                                        return new Symbol(TokenIds.LEX_ERROR,
+                                           new Token("LEX_ERROR", yyline));
+                                      }
+                                    }
 
-<YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*           { return new Symbol(TokenIds.ID,
-                                               new Token("ID", yytext(), yyline)); }
+<YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*    { return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
 
-<YYINITIAL>\"([^\n\\\"]|\\[tfn\\\"])*\"    { if (yytext().length() <= 5000){
-                                                return new Symbol(TokenIds.STRING_CONST,
-                                                  new Token("STRING_CONST", yytext(), yyline));
-                                             }
-                                             else{
-                                                return new Symbol(TokenIds.LEX_ERROR,
-                                                  new Token("LEX_ERROR",yytext(), yyline));
-                                             }
-                                           }
+<YYINITIAL>\"([^\n\\\"]|\\[tfn\\\"])*\"
+                                    { if (yytext().length() <= 5000){
+                                        return new Symbol(TokenIds.STRING_CONST,
+                                          new Token("STRING_CONST", yytext(), yyline));
+                                      }
+                                      else{
+                                        return new Symbol(TokenIds.LEX_ERROR,
+                                          new Token("LEX_ERROR",yytext(), yyline));
+                                      }
+                                    }
 
-<YYINITIAL>\"([^\n\"\\]|\\[tfn\\\"])*$     { /*unterminated string*/
-                                             return new Symbol(TokenIds.LEX_ERROR,
-                                               new Token("LEX_ERROR",yytext(), yyline)); }
+<YYINITIAL>\"([^\n\"\\]|\\[tfn\\\"])*$
+                                    { /*unterminated string*/
+                                        return new Symbol(TokenIds.LEX_ERROR,
+                                          new Token("LEX_ERROR",yytext(), yyline)); }
 
-<YYINITIAL>\"([^\n\"\\]|\\.)*\"            { /*illegal escape*/
-                                             return new Symbol(TokenIds.LEX_ERROR,
-                                               new Token("LEX_ERROR",yytext(), yyline)); }
-
-
-
-<YYINITIAL>/\*([^\*]|\*[^/])*              { return new Symbol(TokenIds.LEX_ERROR,
-						                       new Token("LEX_ERROR", yytext(), yyline)); }
+<YYINITIAL>\"([^\n\"\\]|\\.)*\"
+                                    { /*illegal escape*/
+                                        return new Symbol(TokenIds.LEX_ERROR,
+                                          new Token("LEX_ERROR",yytext(), yyline)); }
 
 
-<YYINITIAL>[]                              { return new Symbol(TokenIds.LEX_ERROR,
-                         	                   new Token("LEX_ERROR", yytext(), yyline)); }
+
+<YYINITIAL>/\*([^\*]|\*[^/])*       { return new Symbol(TokenIds.LEX_ERROR,
+						                new Token("LEX_ERROR", yytext(), yyline)); }
+
+
+<YYINITIAL>[]                       { return new Symbol(TokenIds.LEX_ERROR,
+                         	            new Token("LEX_ERROR", yytext(), yyline)); }
 
 <YYINITIAL>[^a-zA-Z0-9\";,\.\(\)\[\]\{\}\-\+/\*%<>=!]
-                                           { return new Symbol(TokenIds.LEX_ERROR,
-                                               new Token("LEX_ERROR", yytext(), yyline)); }
+                                    { return new Symbol(TokenIds.LEX_ERROR,
+                                        new Token("LEX_ERROR", yytext(), yyline)); }
 
-.                                          { throw new RuntimeException("Unmatched lexeme " +
-                                               yytext() + " at line " + yyline); }
+.                                   { throw new RuntimeException("Unmatched lexeme " +
+                                        yytext() + " at line " + yyline); }
