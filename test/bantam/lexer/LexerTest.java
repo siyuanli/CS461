@@ -35,8 +35,9 @@ public class LexerTest
 
     @Test
     public void commentToken() throws Exception {
-        checkToken("/*class*/   // */ if // new \n class", "CLASS");
+        checkToken("/*class \n while*/   // */ if // new \n if", "IF");
     }
+
 
     @Test
     public void classToken() throws Exception {
@@ -96,6 +97,11 @@ public class LexerTest
     @Test
     public void commmaToken() throws Exception {
         checkToken(" , ", "COMMA");
+    }
+
+    @Test
+    public void dotToken() throws Exception {
+        checkToken(" . ", "DOT");
     }
 
     @Test
@@ -175,12 +181,12 @@ public class LexerTest
 
     @Test
     public void leqToken() throws Exception {
-        checkToken(" <= ", "LEG");
+        checkToken(" <= ", "LEQ");
     }
 
     @Test
     public void geqToken() throws Exception {
-        checkToken(" >= ", "GEG");
+        checkToken(" >= ", "GEQ");
     }
 
     @Test
@@ -190,12 +196,30 @@ public class LexerTest
 
     @Test
     public void eqToken() throws Exception {
-        checkToken(" == ", "EG");
+        checkToken(" == ", "EQ");
     }
 
     @Test
     public void neToken() throws Exception {
         checkToken(" != ", "NE");
+    }
+
+
+    @Test
+    public void andToken() throws Exception {
+        checkToken(" && ", "AND");
+    }
+
+
+    @Test
+    public void orToken() throws Exception {
+        checkToken(" || ", "OR");
+    }
+
+
+    @Test
+    public void notToken() throws Exception {
+        checkToken(" ! ", "NOT");
     }
 
 
@@ -208,6 +232,37 @@ public class LexerTest
     public void stringToken() throws Exception {
         checkToken(" \" hi 890#$^&*^$  \\n  \\t \\f \\\\  \\\" \" ", "STRING_CONST");
     }
+
+    @Test
+    public void unterminatedCommentToken() throws Exception {
+        checkToken("/* sdjkwelk/////  *****\nsdllkjsdf   ** ///\\//","LEX_ERROR");
+    }
+
+    @Test
+    public void unClosedStringToken() throws Exception {
+        checkToken(" \"skdjfs\t\f  ", "LEX_ERROR");
+    }
+
+    @Test
+    public void multilineStringToken() throws Exception {
+        checkToken(" \"skdjfs\t\f\n sdfkjs sldksf \\\" \"  ", "LEX_ERROR");
+    }
+
+    @Test
+    public void illegalItemsInStringToken() throws Exception {
+        checkToken(" \" \\0 \" ", "LEX_ERROR");
+    }
+
+
+    @Test
+    public void illegalSymbolToken() throws Exception {
+        //a bell
+        checkToken(Character.toString( (char) 7), "LEX_ERROR");
+
+        checkToken("??@#$^&$#", "LEX_ERROR");
+    }
+
+
 
     @Test
     public void EOFToken() throws Exception {
