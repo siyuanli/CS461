@@ -1,6 +1,12 @@
+/*
+ * Project 1: Build Lexer
+ * File: LexerTest.java
+ * Author: djskrien, Phoebe Hughes, Joseph Malionek, Siyuan Li
+ * Date: Feb 14, 2017
+ */
+
 package bantam.lexer;
 
-import com.sun.javafx.fxml.expression.Expression;
 import java_cup.runtime.Symbol;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -9,17 +15,19 @@ import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
 
-/*
- * File: LexerTest.java
- * Author: djskrien
- * Date: 1/8/17
- */
 public class LexerTest
 {
     @BeforeClass
     public static void begin() {
         System.out.println("begin");
     }
+
+    /**
+     * Match the first token in the string with the given id
+     * @param str the string to be tokenized
+     * @param id the token id to be matched
+     * @throws Exception throws an exception if the two do not match
+     */
 
     public void checkToken(String str, String id) throws Exception {
         Lexer lexer = new Lexer(new StringReader(str));
@@ -30,7 +38,7 @@ public class LexerTest
 
     @Test
     public void whiteSpaceToken() throws Exception {
-        checkToken("    \t\n\f\t", "EOF");
+        checkToken("    \t\n\f\t\r", "EOF");
     }
 
     @Test
@@ -230,12 +238,13 @@ public class LexerTest
 
     @Test
     public void stringToken() throws Exception {
-        checkToken(" \" hi 890#$^&*^$  \\n  \\t \\f \\\\  \\\" \" ", "STRING_CONST");
+        checkToken(" \" hi 890#$^&*^$  \\n  \\t \\f \\r \\\\  \\\" \" ",
+                "STRING_CONST");
     }
 
     @Test
     public void unterminatedCommentToken() throws Exception {
-        checkToken("/* sdjkwelk/////  *****\nsdllkjsdf   ** ///\\//","LEX_ERROR");
+        checkToken("/* sdjkwelk/////  *****\nsdllkjsdf  ** ///\\//","LEX_ERROR");
     }
 
     @Test
@@ -256,19 +265,55 @@ public class LexerTest
 
     @Test
     public void illegalSymbolToken() throws Exception {
+        checkToken("??@#$^&$#", "LEX_ERROR");
         //a bell
         checkToken(Character.toString( (char) 7), "LEX_ERROR");
-
-        checkToken("??@#$^&$#", "LEX_ERROR");
     }
 
+    @Test
+    public void illegalIdentifierToken() throws Exception {
+        checkToken("_aaaa", "LEX_ERROR");
+        checkToken("22aaaa", "LEX_ERROR");
+    }
 
+    @Test
+    public void legalIdentifierToken() throws Exception {
+        checkToken("public", "ID");
+        checkToken("int", "ID");
+        checkToken("a_23", "ID");
+        checkToken("A_20B", "ID");
+    }
+
+    @Test
+    public void longStringToken() throws Exception {
+        String str = "\"A";
+        for (int i = 0; i < 5010; i++){
+            str += "A";
+        }
+        checkToken(str + "H!!!!\"", "LEX_ERROR");
+    }
+
+    @Test
+    public void longIntToken() throws Exception {
+        checkToken("99999999999999", "LEX_ERROR");
+    }
+
+    @Test
+    public void legalIntToken() throws Exception {
+        checkToken("012999", "INT_CONST");
+    }
+
+    @Test
+    public void booleanToken() throws Exception {
+        checkToken(" true ", "BOOLEAN_CONST");
+        checkToken(" false ", "BOOLEAN_CONST");
+    }
+    
 
     @Test
     public void EOFToken() throws Exception {
-        Lexer lexer = new Lexer(new StringReader(""));
-        Symbol token = lexer.next_token();
-        String s = ((Token)token.value).getName();
-        assertEquals("EOF",s);
+        checkToken("","EOF");
     }
+
+
 }

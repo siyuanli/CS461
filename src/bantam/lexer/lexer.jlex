@@ -1,3 +1,10 @@
+/*
+ * Project 1: Build Lexer
+ * Date: Feb 14, 2017
+ * Authors: Phoebe Hughes, Joseph Malionek, Siyuan Li
+ * File name: Lexer.java; lexer.jlex
+ */
+
 /* Bantam Java Compiler and Language Toolset.
 
    Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
@@ -25,6 +32,7 @@
 */
 
 /* code below is copied to the file containing the bantam.lexer */
+
 
 package bantam.lexer;
 
@@ -198,7 +206,7 @@ import java_cup.runtime.Symbol;
 
 %%
 
-[ \t\n\f]*              {/*This is the regex for white spaces*/}
+[ \t\n\f\r]*              {/*This is the regex for white spaces*/}
 
 /\*(\*[^/]|[^\*])*\*/   {/*Regex for block comments*/}
 
@@ -316,52 +324,57 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>true|false               { return new Symbol(TokenIds.BOOLEAN_CONST,
 						                new Token("BOOLEAN_CONST", yytext(), yyline));}
 
-<YYINITIAL>[0-9]*                   { if (Integer.parseInt(yytext()) <= Math.pow(2, 31)){
+<YYINITIAL>[0-9]*                   { if (Long.parseLong(yytext()) < Math.pow(2, 31)){
                                         return new Symbol(TokenIds.INT_CONST,
                                           new Token("INT_CONST", yytext(), yyline));
                                       }
                                       else{
                                         return new Symbol(TokenIds.LEX_ERROR,
-                                           new Token("LEX_ERROR", yyline));
+                                           new Token("LEX_ERROR", "Integer " + yytext() +
+                                             " is larger than 2^31 -1.", yyline));
                                       }
                                     }
 
 <YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*    { return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 
-<YYINITIAL>\"([^\n\\\"]|\\[tfn\\\"])*\"
+<YYINITIAL>[_0-9][a-zA-Z0-9_]*      { return new Symbol(TokenIds.LEX_ERROR,
+                         	            new Token("LEX_ERROR", "Identifier " + yytext() +
+                         	                " cannot start with _ or 0-9.", yyline)); }
+
+<YYINITIAL>\"([^\n\\\"]|\\[tfnr\\\"])*\"
                                     { if (yytext().length() <= 5000){
                                         return new Symbol(TokenIds.STRING_CONST,
                                           new Token("STRING_CONST", yytext(), yyline));
                                       }
                                       else{
                                         return new Symbol(TokenIds.LEX_ERROR,
-                                          new Token("LEX_ERROR",yytext(), yyline));
+                                          new Token("LEX_ERROR", "String " + yytext() +
+                                            " is longer than 5000 characters.", yyline));
                                       }
                                     }
 
-<YYINITIAL>\"([^\n\"\\]|\\[tfn\\\"])*$
+<YYINITIAL>\"([^\n\"\\]|\\[tfnr\\\"])*$
                                     { /*unterminated string*/
                                         return new Symbol(TokenIds.LEX_ERROR,
-                                          new Token("LEX_ERROR",yytext(), yyline)); }
+                                          new Token("LEX_ERROR", "Unterminated string.",
+                                            yyline)); }
 
-<YYINITIAL>\"([^\n\"\\]|\\.)*\"
-                                    { /*illegal escape*/
+
+<YYINITIAL>\"([^\n\"\\]|\\.)*\"     { /*illegal escape*/
                                         return new Symbol(TokenIds.LEX_ERROR,
-                                          new Token("LEX_ERROR",yytext(), yyline)); }
+                                          new Token("LEX_ERROR", yytext() +
+                                            " is illegal escape character.", yyline)); }
 
-
-
-<YYINITIAL>/\*([^\*]|\*[^/])*       { return new Symbol(TokenIds.LEX_ERROR,
-						                new Token("LEX_ERROR", yytext(), yyline)); }
-
-
-<YYINITIAL>[]                       { return new Symbol(TokenIds.LEX_ERROR,
-                         	            new Token("LEX_ERROR", yytext(), yyline)); }
+<YYINITIAL>/\*([^\*]|\*[^/])*       { /*unterminated comment*/
+                                       return new Symbol(TokenIds.LEX_ERROR,
+						                new Token("LEX_ERROR", "Unterminated comment.",
+						                  yyline)); }
 
 <YYINITIAL>[^a-zA-Z0-9\";,\.\(\)\[\]\{\}\-\+/\*%<>=!]
                                     { return new Symbol(TokenIds.LEX_ERROR,
-                                        new Token("LEX_ERROR", yytext(), yyline)); }
+                                        new Token("LEX_ERROR", yytext() +
+                                          " is an illegal character.", yyline)); }
 
 .                                   { throw new RuntimeException("Unmatched lexeme " +
                                         yytext() + " at line " + yyline); }
