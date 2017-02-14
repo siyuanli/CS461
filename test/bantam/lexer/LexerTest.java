@@ -10,9 +10,7 @@ package bantam.lexer;
 import java_cup.runtime.Symbol;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import java.io.StringReader;
-
 import static org.junit.Assert.assertEquals;
 
 public class LexerTest
@@ -308,7 +306,17 @@ public class LexerTest
         checkToken(" true ", "BOOLEAN_CONST");
         checkToken(" false ", "BOOLEAN_CONST");
     }
-    
+
+    @Test
+    public void testTokenSequences() throws Exception{
+        Lexer lexer = new Lexer(new StringReader(".5E-3"));
+        String[] ids = {"DOT","LEX_ERROR","MINUS","INT_CONST"};
+        for(int i = 0;i<4;i++){
+            Symbol token = lexer.next_token();
+            String s = ((Token)token.value).getName();
+            assertEquals(ids[i],s);
+        }
+    }
 
     @Test
     public void EOFToken() throws Exception {

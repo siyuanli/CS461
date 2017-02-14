@@ -324,7 +324,9 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>true|false               { return new Symbol(TokenIds.BOOLEAN_CONST,
 						                new Token("BOOLEAN_CONST", yytext(), yyline));}
 
-<YYINITIAL>[0-9]*                   { if (Long.parseLong(yytext()) < Math.pow(2, 31)){
+<YYINITIAL>[0-9]*                   { /*matches integer constants and checks if they are
+                                        too big*/
+                                      if (Long.parseLong(yytext()) < Math.pow(2, 31)){
                                         return new Symbol(TokenIds.INT_CONST,
                                           new Token("INT_CONST", yytext(), yyline));
                                       }
@@ -335,15 +337,19 @@ import java_cup.runtime.Symbol;
                                       }
                                     }
 
-<YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*    { return new Symbol(TokenIds.ID,
+<YYINITIAL>[a-zA-Z][a-zA-Z0-9_]*    { /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 
-<YYINITIAL>[_0-9][a-zA-Z0-9_]*      { return new Symbol(TokenIds.LEX_ERROR,
+<YYINITIAL>[_0-9][a-zA-Z0-9_]*      { /*matches illegal identifiers*/
+                                      return new Symbol(TokenIds.LEX_ERROR,
                          	            new Token("LEX_ERROR", "Identifier " + yytext() +
                          	                " cannot start with _ or 0-9.", yyline)); }
 
 <YYINITIAL>\"([^\n\\\"]|\\[tfnr\\\"])*\"
-                                    { if (yytext().length() <= 5000){
+                                    { /*matches string constants and checks if they are
+                                        too big*/
+                                      if (yytext().length() <= 5000){
                                         return new Symbol(TokenIds.STRING_CONST,
                                           new Token("STRING_CONST", yytext(), yyline));
                                       }
@@ -355,24 +361,26 @@ import java_cup.runtime.Symbol;
                                     }
 
 <YYINITIAL>\"([^\n\"\\]|\\[tfnr\\\"])*$
-                                    { /*unterminated string*/
+                                    { /*matches unterminated string*/
                                         return new Symbol(TokenIds.LEX_ERROR,
                                           new Token("LEX_ERROR", "Unterminated string.",
                                             yyline)); }
 
 
-<YYINITIAL>\"([^\n\"\\]|\\.)*\"     { /*illegal escape*/
+<YYINITIAL>\"([^\n\"\\]|\\.)*\"     { /*matches illegal escape sequences in strings*/
                                         return new Symbol(TokenIds.LEX_ERROR,
                                           new Token("LEX_ERROR", yytext() +
-                                            " is illegal escape character.", yyline)); }
+                                            " contains an illegal escape character.",
+                                             yyline)); }
 
-<YYINITIAL>/\*([^\*]|\*[^/])*       { /*unterminated comment*/
+<YYINITIAL>/\*([^\*]|\*[^/])*       { /*matches unterminated comment*/
                                        return new Symbol(TokenIds.LEX_ERROR,
 						                new Token("LEX_ERROR", "Unterminated comment.",
 						                  yyline)); }
 
 <YYINITIAL>[^a-zA-Z0-9\";,\.\(\)\[\]\{\}\-\+/\*%<>=!]
-                                    { return new Symbol(TokenIds.LEX_ERROR,
+                                    { /*matches any non-legal character*/
+                                      return new Symbol(TokenIds.LEX_ERROR,
                                         new Token("LEX_ERROR", yytext() +
                                           " is an illegal character.", yyline)); }
 
