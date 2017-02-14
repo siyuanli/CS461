@@ -212,6 +212,12 @@ public class LexerTest
 
 
     @Test
+    public void notToken() throws Exception {
+        checkToken(" ! ", "NOT");
+    }
+
+
+    @Test
     public void andToken() throws Exception {
         checkToken(" && ", "AND");
     }
@@ -222,12 +228,35 @@ public class LexerTest
         checkToken(" || ", "OR");
     }
 
-
     @Test
-    public void notToken() throws Exception {
-        checkToken(" ! ", "NOT");
+    public void booleanToken() throws Exception {
+        checkToken(" true ", "BOOLEAN_CONST");
+        checkToken(" false ", "BOOLEAN_CONST");
     }
 
+    @Test
+    public void longIntToken() throws Exception {
+        checkToken("99999999999999", "LEX_ERROR");
+    }
+
+    @Test
+    public void legalIntToken() throws Exception {
+        checkToken("012999", "INT_CONST");
+    }
+
+    @Test
+    public void legalIdentifierToken() throws Exception {
+        checkToken("public", "ID");
+        checkToken("int", "ID");
+        checkToken("a_23", "ID");
+        checkToken("A_20B", "ID");
+    }
+
+    @Test
+    public void illegalIdentifierToken() throws Exception {
+        checkToken("_aaaa", "LEX_ERROR");
+        checkToken("22aaaa", "LEX_ERROR");
+    }
 
     @Test
     public void basicStringToken() throws Exception {
@@ -240,9 +269,14 @@ public class LexerTest
                 "STRING_CONST");
     }
 
+
     @Test
-    public void unterminatedCommentToken() throws Exception {
-        checkToken("/* sdjkwelk/////  *****\nsdllkjsdf  ** ///\\//","LEX_ERROR");
+    public void longStringToken() throws Exception {
+        String str = "\"A";
+        for (int i = 0; i < 5010; i++){
+            str += "A";
+        }
+        checkToken(str + "H!!!!\"", "LEX_ERROR");
     }
 
     @Test
@@ -260,51 +294,16 @@ public class LexerTest
         checkToken(" \" \\0 \" ", "LEX_ERROR");
     }
 
+    @Test
+    public void unterminatedCommentToken() throws Exception {
+        checkToken("/* sdjkwelk/////  *****\nsdllkjsdf  ** ///\\//","LEX_ERROR");
+    }
 
     @Test
     public void illegalSymbolToken() throws Exception {
         checkToken("??@#$^&$#", "LEX_ERROR");
         //a bell
         checkToken(Character.toString( (char) 7), "LEX_ERROR");
-    }
-
-    @Test
-    public void illegalIdentifierToken() throws Exception {
-        checkToken("_aaaa", "LEX_ERROR");
-        checkToken("22aaaa", "LEX_ERROR");
-    }
-
-    @Test
-    public void legalIdentifierToken() throws Exception {
-        checkToken("public", "ID");
-        checkToken("int", "ID");
-        checkToken("a_23", "ID");
-        checkToken("A_20B", "ID");
-    }
-
-    @Test
-    public void longStringToken() throws Exception {
-        String str = "\"A";
-        for (int i = 0; i < 5010; i++){
-            str += "A";
-        }
-        checkToken(str + "H!!!!\"", "LEX_ERROR");
-    }
-
-    @Test
-    public void longIntToken() throws Exception {
-        checkToken("99999999999999", "LEX_ERROR");
-    }
-
-    @Test
-    public void legalIntToken() throws Exception {
-        checkToken("012999", "INT_CONST");
-    }
-
-    @Test
-    public void booleanToken() throws Exception {
-        checkToken(" true ", "BOOLEAN_CONST");
-        checkToken(" false ", "BOOLEAN_CONST");
     }
 
     @Test
