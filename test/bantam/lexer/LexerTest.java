@@ -34,127 +34,228 @@ public class LexerTest
         assertEquals(id,s);
     }
 
+    /**
+     * Checks if white space matches a token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void whiteSpaceToken() throws Exception {
         checkToken("    \t\n\f\t\r", "EOF");
     }
 
+    /**
+     * Checks if comments match a token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void commentToken() throws Exception {
         checkToken("/*class \n while*/   // */ if // new \n if", "IF");
     }
 
 
+    /**
+     * Checks if "class" matches the class token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void classToken() throws Exception {
         checkToken(" class ", "CLASS");
     }
 
+    /**
+     * Checks if "extends" matches the extends token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void extendsToken() throws Exception {
         checkToken(" extends ", "EXTENDS");
     }
 
+
+    /**
+     * Checks if "new" matches the new token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void newToken() throws Exception {
         checkToken(" new ", "NEW");
     }
 
+    /**
+     * Checks if "instanceof" matches the instanceof token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void instanceofToken() throws Exception {
         checkToken(" instanceof ", "INSTANCEOF");
     }
 
+    /**
+     * Checks if "for" matches the for token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void forToken() throws Exception {
         checkToken(" for ", "FOR");
     }
 
+    /**
+     * Checks if "while" matches the while token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void whileToken() throws Exception {
         checkToken(" while ", "WHILE");
     }
 
+    /**
+     * Checks if "if" matches the if token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void ifToken() throws Exception {
         checkToken(" if ", "IF");
     }
 
+    /**
+     * Checks if "else" matches the else token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void elseToken() throws Exception {
         checkToken(" else ", "ELSE");
     }
 
+    /**
+     * Checks if "return" matches the return token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void returnToken() throws Exception {
         checkToken(" return ", "RETURN");
     }
 
+    /**
+     * Checks if "break" matches the break token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void breakToken() throws Exception {
         checkToken(" break ", "BREAK");
     }
 
+    /**
+     * Checks if a semicolon matches the semi token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void semiToken() throws Exception {
         checkToken(" ; ", "SEMI");
     }
 
+    /**
+     * Checks if a comma matches the comma token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void commmaToken() throws Exception {
         checkToken(" , ", "COMMA");
     }
 
+    /**
+     * Checks if a period matches the dot token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void dotToken() throws Exception {
         checkToken(" . ", "DOT");
     }
 
+    /**
+     * Checks if a left parenthesis  matches the lparen token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void lparenToken() throws Exception {
         checkToken(" ( ", "LPAREN");
     }
 
+    /**
+     * Checks if a right parenthesis matches the rparen token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void rparenToken() throws Exception {
         checkToken(" ) ", "RPAREN");
     }
 
+    /**
+     * Checks if a left square brace matches the lsqbrace token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void lsqbraceToken() throws Exception {
         checkToken(" [ ", "LSQBRACE");
     }
 
+    /**
+     * Checks if a right square brace matches the rsqbrace token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void rsqbraceToken() throws Exception {
         checkToken(" ] ", "RSQBRACE");
     }
 
+    /**
+     * Checks if a left curly brace matches the lbrace token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void lbraceToken() throws Exception {
         checkToken(" { ", "LBRACE");
     }
 
+    /**
+     * Checks if a right curly brace matches the rbrace token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void rbraceToken() throws Exception {
         checkToken(" } ", "RBRACE");
     }
 
+    /**
+     * Checks if the minus sign matches the minus token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void minusToken() throws Exception {
         checkToken(" - ", "MINUS");
     }
 
+    /**
+     * Checks if the plus sign matches the plus token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void plusToken() throws Exception {
         checkToken(" + ", "PLUS");
     }
 
+    /**
+     * Checks if the forward slash matches the divide token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void divideToken() throws Exception {
         checkToken(" / ", "DIVIDE");
     }
 
+    /**
+     * Checks if the star matches the times token
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void timesToken() throws Exception {
         checkToken(" * ", "TIMES");
