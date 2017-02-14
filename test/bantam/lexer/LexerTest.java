@@ -261,90 +261,156 @@ public class LexerTest
         checkToken(" * ", "TIMES");
     }
 
+    /**
+     * Checks to see if it catches the modulus token "%"
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void modulusToken() throws Exception {
         checkToken(" % ", "MODULUS");
     }
 
+    /**
+     * Checks to see if it catches the decrementer token "--"
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void decrToken() throws Exception {
         checkToken(" -- ", "DECR");
     }
 
+    /**
+     * Checks to see if it catches the incrementer token "++"
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void incrToken() throws Exception {
         checkToken(" ++ ", "INCR");
     }
 
+    /**
+     * Checks to see if it catches the less than token "<"
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void ltToken() throws Exception {
         checkToken(" < ", "LT");
     }
 
+    /**
+     * Checks to see if it catches the greater than token ">"
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void gtToken() throws Exception {
         checkToken(" > ", "GT");
     }
 
+    /**
+     * Checks to see if it catches the less than or equal to token "<="
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void leqToken() throws Exception {
         checkToken(" <= ", "LEQ");
     }
 
+    /**
+     * Checks to see if it catches the greater than or equals token ">="
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void geqToken() throws Exception {
         checkToken(" >= ", "GEQ");
     }
 
+    /**
+     * Checks to see if it catches the assignment token "="
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void assignToken() throws Exception {
         checkToken(" = ", "ASSIGN");
     }
 
+    /**
+     * Checks to see if it catches the "equals" token ==
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void eqToken() throws Exception {
         checkToken(" == ", "EQ");
     }
 
+    /**
+     * Checks to see if it catches the "not equals" token !=
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void neToken() throws Exception {
         checkToken(" != ", "NE");
     }
 
-
+    /**
+     * Checks to see if it catches the "not" token !
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void notToken() throws Exception {
         checkToken(" ! ", "NOT");
     }
 
-
+    /**
+     * Checks to see if it catches the "and" token &&
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void andToken() throws Exception {
         checkToken(" && ", "AND");
     }
 
 
+    /**
+     * Checks to see if it catches the "or" token ||
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void orToken() throws Exception {
         checkToken(" || ", "OR");
     }
 
+    /**
+     * Checks to see if it catches the boolean constants true and false
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void booleanToken() throws Exception {
         checkToken(" true ", "BOOLEAN_CONST");
         checkToken(" false ", "BOOLEAN_CONST");
     }
 
+    /**
+     * Checks to see if it catches integer constants which are too long
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void longIntToken() throws Exception {
         checkToken("99999999999999", "LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches legal integer constants
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void legalIntToken() throws Exception {
         checkToken("012999", "INT_CONST");
     }
 
+    /**
+     * Checks to see if it catches various legal identifiers
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void legalIdentifierToken() throws Exception {
         checkToken("public", "ID");
@@ -353,17 +419,29 @@ public class LexerTest
         checkToken("A_20B", "ID");
     }
 
+    /**
+     * Checks to see if it catches illegal identifiers
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void illegalIdentifierToken() throws Exception {
         checkToken("_aaaa", "LEX_ERROR");
         checkToken("22aaaa", "LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches basic string constants
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void basicStringToken() throws Exception {
         checkToken(" \"hi\" ", "STRING_CONST");
     }
 
+    /**
+     * Checks to see if it catches string constants with legal escape sequences
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void stringToken() throws Exception {
         checkToken(" \" hi 890#$^&*^$  \\n  \\t \\f \\r \\\\  \\\" \" ",
@@ -371,6 +449,10 @@ public class LexerTest
     }
 
 
+    /**
+     * Checks to see if it catches string constants which are too long
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void longStringToken() throws Exception {
         String str = "\"A";
@@ -380,26 +462,46 @@ public class LexerTest
         checkToken(str + "H!!!!\"", "LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches unclosed string constants
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void unClosedStringToken() throws Exception {
         checkToken(" \"skdjfs\t\f  ", "LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches multi-line quotes
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void multilineStringToken() throws Exception {
         checkToken(" \"skdjfs\t\f\n sdfkjs sldksf \\\" \"  ", "LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches illegal escape sequences
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void illegalItemsInStringToken() throws Exception {
         checkToken(" \" \\0 \" ", "LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches unterminated comments
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void unterminatedCommentToken() throws Exception {
         checkToken("/* sdjkwelk/////  *****\nsdllkjsdf  ** ///\\//","LEX_ERROR");
     }
 
+    /**
+     * Checks to see if it catches illegal characters
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void illegalSymbolToken() throws Exception {
         checkToken("??@#$^&$#", "LEX_ERROR");
@@ -407,6 +509,12 @@ public class LexerTest
         checkToken(Character.toString( (char) 7), "LEX_ERROR");
     }
 
+    /**
+     * Checks if it handles multiple tokens (in this case scientific notation) correctly
+     * It leaves it up to the parser to check to see if the user has incorrectly used
+     * decimals
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void testTokenSequences() throws Exception{
         Lexer lexer = new Lexer(new StringReader(".5E-3"));
@@ -418,6 +526,10 @@ public class LexerTest
         }
     }
 
+    /**
+     * Checks if it handles the end of the file correctly
+     * @throws Exception throws an exception if the two do not match
+     */
     @Test
     public void EOFToken() throws Exception {
         checkToken("","EOF");
