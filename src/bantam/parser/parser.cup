@@ -122,6 +122,40 @@ nonterminal Program program;
 nonterminal ClassList class_list;
 nonterminal Class_ class;
 nonterminal MemberList member_list;
+nonterminal Member member;
+nonterminal Method method;
+nonterminal Field field;
+nonterminal FormalList formal_list;
+nonterminal Formal formal;
+nonterminal StmtList stmt_list;
+nonterminal Stmt stmt;
+nonterminal ExprStmt expr_stmt;
+nonterminal DeclStmt decl_stmt;
+nonterminal IfStmt if_stmt;
+nonterminal WhileStmt while_stmt;
+nonterminal ForStmt for_stmt;
+nonterminal BreakStmt break_stmt;
+nonterminal ReturnStmt return_stmt;
+nonterminal Block_stmt block_stmt;
+nonterminal Expr expr;
+nonterminal AssignExpr assign_expr;
+nonterminal DispatchExpr dispatch_expr;
+nonterminal ExprList expr_list;
+nonterminal NewExpr new_expr;
+nonterminal InstanceOfExpr instance_of_expr;
+nonterminal CastExpr cast_expr;
+nonterminal BinaryExpr binary_expr;
+nonterminal UnaryExpr unary_expr;
+nonterminal ConstExpr const_expr;
+nonterminal BinaryArithExpr binary_arith_expr;
+nonterminal BinaryCompExpr binary_comp_expr;
+nonterminal BinaryLogicExpr binary_logic_expr;
+nonterminal UnaryNegExpr unary_neg_expr;
+nonterminal UnaryNotExpr unary_not_expr;
+nonterminal UnaryIncrExpr unary_incr_expr;
+nonterminal UnaryDecrExpr unary_decr_expr;
+nonterminal VarExpr var_expr;
+
 /* add other non-terminals... */
 
 /* precedence/associativity rules
@@ -169,6 +203,20 @@ member_list
         /* empty list */
 	    {: RESULT = new MemberList(getCurrLineNum()); :}
 	;
+/*a member of a class*/
+member
+    ::=
+        /*If the member is a method*/
+        Method:method
+        {::}
+        /*If the member is a field*/
+    |   Field:field
+        {::}
+    ;
+/*A method declaration in a class*/
+method
+    ::=
+        ID:name LPAREN formal_list
 
 /* add more productions... */
 
