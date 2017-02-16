@@ -338,11 +338,18 @@ public class Main {
             // parsing
             Parser parser = new Parser(lexer);
             Symbol result = null;
-            if (debugParser) {
-                result = parser.debug_parse();
-            }
-            else {
-                result = parser.parse();
+            try {
+                if (debugParser) {
+                    result = parser.debug_parse();
+                }
+                else {
+                    result = parser.parse();
+                }
+            } catch (RuntimeException e) {
+                // there were parser errors, so report them and exit
+                System.out.println(e.getMessage());
+                parser.getErrorHandler().printErrors();
+                System.exit(1);
             }
             if (stopAfterParsing) {
                 // if stopAfterParsing==true, then print AST and exit
@@ -362,7 +369,15 @@ public class Main {
             // semantic analysis
             SemanticAnalyzer semanticAnalyzer =
                     new SemanticAnalyzer((Program) result.value, debugSemant);
-            ClassTreeNode classTree = semanticAnalyzer.analyze();
+            ClassTreeNode classTree = null;
+            try {
+                classTree = semanticAnalyzer.analyze();
+            } catch (Exception e) {
+                // there were semantic errors, so report them and exit
+                System.out.println(e.getMessage());
+                semanticAnalyzer.getErrorHandler().printErrors();;
+                System.exit(1);
+            }
             if (stopAfterSemant) {
                 // if stopAfterSemant==true, then print AST (with types) and exit
                 PrintVisitor printVisitor = new PrintVisitor(/*start at indent 0*/0,
