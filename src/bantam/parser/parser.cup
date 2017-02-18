@@ -156,28 +156,37 @@ nonterminal UnaryIncrExpr unary_incr_expr;
 nonterminal UnaryDecrExpr unary_decr_expr;
 nonterminal VarExpr var_expr;
 
-/* add other non-terminals... */
 
 /* precedence/associativity rules
-   format: precedence <associativity> <list of terminals>
-   example: precedence right ASSIGN
    precedence specified by order (from lowest to highest)
    note: use a single precedence rule for terminals with same precedence
    associativity specfied by middle operand (left, right, none)
 */
-/* add precedence rules... */
+precedence right ASSIGN;
+precedence left OR;
+precedence left AND;
+precedence left EQ, NE;
+precedence left LT, GT, LEQ, GEQ, INSTANCEOF;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE, MODULUS;
+precedence left NEW;  /* CAST*/
+precedence left NOT, /*UNIARY,++PREFIX, --PREFIX */
+precedence left DOT, LPAREN, RPAREN, LSQBRACE, RSQBRACE, INCR, DERC /*POSTFIX*/
+
 
 /* program, which is simply a list of classes */
 program
-	::= class_list:cl
+	::=
+	class_list:cl
 	    {: RESULT = new Program(0, cl); :}
-        ;
+    ;
 
 /* list of classes (must be at least one class in program) */
 class_list
-	/* single class */
-        ::= class:c
-            {: RESULT = (ClassList)(new ClassList(0)).addElement(c); :}
+    ::=
+    /* single class */
+    class:c
+        {: RESULT = (ClassList)(new ClassList(0)).addElement(c); :}
 	/* several classes */
 	| class_list:cl class:c
 	    {: RESULT = (ClassList)cl.addElement(c); :}
@@ -185,38 +194,371 @@ class_list
 
 /* a single class */
 class
-        ::=
-        /* class with no specified parent - uses Object class */
-        CLASS:t ID:name LBRACE member_list:ml RBRACE
-	    {: RESULT = new Class_(t.getLineNum(), getCurrFilename(),
-				   name.getAttribute(), "Object", ml); :}
-        /* class with a specified parent */
-	| CLASS:t ID:name EXTENDS ID:parent LBRACE member_list:ml RBRACE
-	    {: RESULT = new Class_(t.getLineNum(), getCurrFilename(),
-				   name.getAttribute(),
-				   parent.getAttribute(), ml); :}
-	;
+    ::=
+    /* class with no specified parent - uses Object class */
+    CLASS:t ID:name LBRACE member_list:ml RBRACE
+        {: RESULT = new Class_(t.getLineNum(), getCurrFilename(),
+               name.getAttribute(), "Object", ml); :}
+
+    /* class with a specified parent */
+    | CLASS:t ID:name EXTENDS ID:parent LBRACE member_list:ml RBRACE
+        {: RESULT = new Class_(t.getLineNum(), getCurrFilename(),
+               name.getAttribute(),
+               parent.getAttribute(), ml); :}
+    ;
 
 /* member list (FIXE: only allows empty member lists) */
 member_list
 	::=
-        /* empty list */
-	    {: RESULT = new MemberList(getCurrLineNum()); :}
+    /* empty member */
+        {: RESULT = new MemberList(getCurrLineNum()); :}
+
+    /* single member */
+    member:m
+    |    {: RESULT = (MemberList)(new MemberList(m.getLineNum())).addElement(m); :}
+
+    /* several member*/
+    | member_list:ml member:m
+        {: RESULT = (MemberList)ml.addElement(m); :}
 	;
+
 /*a member of a class*/
 member
     ::=
-        /*If the member is a method*/
-        Method:method
-        {::}
-        /*If the member is a field*/
+    /*If the member is a method*/
+    Method:method
+        {: RESULT = method; :}
+    /*If the member is a field*/
     |   Field:field
-        {::}
+        {: RESULT = field; :}
     ;
-/*A method declaration in a class*/
+
+/*a method declaration in a class*/
 method
     ::=
-        ID:name LPAREN formal_list
+    /* Return type is not array*/
+    ID:type ID:name LPAREN formal_list:fl RPAREN LBRACE stmt_list:sl RBRACE
+        {: RESULT = new Method(name.getLineNum(), type.getAttribute(), name.getAttribute(), fl, sl); :}
+    /* Return type is array*/
+    | ID:type LSQBRACE RSQBRACE ID:name LPAREN formal_list:fl RPAREN LBRACE stmt_list:sl RBRACE
+        {: RESULT = new Method(name.getLineNum(), type.getAttribute()+"[]", name.getAttribute(), fl, sl); :}
+    ;
 
-/* add more productions... */
+/* a decleration for a field */
+field
+    ::=
+    /* Type is not an array, and no assignment */
+    ID:type ID:name SEMI
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute(), name.getAttribute(), null); :}
 
+    /* Type is not an array, and is an assignment */
+    | ID:type ID:name ASSIGN expr:e SEMI
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute(), name.getAttribute(), e); :}
+
+    /* Type is an array, and no assignment */
+    |ID:type LSQBRACE RSQBRACE ID:name SEMI
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute(), null); :}
+
+    /* Type is an array, and is an assignment */
+    | ID:type LSQBRACE RSQBRACE ID:name ASSIGN expr:e SEMI
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute(), e); :}
+    ;
+
+formal_list
+    ::=
+    /* empty formal list */
+        {: RESULT = new FormalList(getCurrLineNum()); :}
+
+    /* single item formal list */
+    formal:f
+    |    {: RESULT = (FormalList)(new FormalList(f.getLineNum())).addElement(f); :}
+
+    /* several items in formal list*/
+    | formal_list:fl COMMA formal:f
+        {: RESULT = (FormalList)fl.addElement(f); :}
+    ;
+
+formal
+    ::=
+    /*array type*/
+    ID:type LSQBRACE RSQBRACE ID:name
+        {: RESULT = new Formal(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute()); :}
+
+    /*not array type */
+    | ID:type ID:name
+        {: RESULT = new Formal(type.getLineNum(), type.getAttribute(), name.getAttribute()); :}
+
+    ;
+
+stmt_list
+    ::=
+    /* empty statement list */
+        {: RESULT = new StmtList(getCurrLineNum()); :}
+
+    /* single item statement list */
+    stmt:s
+    |    {: RESULT = (StmtList)(new StmtList(s.getLineNum())).addElement(s); :}
+
+    /* several items in statement list*/
+    | stmt_list:sl stmt:s
+        {: RESULT = (StmtList)sl.addElement(s); :}
+    ;
+
+stmt
+    ::=
+    expr_stmt:es
+        {: RESULT = es; :}
+    | decl_stmt:ds
+        {: RESULT = ds; :}
+    | if_stmt:is
+        {: RESULT = is; :}
+    | while_stmt:ws
+        {: RESULT = ws; :}
+    | for_stmt:fs
+        {: RESULT = fs; :}
+    | break_stmt:bs
+        {: RESULT = bs; :}
+    | return_stmt:rs
+        {: RESULT = rs; :}
+    | block_stmt:bks
+        {: RESULT = bks; :}
+    ;
+
+expr_stmt
+    ::=
+    expr:e SEMI
+        {: RESULT = new ExprStmt(e.getLineNum(), e);:}
+    ;
+
+decl_stmt
+    ::=
+     /*array type*/
+    ID:type LSQBRACE RSQBRACE ID:name ASSIGN expr:e SEMI
+        {: RESULT = new DeclStmt(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute(), e); :}
+
+    /*not array type */
+    | ID:type ID:name ASSIGN expr:e SEMI
+        {: RESULT = new DeclStmt(type.getLineNum(), type.getAttribute(), name.getAttribute(), e); :}
+    ;
+
+if_stmt
+    ::=
+    /*no else*/
+    IF LPAREN expr:cond RPAREN stmt:then_stmt
+        {: RESULT = new IfStmt(cond.getLineNum(), cond, then_stmt, null); :}
+    /*with else*/
+    | IF LPAREN expr:cond RPAREN stmt:then_stmt ELSE stmt:else_stmt
+        {: RESULT = new IfStmt(cond.getLineNum(), cond, then_stmt, else_stmt); :}
+    ;
+
+while_stmt
+    ::=
+    WHILE LPAREN expr:cond RPAREN stmt:body
+        {: RESULT = new WhileStmt(cond.getLineNum(), cond, body); :}
+    ;
+
+for_stmt
+    ::=
+    /*no statements*/
+    FOR LPAREN SEMI SEMI RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),null,null,null,body); :}
+    /*just an initialization*/
+    | FOR LPAREN expr:init SEMI SEMI RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),init,null,null,body); :}
+    /*just the predicate*/
+    | FOR LPAREN SEMI expr:pred SEMI RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),null,pred,null,body); :}
+    /*predicate and initialization*/
+    | FOR LPAREN expr:init SEMI expr:pred SEMI RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),init,pred,null,body); :}
+    /*just the update*/
+    | FOR LPAREN SEMI SEMI expr:update RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),null,null,update,body); :}
+    /*init and update*/
+    | FOR LPAREN expr:init SEMI SEMI expr:update RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),init,null,update,body); :}
+    /*predicate and update*/
+    | FOR LPAREN SEMI expr:pred SEMI expr:update RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),null,pred,update,body); :}
+    /*everything*/
+    | FOR LPAREN expr:init SEMI expr:pred SEMI expr:update RPAREN stmt:body
+        {: RESULT = new ForStmt(getCurrLineNum(),init,pred,update,body); :}
+    ;
+
+break_stmt
+    ::=
+    BREAK SEMI
+        {: RESULT = new BreakStmt(getCurrLineNum()); :}
+    ;
+
+return_stmt
+    ::=
+    RETURN expr:e
+        {: RESULT = new ReturnStmt(getCurrLineNum(),e); :}
+    ;
+
+block_stmt
+    ::=
+    LBRACE statement_list:sl RBRACE
+        {: RESULT = new BlockStmt(getCurrLineNum(), sl); :}
+    ;
+
+expr
+    ::=
+    assign_expr:ae
+        {: RESULT = ae; :}
+    | dispatch_expr:de
+        {: RESULT = de; :}
+    | new_expr:ne
+        {: RESULT = ne; :}
+    | instance_of_expr:ioe
+        {: RESULT = ioe; :}
+    | cast_expr:ce
+        {: RESULT = ce; :}
+    | binary_expr:be
+        {: RESULT = be; :}
+    | unary_expr:ue
+        {: RESULT = ue; :}
+    | const_expr:conste
+        {: RESULT = conste; :}
+    | var_expr:ve
+        {: RESULT = ve; :}
+    | LPAREN expr:e RPAREN
+        {: RESULT = e; :}
+    ;
+
+assign_expr
+    ::=
+    var_expr:ve ASSIGN expr:e
+        {: RESULT = new AssignExpr(ve.getLineNum(), null, var_expr.getAttribute(), e); :}
+    ;
+
+dispatch_expr
+    ::=
+    /*method called from this object*/
+    ID:name LPAREN expr_list:el RPAREN
+        {: RESULT = new DispatchExpr(el.getLineNum(), null, name.getAttribute(), el); :}
+    /*method called on other object*/
+    | expr:e DOT ID:name LPAREN expr_list:el RPAREN
+        {: RESULT = new DispatchExpr(el.getLineNum(), e, name.getAttribute(), el); :}
+    ;
+
+new_expr
+    ::=
+    /*not an array*/
+    NEW ID:type LPAREN RPAREN
+        {: RESULT = new NewExpr(type.getLineNum(), type.getAttribute());
+    /*an array*/
+    | NEW ID:type LSQBRACE expr:e RSQBRACE
+        {: RESULT = new NewArrayExpr(type.getLineNum(), type.getAttribute(), e); :}
+    ;
+
+instance_of_expr
+    ::=
+    /*no array*/
+    expr:e INSTANCEOF ID:type
+        {: RESULT = new InstanceofExpr(e.getLineNum(), e, type.getAttribute()); :}
+    /*array*/
+    | expr:e INSTANCEOF ID:type LSQBRACE RSQBRACE
+        {: RESULT = new InstanceofExpr(e.getLineNum(), e, type.getAttribute())+"[]"; :}
+    ;
+
+cast_expr
+    ::=
+    /*no array*/
+    LPAREN ID:type RPAREN LPAREN expr:e RPAREN
+        {: RESULT = new CastExpr(type.getLineNum(), type.getAttribute(), e); :}
+    /*array*/
+    | LPAREN ID:type LSQBRACE RSQBRACE RPAREN LPAREN expr:e RPAREN
+        {: RESULT = new CastExpr(type.getLineNum(), type.getAttribute()+"[]", e); :}
+    ;
+
+binary_expr
+    ::=
+    binary_arith_expr:bae
+        {: RESULT = bae; :}
+    | binary_comp_expr:bce
+        {: RESULT = bce; :}
+    | binary_logic_expr = ble
+        {: RESULT = ble; :}
+    ;
+
+unary_expr
+    ::=
+    unary_neg_expr:une
+        {: RESULT = une; :}
+    | unary_not_expr:unote
+        {: RESULT = unote; :}
+    | unary_incr_expr:uie
+        {: RESULT = uie; :}
+    | unary_decr_expr:ude
+        {: RESULT = ude; :}
+    ;
+
+const_expr
+    ::=
+    INT_CONST:int
+        {: RESULT = new ConstIntExpr(int.getLineNum(), int.getAttribute()); :}
+    | BOOLEAN_CONST:bool
+        {: RESULT = new ConstBooleanExpr(bool.getLineNum(), bool.getAttribute()); :}
+    | STRING_CONST:str
+        {: RESULT = new ConstStringExpr(str.getLineNum(), str.getAttribute()); :}
+    ;
+
+binary_arith_expr
+    ::=
+
+binary_comp_expr
+    ::=
+
+binary_logic_expr
+    ::=
+
+unary_neg_expr
+    ::=
+    MINUS expr:e
+        {: RESULT = new UnaryNegExpr(e.getLineNum(), e); :}
+    ;
+
+unary_not_expr
+    ::=
+    NOT expr:e
+        {: RESULT = new UnaryNotExpr(e.getLineNum(), e); :}
+    ;
+
+unary_incr_expr
+    ::=
+    /* prefix */
+    INCR expr:e
+        {: RESULT = new UnaryIncrExpr(e.getLineNum(), e, false); :}
+    /*postfix*/
+    | expr:e INCR
+        {: RESULT = new UnaryIncrExpr(e.getLineNum(), e, true); :}
+    ;
+
+unary_decr_expr
+    ::=
+    /* prefix */
+    DECR expr:e
+        {: RESULT = new UnaryDecrExpr(e.getLineNum(), e, false); :}
+    /*postfix*/
+    | expr:e DECR
+        {: RESULT = new UnaryDecrExpr(e.getLineNum(), e, true); :}
+    ;
+
+/* check this !!!!! */
+var_expr
+    ::=
+    /* with reference and no array*/
+    expr:e DOT ID:name
+        {: RESULT = new VarExpr(e.getLineNum(), , ); :}
+    /* with reference and with array*/
+    expr:e DOT ID:name LSQBRACE expr:e2 RSQBRACE
+        {: RESULT = new VarExpr(e.getLineNum(), , ); :}
+    /* no reference and with array*/
+    ID:name LSQBRACE expr:e RSQBRACE
+        {: RESULT = new VarExpr(e.getLineNum(), , ); :}
+    /* no reference and no array*/
+    ID:name
+        {: RESULT = new VarExpr(name.getLineNum(), , ); :}
+    ;
