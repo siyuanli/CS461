@@ -429,8 +429,19 @@ expr
 
 assign_expr
     ::=
+    /* no reference, not an array */
     var_expr:ve ASSIGN expr:e
         {: RESULT = new AssignExpr(ve.getLineNum(), null, var_expr.getAttribute(), e); :}
+
+    /* no reference, array*/
+    | var_expr:ve LSQBRACE expr:index RSQBRACE ASSIGN expr:e
+        {: RESULT = new AssignExpr(ve.getLineNum(), null, var_expr.getAttribute() + "[" + index.getAttribute() + "]", e); :}
+
+    /* reference, not an array */
+
+    /* reference, array*/
+
+
     ;
 
 dispatch_expr
