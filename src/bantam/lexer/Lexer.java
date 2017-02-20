@@ -406,20 +406,20 @@ public class Lexer implements java_cup.runtime.Scanner {
 		/* 55 */ YY_NOT_ACCEPT,
 		/* 56 */ YY_NO_ANCHOR,
 		/* 57 */ YY_NO_ANCHOR,
-		/* 58 */ YY_NOT_ACCEPT,
-		/* 59 */ YY_NO_ANCHOR,
-		/* 60 */ YY_NOT_ACCEPT,
-		/* 61 */ YY_NO_ANCHOR,
-		/* 62 */ YY_NOT_ACCEPT,
-		/* 63 */ YY_NO_ANCHOR,
+		/* 58 */ YY_NO_ANCHOR,
+		/* 59 */ YY_NOT_ACCEPT,
+		/* 60 */ YY_NO_ANCHOR,
+		/* 61 */ YY_NOT_ACCEPT,
+		/* 62 */ YY_NO_ANCHOR,
+		/* 63 */ YY_NOT_ACCEPT,
 		/* 64 */ YY_NO_ANCHOR,
-		/* 65 */ YY_NO_ANCHOR,
+		/* 65 */ YY_NOT_ACCEPT,
 		/* 66 */ YY_NO_ANCHOR,
-		/* 67 */ YY_NO_ANCHOR,
+		/* 67 */ YY_NOT_ACCEPT,
 		/* 68 */ YY_NO_ANCHOR,
-		/* 69 */ YY_NO_ANCHOR,
+		/* 69 */ YY_NOT_ACCEPT,
 		/* 70 */ YY_NO_ANCHOR,
-		/* 71 */ YY_NO_ANCHOR,
+		/* 71 */ YY_NOT_ACCEPT,
 		/* 72 */ YY_NO_ANCHOR,
 		/* 73 */ YY_NO_ANCHOR,
 		/* 74 */ YY_NO_ANCHOR,
@@ -449,45 +449,53 @@ public class Lexer implements java_cup.runtime.Scanner {
 		/* 98 */ YY_NO_ANCHOR,
 		/* 99 */ YY_NO_ANCHOR,
 		/* 100 */ YY_NO_ANCHOR,
-		/* 101 */ YY_NO_ANCHOR
+		/* 101 */ YY_NO_ANCHOR,
+		/* 102 */ YY_NO_ANCHOR,
+		/* 103 */ YY_NO_ANCHOR,
+		/* 104 */ YY_NO_ANCHOR,
+		/* 105 */ YY_NO_ANCHOR,
+		/* 106 */ YY_NO_ANCHOR
 	};
 	private int yy_cmap[] = unpackFromString(1,130,
 "46:9,5,1,46,5,47,46:18,5,39,45,46:2,35,40,46,27,28,3,34,25,33,26,2,42:10,46" +
 ",24,36,38,37,46:2,43:26,29,4,30,46,44,46,8,22,6,14,10,18,43,20,16,43,23,7,4" +
 "3,13,17,43:2,19,9,12,21,43,15,11,43:2,31,41,32,46:2,0,48")[0];
 
-	private int yy_rmap[] = unpackFromString(1,102,
+	private int yy_rmap[] = unpackFromString(1,107,
 "0,1,2,1:2,3,1:9,4,5,1,6,7,8,9,10,11,12,13,14,15,1:9,12,1,15:2,1,15:2,1,15:6" +
-",16,17,18,12,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39" +
-",40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,15,61,62,63" +
-",64")[0];
+",16,17,18,12,19,20,21,22,23,24,25,26,27,28,29,30,20,31,32,33,34,35,36,37,38" +
+",39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63" +
+",64,15,65,66,67,68")[0];
 
-	private int yy_nxt[][] = unpackFromString(65,49,
-"1,51,2,3,4,51,5,97:3,81,97,82,70,97,99,53,97,71,100,97:2,101,97,6,7,8,9,10," +
-"11,12,13,14,15,16,17,18,19,20,21,52,56,22,97,23,24,4,51,1,-1:51,25,26,-1:51" +
-",97,83,97:16,-1:18,97:3,-1:37,28,-1:49,29,-1:52,30,-1:48,31,-1:48,32,-1:48," +
-"33,-1:16,23:18,-1:18,22,23:2,-1:10,23:18,-1:18,23:3,-1:5,36,37:2,55,37:40,3" +
-"8,37,54,36,-1:2,25:45,-1:3,26:2,58,26:44,-1:7,97:18,-1:18,97:3,-1:5,51,-1:3" +
-",51,-1:41,51,-1:41,34,-1:14,97:7,86,97:4,27,97:5,-1:18,97:3,-1:6,60:2,37,60" +
-":7,37:2,60:4,37:2,60:25,37,60,-1:43,35,-1:13,97:9,39,97:8,-1:18,97:3,-1:5,2" +
-"6,41,26:45,-1:7,97:13,40,97:4,-1:18,97:3,-1:6,60:2,62,60:40,44,60:2,-1:7,97" +
-":4,42,97:13,-1:18,97:3,-1:6,60:45,-1:8,97:4,43,97:13,-1:18,97:3,-1:10,97:3," +
-"45,97:14,-1:18,97:3,-1:10,97:4,46,97:13,-1:18,97:3,-1:10,97:17,47,-1:18,97:" +
-"3,-1:10,97:7,48,97:10,-1:18,97:3,-1:10,97:3,49,97:14,-1:18,97:3,-1:10,97:12" +
-",50,97:5,-1:18,97:3,-1:10,97:4,57,97:13,-1:18,97:3,-1:10,97:2,87,97:8,59,97" +
-":6,-1:18,97:3,-1:10,97:3,61,97:14,-1:18,97:3,-1:10,97:15,63,97:2,-1:18,97:3" +
-",-1:10,97:3,64,97:14,-1:18,97:3,-1:10,97,65,97:16,-1:18,97:3,-1:10,97:3,63," +
-"97:14,-1:18,97:3,-1:10,97:2,66,97:15,-1:18,97:3,-1:10,97:13,67,97:4,-1:18,9" +
-"7:3,-1:10,97:8,68,97:9,-1:18,97:3,-1:10,97:11,69,97:6,-1:18,97:3,-1:10,97,7" +
-"2,97:3,84,97:12,-1:18,97:3,-1:10,97:13,73,97:4,-1:18,97:3,-1:10,97:2,74,97:" +
-"15,-1:18,97:3,-1:10,97:6,89,97:11,-1:18,97:3,-1:10,97:10,75,97:7,-1:18,97:3" +
-",-1:10,97:3,90,97:14,-1:18,97:3,-1:10,97,76,97:16,-1:18,97:3,-1:10,97:4,77," +
-"97:13,-1:18,97:3,-1:10,97:4,92,97:13,-1:18,97:3,-1:10,97:6,93,97:11,-1:18,9" +
-"7:3,-1:10,97:15,78,97:2,-1:18,97:3,-1:10,97:7,79,97:10,-1:18,97:3,-1:10,97:" +
-"2,94,97:15,-1:18,97:3,-1:10,97:7,95,97:10,-1:18,97:3,-1:10,96,97:17,-1:18,9" +
-"7:3,-1:10,97:4,80,97:13,-1:18,97:3,-1:10,97:6,91,97:11,-1:18,97:3,-1:10,97:" +
-"14,85,97:3,-1:18,97:3,-1:10,97:4,98,97:13,-1:18,97:3,-1:10,97:13,88,97:4,-1" +
-":18,97:3,-1:4");
+	private int yy_nxt[][] = unpackFromString(69,49,
+"1,51,2,3,4,51,5,102:3,86,102,87,75,102,104,53,102,76,105,102:2,106,102,6,7," +
+"8,9,10,11,12,13,14,15,16,17,18,19,20,21,52,57,22,102,23,24,4,51,1,-1:51,25," +
+"26,-1:51,102,88,102:16,-1:18,102:3,-1:37,28,-1:49,29,-1:52,30,-1:48,31,-1:4" +
+"8,32,-1:48,33,-1:16,23:18,-1:18,22,23:2,-1:10,23:18,-1:18,23:3,-1:5,36,37:2" +
+",55,37:40,38,37,54,36,-1:2,25:45,-1:3,26:2,59,26:44,-1:7,102:18,-1:18,102:3" +
+",-1:5,51,-1:3,51,-1:41,51,-1:41,34,-1:14,102:7,91,102:4,27,102:5,-1:18,102:" +
+"3,-1:6,61:2,37,61:7,37:2,61:4,37:2,61:25,37,61,-1:3,67:2,69,67:44,-1:42,35," +
+"-1:13,102:9,39,102:8,-1:18,102:3,-1:5,26,41,63,26:44,-1:7,102:13,40,102:4,-" +
+"1:18,102:3,-1:6,61:2,65,61:40,44,61:2,-1:7,102:4,42,102:13,-1:18,102:3,-1:5" +
+",26,56,59,26:44,-1:7,102:4,43,102:13,-1:18,102:3,-1:6,61:45,-1:8,102:3,45,1" +
+"02:14,-1:18,102:3,-1:10,102:4,46,102:13,-1:18,102:3,-1:5,67,41,71,67:44,-1:" +
+"7,102:17,47,-1:18,102:3,-1:5,67,56,69,67:44,-1:7,102:7,48,102:10,-1:18,102:" +
+"3,-1:10,102:3,49,102:14,-1:18,102:3,-1:10,102:12,50,102:5,-1:18,102:3,-1:10" +
+",102:4,58,102:13,-1:18,102:3,-1:10,102:2,92,102:8,60,102:6,-1:18,102:3,-1:1" +
+"0,102:3,62,102:14,-1:18,102:3,-1:10,102:15,64,102:2,-1:18,102:3,-1:10,102:3" +
+",66,102:14,-1:18,102:3,-1:10,102,68,102:16,-1:18,102:3,-1:10,102:3,64,102:1" +
+"4,-1:18,102:3,-1:10,102:2,70,102:15,-1:18,102:3,-1:10,102:13,72,102:4,-1:18" +
+",102:3,-1:10,102:8,73,102:9,-1:18,102:3,-1:10,102:11,74,102:6,-1:18,102:3,-" +
+"1:10,102,77,102:3,89,102:12,-1:18,102:3,-1:10,102:13,78,102:4,-1:18,102:3,-" +
+"1:10,102:2,79,102:15,-1:18,102:3,-1:10,102:6,94,102:11,-1:18,102:3,-1:10,10" +
+"2:10,80,102:7,-1:18,102:3,-1:10,102:3,95,102:14,-1:18,102:3,-1:10,102,81,10" +
+"2:16,-1:18,102:3,-1:10,102:4,82,102:13,-1:18,102:3,-1:10,102:4,97,102:13,-1" +
+":18,102:3,-1:10,102:6,98,102:11,-1:18,102:3,-1:10,102:15,83,102:2,-1:18,102" +
+":3,-1:10,102:7,84,102:10,-1:18,102:3,-1:10,102:2,99,102:15,-1:18,102:3,-1:1" +
+"0,102:7,100,102:10,-1:18,102:3,-1:10,101,102:17,-1:18,102:3,-1:10,102:4,85," +
+"102:13,-1:18,102:3,-1:10,102:6,96,102:11,-1:18,102:3,-1:10,102:14,90,102:3," +
+"-1:18,102:3,-1:10,102:4,103,102:13,-1:18,102:3,-1:10,102:13,93,102:4,-1:18," +
+"102:3,-1:4");
 
 	public java_cup.runtime.Symbol next_token ()
 		throws java.io.IOException {
@@ -855,31 +863,29 @@ public class Lexer implements java_cup.runtime.Scanner {
 					case -55:
 						break;
 					case 56:
+						{/*Regex for block comments*/}
+					case -56:
+						break;
+					case 57:
 						{ /*matches any non-legal character*/
                                       return new Symbol(TokenIds.LEX_ERROR,
                                         new Token("LEX_ERROR", yytext() +
                                           " is an illegal character.", yyline)); }
-					case -56:
-						break;
-					case 57:
-						{ /*matches legal identifiers*/
-                                      return new Symbol(TokenIds.ID,
-                                        new Token("ID", yytext(), yyline)); }
 					case -57:
 						break;
-					case 59:
+					case 58:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -58:
 						break;
-					case 61:
+					case 60:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -59:
 						break;
-					case 63:
+					case 62:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
@@ -891,227 +897,233 @@ public class Lexer implements java_cup.runtime.Scanner {
                                         new Token("ID", yytext(), yyline)); }
 					case -61:
 						break;
-					case 65:
+					case 66:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -62:
 						break;
-					case 66:
+					case 68:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -63:
 						break;
-					case 67:
+					case 70:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -64:
 						break;
-					case 68:
+					case 72:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -65:
 						break;
-					case 69:
+					case 73:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -66:
 						break;
-					case 70:
+					case 74:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -67:
 						break;
-					case 71:
+					case 75:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -68:
 						break;
-					case 72:
+					case 76:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -69:
 						break;
-					case 73:
+					case 77:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -70:
 						break;
-					case 74:
+					case 78:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -71:
 						break;
-					case 75:
+					case 79:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -72:
 						break;
-					case 76:
+					case 80:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -73:
 						break;
-					case 77:
+					case 81:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -74:
 						break;
-					case 78:
+					case 82:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -75:
 						break;
-					case 79:
+					case 83:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -76:
 						break;
-					case 80:
+					case 84:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -77:
 						break;
-					case 81:
+					case 85:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -78:
 						break;
-					case 82:
+					case 86:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -79:
 						break;
-					case 83:
+					case 87:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -80:
 						break;
-					case 84:
+					case 88:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -81:
 						break;
-					case 85:
+					case 89:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -82:
 						break;
-					case 86:
+					case 90:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -83:
 						break;
-					case 87:
+					case 91:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -84:
 						break;
-					case 88:
+					case 92:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -85:
 						break;
-					case 89:
+					case 93:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -86:
 						break;
-					case 90:
+					case 94:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -87:
 						break;
-					case 91:
+					case 95:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -88:
 						break;
-					case 92:
+					case 96:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -89:
 						break;
-					case 93:
+					case 97:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -90:
 						break;
-					case 94:
+					case 98:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -91:
 						break;
-					case 95:
+					case 99:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -92:
 						break;
-					case 96:
+					case 100:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -93:
 						break;
-					case 97:
+					case 101:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -94:
 						break;
-					case 98:
+					case 102:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -95:
 						break;
-					case 99:
+					case 103:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -96:
 						break;
-					case 100:
+					case 104:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -97:
 						break;
-					case 101:
+					case 105:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -98:
+						break;
+					case 106:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -99:
 						break;
 					default:
 						yy_error(YY_E_INTERNAL,false);

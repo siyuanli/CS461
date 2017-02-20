@@ -208,7 +208,7 @@ import java_cup.runtime.Symbol;
 
 [ \t\n\f\r]*              {/*This is the regex for white spaces*/}
 
-/\*(\*[^/]|[^\*])*\*/   {/*Regex for block comments*/}
+/\*(\*[^/]|[^\*])*(\*)+/   {/*Regex for block comments*/}
 
 //.*                    {/*Regex for inline comments*/}
 
@@ -373,7 +373,7 @@ import java_cup.runtime.Symbol;
                                             " contains an illegal escape character.",
                                              yyline)); }
 
-<YYINITIAL>/\*([^\*]|\*[^/])*       { /*matches unterminated comment*/
+<YYINITIAL>/\*([^\*]|(\*)+[^/\*])*       { /*matches unterminated comment*/
                                        return new Symbol(TokenIds.LEX_ERROR,
 						                new Token("LEX_ERROR", "Unterminated comment.",
 						                  yyline)); }

@@ -50,7 +50,7 @@ public class LexerTest
     @Test
     public void commentToken() throws Exception {
         checkToken("/*class \n while*/   // */ if // new \n if", "IF");
-        checkToken("/* text ****/ if", "IF");
+        checkToken("/* *** class text ****/ if", "IF");
     }
 
 
@@ -497,6 +497,7 @@ public class LexerTest
     @Test
     public void unterminatedCommentToken() throws Exception {
         checkToken("/* sdjkwelk/////  *****\nsdllkjsdf  ** ///\\//","LEX_ERROR");
+        checkToken("/* *** if **** ", "LEX_ERROR");
     }
 
     /**
