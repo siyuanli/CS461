@@ -518,12 +518,41 @@ const_expr
 
 binary_arith_expr
     ::=
+    expr:e1 PLUS expr:e2
+        {: RESULT = new BinaryArithPlusExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 MINUS expr:e2
+        {: RESULT = new BinaryArithMinusExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 TIMES expr:e2
+        {: RESULT = new BinaryArithTimesExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 DIVIDE expr:e2
+        {: RESULT = new BinaryArithDivideExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 MODULUS expr:e2
+        {: RESULT = new BinaryArithModulusExpr(e1.getLineNum(), e1, e2); :}
+    ;
 
 binary_comp_expr
     ::=
+    expr:e1 EQ expr:e2
+        {: RESULT = new BinaryCompEqExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 NE expr:e2
+        {: RESULT = new BinaryCompNeExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 LT expr:e2
+        {: RESULT = new BinaryCompLtExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 LEQ expr:e2
+        {: RESULT = new BinaryCompLeqExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 GT expr:e2
+        {: RESULT = new BinaryCompGtExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 GEQ expr:e2
+        {: RESULT = new BinaryCompGeqExpr(e1.getLineNum(), e1, e2); :}
+    ;
 
 binary_logic_expr
     ::=
+    expr:e1 AND expr:e2
+        {: RESULT = new BinaryLogicAndExpr(e1.getLineNum(), e1, e2); :}
+    | expr:e1 OR expr:e2
+        {: RESULT = new BinaryLogicOrExpr(e1.getLineNum(), e1, e2); :}
+    ;
 
 unary_neg_expr
     ::=
@@ -557,19 +586,18 @@ unary_decr_expr
         {: RESULT = new UnaryDecrExpr(e.getLineNum(), e, true); :}
     ;
 
-/* check this !!!!! */
 var_expr
     ::=
     /* with reference and no array*/
     expr:e DOT ID:name
-        {: RESULT = new VarExpr(e.getLineNum(), , ); :}
+        {: RESULT = new VarExpr(e.getLineNum(), , name.getAttribute()); :}
     /* with reference and with array*/
     expr:e DOT ID:name LSQBRACE expr:e2 RSQBRACE
-        {: RESULT = new VarExpr(e.getLineNum(), , ); :}
+        {: RESULT = new ArrayExpr(e.getLineNum(), , ,); :}
     /* no reference and with array*/
     ID:name LSQBRACE expr:e RSQBRACE
         {: RESULT = new VarExpr(e.getLineNum(), , ); :}
     /* no reference and no array*/
     ID:name
-        {: RESULT = new VarExpr(name.getLineNum(), , ); :}
+        {: RESULT = new ArrayExpr(name.getLineNum(), null, ); :}
     ;
