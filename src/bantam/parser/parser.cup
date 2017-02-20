@@ -156,7 +156,6 @@ nonterminal UnaryIncrExpr unary_incr_expr;
 nonterminal UnaryDecrExpr unary_decr_expr;
 nonterminal VarExpr var_expr;
 nonterminal ArrayExpr array_expr;
-nonterminal AssignExpr assign_expr;
 nonterminal ArrayAssignExpr array_assign_expr;
 
 
@@ -230,11 +229,11 @@ member_list
 member
     ::=
     /*If the member is a method*/
-    Method:method
-        {: RESULT = method; :}
+    method:meth
+        {: RESULT = meth; :}
     /*If the member is a field*/
-    |   Field:field
-        {: RESULT = field; :}
+    | field:f
+        {: RESULT = f; :}
     ;
 
 /*a method declaration in a class*/
@@ -403,7 +402,7 @@ return_stmt
 
 block_stmt
     ::=
-    LBRACE statement_list:sl RBRACE
+    LBRACE stmt_list:sl RBRACE
         {: RESULT = new BlockStmt(getCurrLineNum(), sl); :}
     ;
 
@@ -490,7 +489,7 @@ binary_expr
         {: RESULT = bae; :}
     | binary_comp_expr:bce
         {: RESULT = bce; :}
-    | binary_logic_expr = ble
+    | binary_logic_expr:ble
         {: RESULT = ble; :}
     ;
 
@@ -594,7 +593,7 @@ var_expr
     /* no reference and with array*/
     | ID:name
         {: RESULT = new VarExpr(name.getLineNum(), null, name.getAttribute() ); :}
-    | ArrayExpr:ae
+    | array_expr:ae
         {: RESULT = ae; :}
     ;
 
@@ -615,7 +614,3 @@ array_assign_expr
     | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
         {: RESULT = new ArrayAssignExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index, e); :}
     ;
-
-
-
-
