@@ -1,13 +1,151 @@
 Opening files...
 Parsing specification from standard input...
-Error at 174(11): Syntax error
-Error at 174(36): Illegal use of reserved word
-Error at 174(36): Terminal "ILLEGAL" has not been declared
-Could find terminal ILLEGAL while declaring precedence
-Error at 178(8): Syntax error
-Error at 186(18): Illegal use of reserved word
-Error at 186(18): Terminal "ILLEGAL" has not been declared
-Could find terminal ILLEGAL while declaring precedence
-Error at 244(1): Syntax error
-Error at 244(1): Couldn't repair and continue parse
-Can't recover from previous error(s), giving up.
+Error at 159(36): java_cup.runtime.Symbol "assign_expr" has already been declared
+Warning at 493(25): Unrecognized character '='(61) -- ignored
+===== Terminals =====
+[0]EOF [1]error [2]LEX_ERROR [3]CLASS [4]EXTENDS 
+[5]IF [6]ELSE [7]WHILE [8]FOR [9]BREAK 
+[10]NEW [11]RETURN [12]INSTANCEOF [13]PLUS [14]MINUS 
+[15]TIMES [16]DIVIDE [17]MODULUS [18]NOT [19]AND 
+[20]OR [21]EQ [22]NE [23]LT [24]LEQ 
+[25]GT [26]GEQ [27]ASSIGN [28]INCR [29]DECR 
+[30]LPAREN [31]RPAREN [32]LBRACE [33]RBRACE [34]LSQBRACE 
+[35]RSQBRACE [36]SEMI [37]COMMA [38]DOT [39]ID 
+[40]INT_CONST [41]BOOLEAN_CONST [42]STRING_CONST 
+
+===== Non terminals =====
+[0]$START [1]program [2]class_list [3]class [4]member_list 
+[5]member [6]method [7]field [8]formal_list [9]formal 
+[10]stmt_list [11]stmt [12]expr_stmt [13]decl_stmt [14]if_stmt 
+[15]while_stmt [16]for_stmt [17]break_stmt [18]return_stmt [19]block_stmt 
+[20]expr [21]assign_expr [22]dispatch_expr [23]expr_list [24]new_expr 
+[25]instance_of_expr [26]cast_expr [27]binary_expr [28]unary_expr [29]const_expr 
+[30]binary_arith_expr [31]binary_comp_expr [32]binary_logic_expr [33]unary_neg_expr [34]unary_not_expr 
+[35]unary_incr_expr [36]unary_decr_expr [37]var_expr [38]array_expr [39]array_assign_expr 
+[40]NT$0 [41]NT$1 [42]NT$2 
+
+===== Productions =====
+[0] program ::= class_list 
+[1] $START ::= program EOF 
+[2] class_list ::= class 
+[3] class_list ::= class_list class 
+[4] class ::= CLASS ID LBRACE member_list RBRACE 
+[5] class ::= CLASS ID EXTENDS ID LBRACE member_list RBRACE 
+[6] NT$0 ::= 
+[7] member_list ::= NT$0 member 
+[8] member_list ::= 
+[9] member_list ::= member_list member 
+[10] member ::= 
+[11] member ::= 
+[12] method ::= ID ID LPAREN formal_list RPAREN LBRACE stmt_list RBRACE 
+[13] method ::= ID LSQBRACE RSQBRACE ID LPAREN formal_list RPAREN LBRACE stmt_list RBRACE 
+[14] field ::= ID ID SEMI 
+[15] field ::= ID ID ASSIGN expr SEMI 
+[16] field ::= ID LSQBRACE RSQBRACE ID SEMI 
+[17] field ::= ID LSQBRACE RSQBRACE ID ASSIGN expr SEMI 
+[18] NT$1 ::= 
+[19] formal_list ::= NT$1 formal 
+[20] formal_list ::= 
+[21] formal_list ::= formal_list COMMA formal 
+[22] formal ::= ID LSQBRACE RSQBRACE ID 
+[23] formal ::= ID ID 
+[24] NT$2 ::= 
+[25] stmt_list ::= NT$2 stmt 
+[26] stmt_list ::= 
+[27] stmt_list ::= stmt_list stmt 
+[28] stmt ::= expr_stmt 
+[29] stmt ::= decl_stmt 
+[30] stmt ::= if_stmt 
+[31] stmt ::= while_stmt 
+[32] stmt ::= for_stmt 
+[33] stmt ::= break_stmt 
+[34] stmt ::= return_stmt 
+[35] stmt ::= block_stmt 
+[36] expr_stmt ::= expr SEMI 
+[37] decl_stmt ::= ID LSQBRACE RSQBRACE ID ASSIGN expr SEMI 
+[38] decl_stmt ::= ID ID ASSIGN expr SEMI 
+[39] if_stmt ::= IF LPAREN expr RPAREN stmt 
+[40] if_stmt ::= IF LPAREN expr RPAREN stmt ELSE stmt 
+[41] while_stmt ::= WHILE LPAREN expr RPAREN stmt 
+[42] for_stmt ::= FOR LPAREN SEMI SEMI RPAREN stmt 
+[43] for_stmt ::= FOR LPAREN expr SEMI SEMI RPAREN stmt 
+[44] for_stmt ::= FOR LPAREN SEMI expr SEMI RPAREN stmt 
+[45] for_stmt ::= FOR LPAREN expr SEMI expr SEMI RPAREN stmt 
+[46] for_stmt ::= FOR LPAREN SEMI SEMI expr RPAREN stmt 
+[47] for_stmt ::= FOR LPAREN expr SEMI SEMI expr RPAREN stmt 
+[48] for_stmt ::= FOR LPAREN SEMI expr SEMI expr RPAREN stmt 
+[49] for_stmt ::= FOR LPAREN expr SEMI expr SEMI expr RPAREN stmt 
+[50] break_stmt ::= BREAK SEMI 
+[51] return_stmt ::= RETURN expr 
+[52] block_stmt ::= LBRACE RBRACE 
+[53] expr ::= assign_expr 
+[54] expr ::= dispatch_expr 
+[55] expr ::= new_expr 
+[56] expr ::= instance_of_expr 
+[57] expr ::= cast_expr 
+[58] expr ::= binary_expr 
+[59] expr ::= unary_expr 
+[60] expr ::= const_expr 
+[61] expr ::= var_expr 
+[62] expr ::= LPAREN expr RPAREN 
+[63] assign_expr ::= var_expr ASSIGN expr 
+[64] assign_expr ::= ID DOT ID ASSIGN expr 
+[65] assign_expr ::= array_assign_expr 
+[66] dispatch_expr ::= ID LPAREN expr_list RPAREN 
+[67] dispatch_expr ::= expr DOT ID LPAREN expr_list RPAREN 
+[68] new_expr ::= NEW ID LPAREN RPAREN 
+[69] instance_of_expr ::= expr INSTANCEOF ID 
+[70] instance_of_expr ::= expr INSTANCEOF ID LSQBRACE RSQBRACE 
+[71] cast_expr ::= LPAREN ID RPAREN LPAREN expr RPAREN 
+[72] cast_expr ::= LPAREN ID LSQBRACE RSQBRACE RPAREN LPAREN expr RPAREN 
+[73] binary_expr ::= binary_arith_expr 
+[74] binary_expr ::= binary_comp_expr 
+[75] binary_expr ::= binary_logic_expr 
+[76] unary_expr ::= unary_neg_expr 
+[77] unary_expr ::= unary_not_expr 
+[78] unary_expr ::= unary_incr_expr 
+[79] unary_expr ::= unary_decr_expr 
+[80] const_expr ::= INT_CONST 
+[81] const_expr ::= BOOLEAN_CONST 
+[82] const_expr ::= STRING_CONST 
+[83] binary_arith_expr ::= expr PLUS expr 
+[84] binary_arith_expr ::= expr MINUS expr 
+[85] binary_arith_expr ::= expr TIMES expr 
+[86] binary_arith_expr ::= expr DIVIDE expr 
+[87] binary_arith_expr ::= expr MODULUS expr 
+[88] binary_comp_expr ::= expr EQ expr 
+[89] binary_comp_expr ::= expr NE expr 
+[90] binary_comp_expr ::= expr LT expr 
+[91] binary_comp_expr ::= expr LEQ expr 
+[92] binary_comp_expr ::= expr GT expr 
+[93] binary_comp_expr ::= expr GEQ expr 
+[94] binary_logic_expr ::= expr AND expr 
+[95] binary_logic_expr ::= expr OR expr 
+[96] unary_neg_expr ::= MINUS expr 
+[97] unary_not_expr ::= NOT expr 
+[98] unary_incr_expr ::= INCR expr 
+[99] unary_incr_expr ::= expr INCR 
+[100] unary_decr_expr ::= DECR expr 
+[101] unary_decr_expr ::= expr DECR 
+[102] var_expr ::= ID DOT ID 
+[103] var_expr ::= ID 
+[104] var_expr ::= 
+[105] array_expr ::= ID LSQBRACE expr RSQBRACE 
+[106] array_expr ::= ID ID LSQBRACE expr RSQBRACE 
+[107] array_assign_expr ::= ID LSQBRACE expr RSQBRACE ASSIGN expr 
+[108] array_assign_expr ::= ID DOT ID LSQBRACE expr RSQBRACE ASSIGN expr 
+
+===== Viable Prefix Recognizer =====
+null
+null
+Closing files...
+------- CUP v0.10k Parser Generation Summary -------
+  1 error and 1 warning
+  43 terminals, 43 non-terminals, and 109 productions declared, 
+  producing 0 unique parse states.
+  0 terminals declared but not used.
+  0 non-terminals declared but not used.
+  0 productions never reduced.
+  0 conflicts detected (100 expected).
+  No code produced.
+---------------------------------------------------- (v0.10k)
