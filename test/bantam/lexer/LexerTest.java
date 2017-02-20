@@ -50,6 +50,7 @@ public class LexerTest
     @Test
     public void commentToken() throws Exception {
         checkToken("/*class \n while*/   // */ if // new \n if", "IF");
+        checkToken("/* text ****/ if", "IF");
     }
 
 
@@ -534,6 +535,5 @@ public class LexerTest
     public void EOFToken() throws Exception {
         checkToken("","EOF");
     }
-
 
 }
