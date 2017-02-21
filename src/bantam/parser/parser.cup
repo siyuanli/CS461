@@ -594,7 +594,7 @@ var_expr
     | ID:name
         {: RESULT = new VarExpr(name.getLineNum(), null, name.getAttribute() ); :}
     | array_expr:ae
-        {: RESULT = ae; :}
+        {: RESULT = (ArrayExpr)ae; :}
     ;
 
 array_expr
