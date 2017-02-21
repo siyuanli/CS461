@@ -157,6 +157,7 @@ nonterminal UnaryDecrExpr unary_decr_expr;
 nonterminal VarExpr var_expr;
 nonterminal ArrayExpr array_expr;
 nonterminal ArrayAssignExpr array_assign_expr;
+nonterminal NewArrayExpr new_array_expr;
 
 
 /* precedence/associativity rules
@@ -406,14 +407,32 @@ block_stmt
         {: RESULT = new BlockStmt(getCurrLineNum(), sl); :}
     ;
 
+expr_list
+    ::=
+    /* empty expr list */
+        {: RESULT = new ExprList(getCurrLineNum()); :}
+
+    /* single item expr list */
+    | expr:e
+        {: RESULT = (ExprList)(new ExprList(e.getLineNum())).addElement(e); :}
+
+    /* several items in expr list*/
+    | expr_list:el expr:e
+        {: RESULT = (ExprList)el.addElement(e); :}
+    ;
+
 expr
     ::=
     assign_expr:ae
         {: RESULT = ae; :}
+    | array_assign_expr:aae
+        {: RESULT = aae; :}
     | dispatch_expr:de
         {: RESULT = de; :}
     | new_expr:ne
         {: RESULT = ne; :}
+    | new_array_expr:nae
+        {: RESULT = nae; :}
     | instance_of_expr:ioe
         {: RESULT = ioe; :}
     | cast_expr:ce
@@ -428,6 +447,8 @@ expr
         {: RESULT = ve; :}
     | LPAREN expr:e RPAREN
         {: RESULT = e; :}
+    | array_expr:aye
+        {: RESULT = aye; :}
     ;
 
 assign_expr
@@ -438,9 +459,16 @@ assign_expr
     /* reference */
     | ID:ref DOT ID:name ASSIGN expr:e
         {: RESULT = new AssignExpr(name.getLineNum(),  ref.getAttribute(), name.getAttribute(), e); :}
-    /*array*/
-    | array_assign_expr:aae
-        {: RESULT = aae; :}
+    ;
+
+array_assign_expr
+    ::=
+    /*no reference*/
+    ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
+        {: RESULT = new ArrayAssignExpr(name.getLineNum(), null, name.getAttribute(), index, e); :}
+    /*with reference*/
+    | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
+        {: RESULT = new ArrayAssignExpr(name.getLineNum(), ref.getAttribute(), name.getAttribute(), index, e); :}
     ;
 
 dispatch_expr
@@ -455,11 +483,13 @@ dispatch_expr
 
 new_expr
     ::=
-    /*not an array*/
     NEW ID:type LPAREN RPAREN
         {: RESULT = new NewExpr(type.getLineNum(), type.getAttribute()); :}
-    /*an array*/
-    | NEW ID:type LSQBRACE expr:e RSQBRACE
+    ;
+
+new_array_expr
+    ::=
+    NEW ID:type LSQBRACE expr:e RSQBRACE
         {: RESULT = new NewArrayExpr(type.getLineNum(), type.getAttribute(), e); :}
     ;
 
@@ -587,14 +617,12 @@ unary_decr_expr
 
 var_expr
     ::=
-    /* with reference and no array*/
+    /* with reference*/
     ID:ref DOT ID:name
         {: RESULT = new VarExpr(ref.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()) , name.getAttribute()); :}
-    /* no reference and with array*/
+    /* no reference*/
     | ID:name
         {: RESULT = new VarExpr(name.getLineNum(), null, name.getAttribute() ); :}
-    | array_expr:ae
-        {: RESULT = (ArrayExpr)ae; :}
     ;
 
 array_expr
@@ -602,15 +630,11 @@ array_expr
     /*When there is no reference*/
     ID:name LSQBRACE expr:index RSQBRACE
         {: new ArrayExpr(name.getLineNum(), null, name.getAttribute(), index); :}
+    /*When there is a reference*/
     | ID:ref ID:name LSQBRACE expr:index RSQBRACE
         {: new ArrayExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index); :}
     ;
 
-array_assign_expr
-    ::=
-    /*no reference*/
-    ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
-        {: RESULT = new ArrayAssignExpr(name.getLineNum(), null, name.getAttribute(), index, e); :}
-    | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
-        {: RESULT = new ArrayAssignExpr(name.getLineNum(), ref.getAttribute(), name.getAttribute(), index, e); :}
-    ;
+
+
+
