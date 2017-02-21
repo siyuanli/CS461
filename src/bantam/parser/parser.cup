@@ -136,13 +136,13 @@ nonterminal WhileStmt while_stmt;
 nonterminal ForStmt for_stmt;
 nonterminal BreakStmt break_stmt;
 nonterminal ReturnStmt return_stmt;
-nonterminal Block_stmt block_stmt;
+nonterminal BlockStmt block_stmt;
 nonterminal Expr expr;
 nonterminal AssignExpr assign_expr;
 nonterminal DispatchExpr dispatch_expr;
 nonterminal ExprList expr_list;
 nonterminal NewExpr new_expr;
-nonterminal InstanceOfExpr instance_of_expr;
+nonterminal InstanceofExpr instance_of_expr;
 nonterminal CastExpr cast_expr;
 nonterminal BinaryExpr binary_expr;
 nonterminal UnaryExpr unary_expr;
@@ -217,8 +217,8 @@ member_list
         {: RESULT = new MemberList(getCurrLineNum()); :}
 
     /* single member */
-    member:m
-    |    {: RESULT = (MemberList)(new MemberList(m.getLineNum())).addElement(m); :}
+    | member:m
+        {: RESULT = (MemberList)(new MemberList(m.getLineNum())).addElement(m); :}
 
     /* several member*/
     | member_list:ml member:m
@@ -273,8 +273,8 @@ formal_list
         {: RESULT = new FormalList(getCurrLineNum()); :}
 
     /* single item formal list */
-    formal:f
-    |    {: RESULT = (FormalList)(new FormalList(f.getLineNum())).addElement(f); :}
+    | formal:f
+        {: RESULT = (FormalList)(new FormalList(f.getLineNum())).addElement(f); :}
 
     /* several items in formal list*/
     | formal_list:fl COMMA formal:f
@@ -299,8 +299,8 @@ stmt_list
         {: RESULT = new StmtList(getCurrLineNum()); :}
 
     /* single item statement list */
-    stmt:s
-    |    {: RESULT = (StmtList)(new StmtList(s.getLineNum())).addElement(s); :}
+    | stmt:s
+        {: RESULT = (StmtList)(new StmtList(s.getLineNum())).addElement(s); :}
 
     /* several items in statement list*/
     | stmt_list:sl stmt:s
@@ -433,14 +433,14 @@ expr
 assign_expr
     ::=
     /* no reference */
-    var_expr:ve ASSIGN expr:e
-        {: RESULT = new AssignExpr(ve.getLineNum(), null, var_expr.getAttribute(), e); :}
+    ID:name ASSIGN expr:e
+        {: RESULT = new AssignExpr(name.getLineNum(), null, name.getAttribute(), e); :}
     /* reference */
     | ID:ref DOT ID:name ASSIGN expr:e
-        {: RESULT = new AssignExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), e); :}
+        {: RESULT = new AssignExpr(name.getLineNum(),  ref.getAttribute(), name.getAttribute(), e); :}
     /*array*/
     | array_assign_expr:aae
-        {: RESULT = aae :}
+        {: RESULT = aae; :}
     ;
 
 dispatch_expr
@@ -457,7 +457,7 @@ new_expr
     ::=
     /*not an array*/
     NEW ID:type LPAREN RPAREN
-        {: RESULT = new NewExpr(type.getLineNum(), type.getAttribute());
+        {: RESULT = new NewExpr(type.getLineNum(), type.getAttribute()); :}
     /*an array*/
     | NEW ID:type LSQBRACE expr:e RSQBRACE
         {: RESULT = new NewArrayExpr(type.getLineNum(), type.getAttribute(), e); :}
@@ -470,7 +470,7 @@ instance_of_expr
         {: RESULT = new InstanceofExpr(e.getLineNum(), e, type.getAttribute()); :}
     /*array*/
     | expr:e INSTANCEOF ID:type LSQBRACE RSQBRACE
-        {: RESULT = new InstanceofExpr(e.getLineNum(), e, type.getAttribute())+"[]"; :}
+        {: RESULT = new InstanceofExpr(e.getLineNum(), e, type.getAttribute()+ "[]"); :}
     ;
 
 cast_expr
@@ -507,8 +507,8 @@ unary_expr
 
 const_expr
     ::=
-    INT_CONST:int
-        {: RESULT = new ConstIntExpr(int.getLineNum(), int.getAttribute()); :}
+    INT_CONST:num
+        {: RESULT = new ConstIntExpr(num.getLineNum(), num.getAttribute()); :}
     | BOOLEAN_CONST:bool
         {: RESULT = new ConstBooleanExpr(bool.getLineNum(), bool.getAttribute()); :}
     | STRING_CONST:str
@@ -612,5 +612,5 @@ array_assign_expr
     ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
         {: RESULT = new ArrayAssignExpr(name.getLineNum(), null, name.getAttribute(), index, e); :}
     | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
-        {: RESULT = new ArrayAssignExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index, e); :}
+        {: RESULT = new ArrayAssignExpr(name.getLineNum(), ref.getAttribute(), name.getAttribute(), index, e); :}
     ;
