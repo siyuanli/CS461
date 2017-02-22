@@ -172,10 +172,10 @@ precedence left EQ, NE;
 precedence left LT, GT, LEQ, GEQ, INSTANCEOF;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIVIDE, MODULUS;
-precedence left NEW;  /* CAST*/
+//precedence left NEW;  /* CAST*/
 precedence left NOT; /*UNIARY,++PREFIX, --PREFIX */
-precedence left DOT; /*THIS IS A THING YOU SHOULD BE AWARE OF*/
-precedence left LPAREN, RPAREN, /*LSQBRACE, RSQBRACE,*/ INCR, DECR; /*POSTFIX*/
+//precedence left DOT; /*THIS IS A THING YOU SHOULD BE AWARE OF*/
+//precedence left LPAREN, RPAREN, /*LSQBRACE, RSQBRACE,*/ INCR, DECR; /*POSTFIX*/*/
 
 
 /* program, which is simply a list of classes */
@@ -397,8 +397,10 @@ break_stmt
 
 return_stmt
     ::=
-    RETURN expr:e
+    RETURN expr:e SEMI
         {: RESULT = new ReturnStmt(getCurrLineNum(),e); :}
+    | RETURN SEMI
+        {: RESULT = new ReturnStmt(getCurrLineNum(), null); :}
     ;
 
 block_stmt
