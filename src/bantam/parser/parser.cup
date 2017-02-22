@@ -305,7 +305,7 @@ stmt_list
 
     /* several items in statement list*/
     | stmt_list:sl stmt:s
-        {: RESULT = (StmtList)sl.addElement(s); :}
+        {: RESULT = (StmtList) sl.addElement(s); :}
     ;
 
 stmt
@@ -479,6 +479,9 @@ dispatch_expr
     /*method called on other object*/
     | expr:e DOT ID:name LPAREN expr_list:el RPAREN
         {: RESULT = new DispatchExpr(el.getLineNum(), e, name.getAttribute(), el); :}
+    /*method called from this object*/
+    | ID:ref DOT ID:name LPAREN expr_list:el RPAREN
+        {: RESULT = new DispatchExpr(el.getLineNum(), new VarExpr(ref.getLineNum(),null,ref.getAttribute()), name.getAttribute(), el); :}
     ;
 
 new_expr
