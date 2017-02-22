@@ -139,9 +139,11 @@ nonterminal ReturnStmt return_stmt;
 nonterminal BlockStmt block_stmt;
 nonterminal Expr expr;
 nonterminal AssignExpr assign_expr;
+nonterminal ArrayAssignExpr array_assign_expr;
 nonterminal DispatchExpr dispatch_expr;
 nonterminal ExprList expr_list;
 nonterminal NewExpr new_expr;
+nonterminal NewArrayExpr new_array_expr;
 nonterminal InstanceofExpr instance_of_expr;
 nonterminal CastExpr cast_expr;
 nonterminal BinaryExpr binary_expr;
@@ -156,8 +158,6 @@ nonterminal UnaryIncrExpr unary_incr_expr;
 nonterminal UnaryDecrExpr unary_decr_expr;
 nonterminal VarExpr var_expr;
 nonterminal ArrayExpr array_expr;
-nonterminal ArrayAssignExpr array_assign_expr;
-nonterminal NewArrayExpr new_array_expr;
 
 
 /* precedence/associativity rules
@@ -174,8 +174,8 @@ precedence left PLUS, MINUS;
 precedence left TIMES, DIVIDE, MODULUS;
 precedence left NEW;  /* CAST*/
 precedence left NOT; /*UNIARY,++PREFIX, --PREFIX */
-precedence left INCR, DECR; /*THIS IS A THING YOU SHOULD BE AWARE OF*/
-precedence left DOT, LPAREN, RPAREN, LSQBRACE, RSQBRACE; /*POSTFIX*/
+precedence left DOT; /*THIS IS A THING YOU SHOULD BE AWARE OF*/
+precedence left LPAREN, RPAREN, /*LSQBRACE, RSQBRACE,*/ INCR, DECR; /*POSTFIX*/
 
 
 /* program, which is simply a list of classes */
@@ -417,7 +417,7 @@ expr_list
         {: RESULT = (ExprList)(new ExprList(e.getLineNum())).addElement(e); :}
 
     /* several items in expr list*/
-    | expr_list:el expr:e
+    | expr_list:el COMMA expr:e
         {: RESULT = (ExprList)el.addElement(e); :}
     ;
 
@@ -617,12 +617,12 @@ unary_decr_expr
 
 var_expr
     ::=
-    /* with reference*/
-    ID:ref DOT ID:name
-        {: RESULT = new VarExpr(ref.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()) , name.getAttribute()); :}
-    /* no reference*/
-    | ID:name
+    /*no reference*/
+    ID:name
         {: RESULT = new VarExpr(name.getLineNum(), null, name.getAttribute() ); :}
+    /* with reference*/
+    | ID:ref DOT ID:name
+        {: RESULT = new VarExpr(ref.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()) , name.getAttribute()); :}
     ;
 
 array_expr
