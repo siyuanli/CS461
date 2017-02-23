@@ -29,7 +29,7 @@ public class ParserTest
          you might want to initialize some fields here. */
     }
 
-    public Symbol getParseTreeRoot(String program) throws Exception{
+    private Symbol getParseTreeRoot(String program) throws Exception{
         Parser parser = new Parser(new Lexer(new StringReader(program)));
         Symbol result = parser.parse();
         assertEquals(0, parser.getErrorHandler().getErrorList().size());
@@ -37,20 +37,24 @@ public class ParserTest
         return result;
     }
 
-    public MemberList getClassBody(int classIndex, String program) throws Exception{
+    private MemberList getClassBody(int classIndex, String program) throws Exception{
         Symbol result = this.getParseTreeRoot(program);
         ClassList classes = ((Program) result.value).getClassList();
         Class_ mainClass = (Class_) classes.get(classIndex);
         return mainClass.getMemberList();
     }
 
-    public StmtList getMethodBody(int classIndex, int memberIndex, String program) throws Exception{
+    private StmtList getMethodBody(int classIndex, int memberIndex, String program) throws Exception{
         MemberList memberList = this.getClassBody(classIndex, program);
         Method method = (Method)memberList.get(memberIndex);
         return method.getStmtList();
     }
 
-    public void testClass(Class_ mainClass, String className ){
+    private Expr getExpr(StmtList stmtList, int index) {
+        return ((ExprStmt)stmtList.get(index)).getExpr();
+    }
+
+    private void testClass(Class_ mainClass, String className ){
         assertEquals(className, mainClass.getName());
         assertEquals(0, mainClass.getMemberList().getSize());
     }
@@ -87,7 +91,7 @@ public class ParserTest
         assertEquals(mainClass.getParent(), "Test");
     }
 
-    public void fieldTest(String type, String name, Boolean hasAssignment, Field field){
+    private void fieldTest(String type, String name, Boolean hasAssignment, Field field){
         assertEquals(type, field.getType());
         assertEquals(name, field.getName());
         if (hasAssignment) {
@@ -117,7 +121,7 @@ public class ParserTest
         this.fieldTest("int[]", "a", true, (Field)memberList.get(3));
     }
 
-    public void formalListTest(String[][] formalProperties, FormalList formalList){
+    private void formalListTest(String[][] formalProperties, FormalList formalList){
         assertEquals(formalProperties.length, formalList.getSize());
         for (int i =0; i< formalList.getSize(); i++){
             Formal formal = (Formal) formalList.get(i);
@@ -127,7 +131,7 @@ public class ParserTest
         }
     }
 
-    public void methodTest(String returnType, String name, String[][] params, int stmtListSize, Method method ){
+    private void methodTest(String returnType, String name, String[][] params, int stmtListSize, Method method ){
         assertEquals(returnType, method.getReturnType());
         assertEquals(name, method.getName());
         this.formalListTest(params, method.getFormalList());
@@ -146,7 +150,7 @@ public class ParserTest
                 "int[] method5 () { int a = 0; }" +
                 "int[] method6 (int a) { int a = 0; }" +
                 "}";
-        ;
+
         String[][] noParams = {};
         String[][] method3Params = {{"int", "z"},{"int", "p"}};
         String[][] method6Params = {{"int", "a"}};
@@ -168,7 +172,7 @@ public class ParserTest
                 "int y = 5;" +
                 "int method1 () {}" +
                 "}";
-        ;
+
         MemberList memberList = this.getClassBody(0, program);
         String[][] noParams = {};
         assertEquals(2, memberList.getSize());
@@ -182,7 +186,7 @@ public class ParserTest
         String program = " class Main{" +
                 "int y = 5;" +
                 "}";
-        ;
+
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(1, memberList.getSize());
         this.fieldTest("int", "y", true, (Field)memberList.get(0));
@@ -392,10 +396,6 @@ public class ParserTest
         assertEquals("\"hi\"",  expr3.getConstant());
     }
 
-    private Expr getExpr(StmtList stmtList, int index) {
-        return ((ExprStmt)stmtList.get(index)).getExpr();
-    }
-
     @Test
     public void arithmeticCompTest() throws  Exception {
         String program = "class Main{int method () { " +
@@ -502,7 +502,7 @@ public class ParserTest
         assertEquals(false, preDecr.isPostfix());
     }
 
-    public void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
+    private void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
         assertEquals(name, varExpr.getName());
         if (hasReference){
             assertNotNull(varExpr.getRef());
@@ -512,7 +512,7 @@ public class ParserTest
         }
     }
 
-    public void arrayExprTest(String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
+    private void arrayExprTest(String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
         assertEquals(name, arrayExpr.getName());
         if (hasReference){
             assertNotNull(arrayExpr.getRef());
