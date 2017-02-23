@@ -1,7 +1,7 @@
 /*
  * File: ParserTest.java
  * CS461 Project 2
- * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek,
+ * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
  * Date: 2/23/17
  */
 package bantam.parser;
@@ -80,7 +80,8 @@ public class ParserTest
      * @return the body of the method
      * @throws Exception if something bad happened while parsing
      */
-    private StmtList getMethodBody(int classIndex, int memberIndex, String program) throws Exception{
+    private StmtList getMethodBody(
+            int classIndex, int memberIndex, String program) throws Exception{
         MemberList memberList = this.getClassBody(classIndex, program);
         Method method = (Method)memberList.get(memberIndex);
         return method.getStmtList();
@@ -171,10 +172,14 @@ public class ParserTest
 
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(4, memberList.getSize());
-        this.fieldTest("String", "x", false, (Field)memberList.get(0));
-        this.fieldTest("int", "y", true, (Field)memberList.get(1));
-        this.fieldTest("Boolean[]", "z", false, (Field)memberList.get(2));
-        this.fieldTest("int[]", "a", true, (Field)memberList.get(3));
+        this.fieldTest("String", "x", false,
+                                                    (Field)memberList.get(0));
+        this.fieldTest("int", "y", true,
+                                                    (Field)memberList.get(1));
+        this.fieldTest("Boolean[]", "z", false,
+                                                    (Field)memberList.get(2));
+        this.fieldTest("int[]", "a", true,
+                                                    (Field)memberList.get(3));
     }
 
     /**
@@ -201,7 +206,8 @@ public class ParserTest
      * @param stmtListSize the size of the body
      * @param method the method object
      */
-    private void methodTest(String returnType, String name, String[][] params, int stmtListSize, Method method ){
+    private void methodTest(String returnType, String name,
+                            String[][] params, int stmtListSize, Method method ){
         assertEquals(returnType, method.getReturnType());
         assertEquals(name, method.getName());
         this.formalListTest(params, method.getFormalList());
@@ -226,12 +232,18 @@ public class ParserTest
         String[][] method6Params = {{"int", "a"}};
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(6, memberList.getSize());
-        this.methodTest("int", "method1", noParams, 0, (Method)memberList.get(0));
-        this.methodTest("int", "method2", noParams, 1, (Method)memberList.get(1));
-        this.methodTest("int", "method3", method3Params, 2, (Method)memberList.get(2));
-        this.methodTest("int[]", "method4", noParams, 0, (Method)memberList.get(3));
-        this.methodTest("int[]", "method5", noParams, 1, (Method)memberList.get(4));
-        this.methodTest("int[]", "method6", method6Params, 1, (Method)memberList.get(5));
+        this.methodTest("int", "method1", noParams, 0,
+                                                    (Method)memberList.get(0));
+        this.methodTest("int", "method2", noParams, 1,
+                                                    (Method)memberList.get(1));
+        this.methodTest("int", "method3", method3Params, 2,
+                                                    (Method)memberList.get(2));
+        this.methodTest("int[]", "method4", noParams, 0,
+                                                    (Method)memberList.get(3));
+        this.methodTest("int[]", "method5", noParams, 1,
+                                                    (Method)memberList.get(4));
+        this.methodTest("int[]", "method6", method6Params, 1,
+                                                    (Method)memberList.get(5));
     }
 
 
@@ -246,8 +258,10 @@ public class ParserTest
         MemberList memberList = this.getClassBody(0, program);
         String[][] noParams = {};
         assertEquals(2, memberList.getSize());
-        this.fieldTest("int", "y", true, (Field)memberList.get(0));
-        this.methodTest("int", "method1", noParams, 0, (Method)memberList.get(1));
+        this.fieldTest("int", "y", true,
+                                                    (Field)memberList.get(0));
+        this.methodTest("int", "method1", noParams, 0,
+                                                    (Method)memberList.get(1));
     }
 
     /** tests the case of one item in Class */
@@ -259,7 +273,8 @@ public class ParserTest
 
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(1, memberList.getSize());
-        this.fieldTest("int", "y", true, (Field)memberList.get(0));
+        this.fieldTest("int", "y", true,
+                                                (Field)memberList.get(0));
     }
 
     /**
@@ -305,7 +320,8 @@ public class ParserTest
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(1, stmtList.getSize());
         IfStmt statement = (IfStmt) stmtList.get(0);
-        assertEquals("true", ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
+        assertEquals("true",
+                    ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
         assert statement.getThenStmt() instanceof BreakStmt;
         assert statement.getElseStmt() instanceof ReturnStmt;
     }
@@ -320,7 +336,8 @@ public class ParserTest
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(2, stmtList.getSize());
         IfStmt statement = (IfStmt) stmtList.get(0);
-        assertEquals("true", ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
+        assertEquals("true",
+                    ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
         assert statement.getThenStmt() instanceof BreakStmt;
         assert stmtList.get(1) instanceof ReturnStmt;
     }
@@ -335,7 +352,8 @@ public class ParserTest
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(1, stmtList.getSize());
         WhileStmt statement = (WhileStmt) stmtList.get(0);
-        assertEquals("true", ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
+        assertEquals("true",
+                    ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
         assert statement.getBodyStmt() instanceof BreakStmt;
     }
 
@@ -432,7 +450,8 @@ public class ParserTest
         DispatchExpr expr2 = (DispatchExpr) this.getExpr(stmtList, 1);
         assertEquals("c",expr1.getMethodName());
         assertEquals(1,expr1.getActualList().getSize());
-        assertEquals("7",((ConstIntExpr)expr1.getActualList().get(0)).getConstant());
+        assertEquals("7",
+                ((ConstIntExpr)expr1.getActualList().get(0)).getConstant());
         //a.b()
         DispatchExpr expr3 = (DispatchExpr) expr1.getRefExpr();
         assertEquals("b",expr3.getMethodName());
@@ -667,7 +686,8 @@ public class ParserTest
      * @param index the index the ArrayExpr should have
      * @param arrayExpr the ArrayExpr being tested
      */
-    private void arrayExprTest(String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
+    private void arrayExprTest(
+            String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
         assertEquals(name, arrayExpr.getName());
         if (hasReference){
             assertNotNull(arrayExpr.getRef());
@@ -692,10 +712,14 @@ public class ParserTest
                 "c[1];" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        this.varExprTest("a", false, (VarExpr)this.getExpr(stmtList, 0));
-        this.varExprTest("b", true, (VarExpr)this.getExpr(stmtList, 1));
-        this.arrayExprTest("d", true, 2, (ArrayExpr)this.getExpr(stmtList,2));
-        this.arrayExprTest("c", false, 1, (ArrayExpr) this.getExpr(stmtList,3));
+        this.varExprTest("a", false,
+                            (VarExpr)this.getExpr(stmtList, 0));
+        this.varExprTest("b", true,
+                            (VarExpr)this.getExpr(stmtList, 1));
+        this.arrayExprTest("d", true, 2,
+                            (ArrayExpr)this.getExpr(stmtList,2));
+        this.arrayExprTest("c", false, 1,
+                            (ArrayExpr) this.getExpr(stmtList,3));
 
 
     }
@@ -933,7 +957,7 @@ public class ParserTest
         assert badTest("class Main{String x = \"asdf;lhwlwer;");
         assert badTest("class/*12345M Main {}");
         assert badTest("class Main{String x =\"123\\4\"}");
-        assert badTest("class Main{int x = 111111111111111111111111111111111111111111;}");
+        assert badTest("class Main{int x = 11111111111111111111111111111111111111;}");
         String s = "class Main{String x = \"L";
         for(int i = 0;i <50000;i++){
             s = s +"O";
@@ -1097,10 +1121,5 @@ public class ParserTest
         assert badTestMethod("3.3;");
         assert badTestMethod("x[3;");
     }
-
-
-
-
-
 
 }

@@ -1,7 +1,7 @@
 /*
  * File: parser.cup
  * CS461 Project 2
- * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek,
+ * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
  * Date: 2/23/17
  */
 /* Bantam Java Compiler and Language Toolset.
@@ -253,10 +253,12 @@ method
     ::=
     /* Return type is not array*/
     ID:type ID:name LPAREN formal_list:fl RPAREN LBRACE stmt_list:sl RBRACE
-        {: RESULT = new Method(name.getLineNum(), type.getAttribute(), name.getAttribute(), fl, sl); :}
+        {: RESULT = new Method(name.getLineNum(), type.getAttribute(),
+                               name.getAttribute(), fl, sl); :}
     /* Return type is array*/
     | ID:type LSQBRACE RSQBRACE ID:name LPAREN formal_list:fl RPAREN LBRACE stmt_list:sl RBRACE
-        {: RESULT = new Method(name.getLineNum(), type.getAttribute()+"[]", name.getAttribute(), fl, sl); :}
+        {: RESULT = new Method(name.getLineNum(), type.getAttribute()+"[]",
+                               name.getAttribute(), fl, sl); :}
     ;
 
 /* a decleration for a field */
@@ -264,19 +266,23 @@ field
     ::=
     /* Type is not an array, and no assignment */
     ID:type ID:name SEMI
-        {: RESULT = new Field(type.getLineNum(), type.getAttribute(), name.getAttribute(), null); :}
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute(),
+                              name.getAttribute(), null); :}
 
     /* Type is not an array, and is an assignment */
     | ID:type ID:name ASSIGN expr:e SEMI
-        {: RESULT = new Field(type.getLineNum(), type.getAttribute(), name.getAttribute(), e); :}
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute(),
+                              name.getAttribute(), e); :}
 
     /* Type is an array, and no assignment */
     |ID:type LSQBRACE RSQBRACE ID:name SEMI
-        {: RESULT = new Field(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute(), null); :}
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute() + "[]",
+                              name.getAttribute(), null); :}
 
     /* Type is an array, and is an assignment */
     | ID:type LSQBRACE RSQBRACE ID:name ASSIGN expr:e SEMI
-        {: RESULT = new Field(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute(), e); :}
+        {: RESULT = new Field(type.getLineNum(), type.getAttribute() + "[]",
+                              name.getAttribute(), e); :}
     ;
 
 formal_list
@@ -297,11 +303,13 @@ formal
     ::=
     /*array type*/
     ID:type LSQBRACE RSQBRACE ID:name
-        {: RESULT = new Formal(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute()); :}
+        {: RESULT = new Formal(type.getLineNum(), type.getAttribute() + "[]",
+                               name.getAttribute()); :}
 
     /*not array type */
     | ID:type ID:name
-        {: RESULT = new Formal(type.getLineNum(), type.getAttribute(), name.getAttribute()); :}
+        {: RESULT = new Formal(type.getLineNum(), type.getAttribute(),
+                               name.getAttribute()); :}
 
     ;
 
@@ -349,11 +357,13 @@ decl_stmt
     ::=
      /*array type*/
     ID:type LSQBRACE RSQBRACE ID:name ASSIGN expr:e SEMI
-        {: RESULT = new DeclStmt(type.getLineNum(), type.getAttribute() + "[]", name.getAttribute(), e); :}
+        {: RESULT = new DeclStmt(type.getLineNum(), type.getAttribute() + "[]",
+                                 name.getAttribute(), e); :}
 
     /*not array type */
     | ID:type ID:name ASSIGN expr:e SEMI
-        {: RESULT = new DeclStmt(type.getLineNum(), type.getAttribute(), name.getAttribute(), e); :}
+        {: RESULT = new DeclStmt(type.getLineNum(), type.getAttribute(),
+                                 name.getAttribute(), e); :}
     ;
 
 if_stmt
@@ -471,17 +481,20 @@ assign_expr
         {: RESULT = new AssignExpr(name.getLineNum(), null, name.getAttribute(), e); :}
     /* reference */
     | ID:ref DOT ID:name ASSIGN expr:e
-        {: RESULT = new AssignExpr(name.getLineNum(),  ref.getAttribute(), name.getAttribute(), e); :}
+        {: RESULT = new AssignExpr(name.getLineNum(),  ref.getAttribute(),
+                                   name.getAttribute(), e); :}
     ;
 
 array_assign_expr
     ::=
     /*no reference*/
     ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
-        {: RESULT = new ArrayAssignExpr(name.getLineNum(), null, name.getAttribute(), index, e); :}
+        {: RESULT = new ArrayAssignExpr(name.getLineNum(), null,
+                                        name.getAttribute(), index, e); :}
     /*with reference*/
     | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE ASSIGN expr:e
-        {: RESULT = new ArrayAssignExpr(name.getLineNum(), ref.getAttribute(), name.getAttribute(), index, e); :}
+        {: RESULT = new ArrayAssignExpr(name.getLineNum(), ref.getAttribute(),
+                                        name.getAttribute(), index, e); :}
     ;
 
 dispatch_expr
@@ -494,7 +507,8 @@ dispatch_expr
         {: RESULT = new DispatchExpr(el.getLineNum(), e, name.getAttribute(), el); :}
     /*method called from this object*/
     | ID:ref DOT ID:name LPAREN expr_list:el RPAREN
-        {: RESULT = new DispatchExpr(el.getLineNum(), new VarExpr(ref.getLineNum(),null,ref.getAttribute()), name.getAttribute(), el); :}
+        {: RESULT = new DispatchExpr(el.getLineNum(), new VarExpr(ref.getLineNum(), null,
+                                     ref.getAttribute()), name.getAttribute(), el); :}
     ;
 
 new_expr
@@ -638,17 +652,20 @@ var_expr
         {: RESULT = new VarExpr(name.getLineNum(), null, name.getAttribute() ); :}
     /* with reference*/
     | ID:ref DOT ID:name
-        {: RESULT = new VarExpr(ref.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()) , name.getAttribute()); :}
+        {: RESULT = new VarExpr(ref.getLineNum(), new VarExpr(ref.getLineNum(), null,
+                                ref.getAttribute()) , name.getAttribute()); :}
     ;
 
 array_expr
     ::=
     /*When there is no reference*/
     ID:name LSQBRACE expr:index RSQBRACE
-        {: RESULT = new ArrayExpr(name.getLineNum(), null, name.getAttribute(), index); :}
+        {: RESULT = new ArrayExpr(name.getLineNum(), null, name.getAttribute(), index);:}
     /*When there is a reference*/
     | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE
-        {: RESULT = new ArrayExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index); :}
+        {: RESULT = new ArrayExpr(name.getLineNum(),
+                                  new VarExpr(ref.getLineNum(), null, ref.getAttribute()),
+                                  name.getAttribute(), index); :}
     ;
 
 
