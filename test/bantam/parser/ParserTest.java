@@ -314,6 +314,10 @@ public class ParserTest
         }
     }
 
+    /**
+     * tests the legal usage of return statements
+     * @throws Exception if the test failed
+     */
     @Test
     public void returnStatement() throws Exception{
         String program = "class Main{int method () { return; return 7; }}";
@@ -324,8 +328,12 @@ public class ParserTest
         assertEquals("7", ((ConstIntExpr) stmt2.getExpr()).getConstant());
     }
 
+    /**
+     * tests empty block statements
+     * @throws Exception if the test failed
+     */
     @Test
-    public void emptyBlockStatment() throws Exception{
+    public void emptyBlockStatement() throws Exception{
         String program = "class Main{int method () { {} }}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(1, stmtList.getSize());
@@ -333,6 +341,10 @@ public class ParserTest
         assertEquals(0,stmt.getStmtList().getSize());
     }
 
+    /**
+     * tests legal assignment statements
+     * @throws Exception if the test failed
+     */
     @Test
     public void assignExpr() throws Exception{
         String program = "class Main{int method () { this.a = 4; a[3]=4; }}";
@@ -348,6 +360,10 @@ public class ParserTest
         assertEquals("3", ((ConstIntExpr)stmt2.getIndex()).getConstant());
     }
 
+    /**
+     * tests legal usage of dispatch
+     * @throws Exception if the test failed
+     */
     @Test
     public void dispatchExpr() throws Exception{
         String program = "class Main{int method () { a.b().c(7); d.e(x,y); }}";
@@ -368,6 +384,10 @@ public class ParserTest
         assertEquals("d",((VarExpr)expr2.getRefExpr()).getName());
     }
 
+    /**
+     * tests legal usage of new
+     * @throws Exception if the tests fail
+     */
     @Test
     public void newExpr() throws Exception{
         String program = "class Main{int method () { new a(); new a[3]; }}";
@@ -380,8 +400,12 @@ public class ParserTest
         assertEquals("3", ((ConstIntExpr) expr2.getSize()).getConstant());
     }
 
+    /**
+     * tests legal instance of usage
+     * @throws Exception if the tests fail
+     */
     @Test
-    public void instanceOfArray() throws Exception{
+    public void instanceOfTest() throws Exception{
         String program = "class Main{ " +
                             "int method () { " +
                                 "x instanceof int; " +
@@ -396,8 +420,12 @@ public class ParserTest
         assertEquals("int[]", expr2.getType());
     }
 
+    /**
+     * test legal casting statements
+     * @throws Exception if the tests failed
+     */
     @Test
-    public void castArray() throws Exception{
+    public void castTest() throws Exception{
         String program = "class Main{ " +
                 "int method () { " +
                     "(int) (num); " +
@@ -413,8 +441,12 @@ public class ParserTest
 
     }
 
+    /**
+     * tests legal data types
+     * @throws Exception if the tests fail
+     */
     @Test
-    public void dataTypes() throws Exception{
+    public void dataTypesTest() throws Exception{
         String program = "class Main{ " +
                 "int method () { " +
                     "50; " +
@@ -430,6 +462,10 @@ public class ParserTest
         assertEquals("\"hi\"",  expr3.getConstant());
     }
 
+    /**
+     * tests legal arithmetic operations
+     * @throws Exception if the test fail
+     */
     @Test
     public void arithmeticCompTest() throws  Exception {
         String program = "class Main{int method () { " +
@@ -457,6 +493,10 @@ public class ParserTest
         assert modulus instanceof BinaryArithModulusExpr;
     }
 
+    /**
+     * tests legal binary comparison operators
+     * @throws Exception if the tests fail
+     */
     @Test
     public void binaryCompTest() throws  Exception{
         String program = "class Main{int method () { " +
@@ -487,6 +527,10 @@ public class ParserTest
         assert geq instanceof BinaryCompGeqExpr;
     }
 
+    /**
+     * tests legal binary logic operators
+     * @throws Exception if the tests fail
+     */
     @Test
     public void binaryLogicTest() throws  Exception{
         String program = "class Main{int method () { " +
@@ -501,6 +545,10 @@ public class ParserTest
         assert and instanceof BinaryLogicAndExpr;
     }
 
+    /**
+     * Tests legal unary operators
+     * @throws Exception if the tests fail
+     */
     @Test
     public void unaryOperatorsTest() throws Exception{
         String program = "class Main{int method () { " +
@@ -536,6 +584,13 @@ public class ParserTest
         assertEquals(false, preDecr.isPostfix());
     }
 
+    /**
+     * Tests if the name and if the var has a reference matches the properties of the
+     * VarExpr
+     * @param name the name the VarExpr should have
+     * @param hasReference if the VarExpr should have a reference
+     * @param varExpr the VarExpr being tested
+     */
     private void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
         assertEquals(name, varExpr.getName());
         if (hasReference){
@@ -546,6 +601,13 @@ public class ParserTest
         }
     }
 
+    /**
+     * tests if the name, index, and if the array has a reference matches the ArrayExpr
+     * @param name the name the ArrayExpr should have
+     * @param hasReference if the ArrayExpr should have a reference
+     * @param index the index the ArrayExpr should have
+     * @param arrayExpr the ArrayExpr being tested
+     */
     private void arrayExprTest(String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
         assertEquals(name, arrayExpr.getName());
         if (hasReference){
@@ -558,6 +620,10 @@ public class ParserTest
     }
 
 
+    /**
+     * test VarExpr and ArrayExprs
+     * @throws Exception if the test fails
+     */
     @Test
     public void varExprTest() throws Exception {
         String program = "class Main{ int method(){" +
