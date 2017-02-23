@@ -342,6 +342,34 @@ public class ParserTest
         assertEquals("3", ((ConstIntExpr) expr2.getSize()).getConstant());
     }
 
+    @Test
+    public void instanceOfArray() throws Exception{
+        String program = "class Main{ " +
+                            "int method () { " +
+                                "x instanceof int; " +
+                                "y instanceof int[]; } " +
+                         "}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        InstanceofExpr expr1 = (InstanceofExpr)((ExprStmt)stmtList.get(0)).getExpr();
+        InstanceofExpr expr2 = (InstanceofExpr)((ExprStmt)stmtList.get(1)).getExpr();
+        assertEquals("x", ((VarExpr)expr1.getExpr()).getName());
+        assertEquals("int", expr1.getType());
+        assertEquals("y", ((VarExpr)expr2.getExpr()).getName());
+        assertEquals("int[]", expr2.getType());
+    }
+
+    @Test
+    public void castArray() throws Exception{
+        String program = "class Main{ " +
+                "int method () { " +
+                    "(int) (); " +
+                    "y instanceof int[]; } " +
+                "}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        InstanceofExpr expr1 = (InstanceofExpr)((ExprStmt)stmtList.get(0)).getExpr();
+        InstanceofExpr expr2 = (InstanceofExpr)((ExprStmt)stmtList.get(1)).getExpr();
+
+    }
 
     /* INVALID CODE TESTS ----------------------------------------------------------*/
     /**
