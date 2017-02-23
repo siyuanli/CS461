@@ -397,6 +397,33 @@ public class ParserTest
     }
 
     @Test
+    public void arithmeticCompTest() throws  Exception {
+        String program = "class Main{int method () { " +
+                "a + b;" +
+                "c - d;" +
+                "e * f;" +
+                "g / h;" +
+                "i % j;" +
+                "}}";
+
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        BinaryExpr plus = (BinaryExpr)this.getExpr(stmtList, 0);
+        assert plus instanceof BinaryArithPlusExpr;
+
+        BinaryExpr minus = (BinaryExpr)this.getExpr(stmtList, 1);
+        assert minus instanceof BinaryArithMinusExpr;
+
+        BinaryExpr times = (BinaryExpr)this.getExpr(stmtList, 2);
+        assert times instanceof BinaryArithTimesExpr;
+
+        BinaryExpr divide = (BinaryExpr)this.getExpr(stmtList, 3);
+        assert divide instanceof BinaryArithDivideExpr;
+
+        BinaryExpr modulus = (BinaryExpr)this.getExpr(stmtList, 4);
+        assert modulus instanceof BinaryArithModulusExpr;
+    }
+
+    @Test
     public void binaryCompTest() throws  Exception{
         String program = "class Main{int method () { " +
                 "a == b;" +
