@@ -1,3 +1,9 @@
+/*
+ * File: ParserTest.java
+ * CS461 Project 2
+ * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek,
+ * Date: 2/23/17
+ */
 package bantam.parser;
 
 import bantam.ast.*;
@@ -13,16 +19,24 @@ import java.io.StringReader;
 
 import static org.junit.Assert.*;
 
-/*
- * File: ParserTest.java
- * Author: djskrien
- * Date: 2/13/17
+/**
+ * A class consisting of unit tests for a Bantam Java parser
+ * @author Phoebe Hughes
+ * @author Siyuan Li
+ * @author Joseph Malionek
  */
 public class ParserTest
 {
+    /**
+     * A rule stating that no exceptions are expected.
+     */
     @Rule
     public ExpectedException thrown= ExpectedException.none();
 
+    /**
+     * An empty method to allow easier expansion of testing. This would be executed before
+     * any test cases occur
+     */
     @BeforeClass
     public static void begin() {
         /* add here any initialization code for all test methods. For example,
@@ -125,6 +139,14 @@ public class ParserTest
         assertEquals(mainClass.getParent(), "Test");
     }
 
+    /**
+     * Tests whether the given field has the specified name, field and whether it has
+     * an assignment as well
+     * @param type
+     * @param name
+     * @param hasAssignment
+     * @param field
+     */
     private void fieldTest(String type, String name, Boolean hasAssignment, Field field){
         assertEquals(type, field.getType());
         assertEquals(name, field.getName());
@@ -155,6 +177,11 @@ public class ParserTest
         this.fieldTest("int[]", "a", true, (Field)memberList.get(3));
     }
 
+    /**
+     * Tests whether the given FormalList has the given properties
+     * @param formalProperties The doubly-indexed array of properties
+     * @param formalList The formal list
+     */
     private void formalListTest(String[][] formalProperties, FormalList formalList){
         assertEquals(formalProperties.length, formalList.getSize());
         for (int i =0; i< formalList.getSize(); i++){
@@ -165,6 +192,15 @@ public class ParserTest
         }
     }
 
+    /**
+     * Tests whether a method has the given return type, name, parameters, and number of
+     * statements in its body
+     * @param returnType the return type
+     * @param name the name
+     * @param params the parameters
+     * @param stmtListSize the size of the body
+     * @param method the method object
+     */
     private void methodTest(String returnType, String name, String[][] params, int stmtListSize, Method method ){
         assertEquals(returnType, method.getReturnType());
         assertEquals(name, method.getName());
@@ -226,6 +262,10 @@ public class ParserTest
         this.fieldTest("int", "y", true, (Field)memberList.get(0));
     }
 
+    /**
+     * Tests the case where you have a declaration statement without an array
+     * @throws Exception if the test or parser fails
+     */
     @Test
     public void noArrayDeclStmt() throws Exception{
         String program = " class Main{" +
@@ -240,6 +280,10 @@ public class ParserTest
 
     }
 
+    /**
+     * Tests whether the case where you have a declaration
+     * @throws Exception if the tests or parser fail
+     */
     @Test
     public void arrayDeclStmt() throws Exception{
         String program = "class Main{int method () { boolean[] flag = true; }}";
@@ -251,7 +295,10 @@ public class ParserTest
         assertNotNull(statement.getInit());
     }
 
-
+    /**
+     * Tests whether an if statement with an else clause will be parsed correctly
+     * @throws Exception if the tests or parser fail
+     */
     @Test
     public void ifWithElse() throws Exception{
         String program = "class Main{int method () { if(true) break; else return; }}";
@@ -263,6 +310,10 @@ public class ParserTest
         assert statement.getElseStmt() instanceof ReturnStmt;
     }
 
+    /**
+     * Tests whether an if statement without an else clause will be parsed correctly
+     * @throws Exception if the tests or parser fail
+     */
     @Test
     public void ifNoElse() throws Exception{
         String program = "class Main{int method () { if(true) break; return; }}";
@@ -274,6 +325,10 @@ public class ParserTest
         assert stmtList.get(1) instanceof ReturnStmt;
     }
 
+    /**
+     * Tests the while and break statements
+     * @throws Exception if the tests or parser fail
+     */
     @Test
     public void whileAndBreakStatement() throws Exception{
         String program = "class Main{int method () { while(true) break; }}";
@@ -284,6 +339,10 @@ public class ParserTest
         assert statement.getBodyStmt() instanceof BreakStmt;
     }
 
+    /**
+     * Tests whether for statements are parsed correctly
+     * @throws Exception if the tests or parser fail
+     */
     @Test
     public void forStatement() throws Exception{
         String[] strings = {"for(;;){}","for(a;;){}","for(;a;){}","for(a;a;){}"
