@@ -577,4 +577,11 @@ public class ParserTest
         assertTrue(thrown);
     }
 
+    @Test
+    public void emptyFile() throws Exception {
+        Parser parser = new Parser(new Lexer(new StringReader("")));
+        thrown.expect(RuntimeException.class);
+        parser.parse();
+    }
+
 }
