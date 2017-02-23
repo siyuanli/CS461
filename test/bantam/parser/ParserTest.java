@@ -481,14 +481,14 @@ public class ParserTest
         String program = "class Main{ int method(){" +
                 "a;" +
                 "this.b;" +
-//                "this.d[2];" +
-//                "c[1];" +
+                "this.d[2];" +
+                "c[1];" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         this.varExprTest("a", false, (VarExpr)this.getExpr(stmtList, 0));
         this.varExprTest("b", true, (VarExpr)this.getExpr(stmtList, 1));
-//        this.arrayExprTest("d", true, 2, (ArrayExpr)((ExprStmt)stmtList.get(0)).getExpr());
-//        this.arrayExprTest("c", false, 1, (ArrayExpr) ((ExprStmt)stmtList.get(0)).getExpr());
+        this.arrayExprTest("d", true, 2, (ArrayExpr)this.getExpr(stmtList,2));
+        this.arrayExprTest("c", false, 1, (ArrayExpr) this.getExpr(stmtList,3));
 
 
     }

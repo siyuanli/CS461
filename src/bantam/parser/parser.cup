@@ -634,10 +634,10 @@ array_expr
     ::=
     /*When there is no reference*/
     ID:name LSQBRACE expr:index RSQBRACE
-        {: new ArrayExpr(name.getLineNum(), null, name.getAttribute(), index); :}
+        {: RESULT = new ArrayExpr(name.getLineNum(), null, name.getAttribute(), index); :}
     /*When there is a reference*/
     | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE
-        {: new ArrayExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index); :}
+        {: RESULT = new ArrayExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index); :}
     ;
 
 
