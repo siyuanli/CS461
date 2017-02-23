@@ -29,6 +29,12 @@ public class ParserTest
          you might want to initialize some fields here. */
     }
 
+    /**
+     * Helper method to get the root of a parse tree of the given string
+     * @param program the string to be parsed
+     * @return the root of the parse tree
+     * @throws Exception if something bad happened while parsing
+     */
     private Symbol getParseTreeRoot(String program) throws Exception{
         Parser parser = new Parser(new Lexer(new StringReader(program)));
         Symbol result = parser.parse();
@@ -37,6 +43,13 @@ public class ParserTest
         return result;
     }
 
+    /**
+     * Helper method to get the body of a specific class from a java program
+     * @param classIndex the index of the class in the program
+     * @param program the string containing the java program
+     * @return the list of classes
+     * @throws Exception if something bad happened while parsing
+     */
     private MemberList getClassBody(int classIndex, String program) throws Exception{
         Symbol result = this.getParseTreeRoot(program);
         ClassList classes = ((Program) result.value).getClassList();
@@ -44,16 +57,37 @@ public class ParserTest
         return mainClass.getMemberList();
     }
 
+    /**
+     * Gets the body of a specific method, given a java program,
+     * the index of the class in the program, and the index of the method in the class
+     * @param classIndex the index of the class
+     * @param memberIndex the index of the member
+     * @param program the string containing the Java program
+     * @return the body of the method
+     * @throws Exception if something bad happened while parsing
+     */
     private StmtList getMethodBody(int classIndex, int memberIndex, String program) throws Exception{
         MemberList memberList = this.getClassBody(classIndex, program);
         Method method = (Method)memberList.get(memberIndex);
         return method.getStmtList();
     }
 
+    /**
+     * Returns the expression of the expression statement at the given index in the
+     * statement list
+     * @param stmtList the statement list
+     * @param index the index of the ExprStmt
+     * @return the Expression
+     */
     private Expr getExpr(StmtList stmtList, int index) {
         return ((ExprStmt)stmtList.get(index)).getExpr();
     }
 
+    /**
+     * tests whether a class is empty and has the given name
+     * @param mainClass the class
+     * @param className the name of the class
+     */
     private void testClass(Class_ mainClass, String className ){
         assertEquals(className, mainClass.getName());
         assertEquals(0, mainClass.getMemberList().getSize());
@@ -618,6 +652,10 @@ public class ParserTest
         assert badTest("class Main{int (int x, int y){x = 4;}}");
     }
 
+    /**
+     * Tests some expressions with lexErrors
+     * @throws Exception if the test fails
+     */
     @Test
     public void lexError() throws Exception {
         assert badTest("class Main{~~~~~}");
@@ -634,6 +672,164 @@ public class ParserTest
         s=s+"L\";}";
         assert badTest(s);
     }
+
+    /**
+     * Tests some incorrect assign expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badAssign() throws Exception {
+        assert badTestMethod("a=;");
+        assert badTestMethod("3=4;");
+        assert badTestMethod("a.b.c=4;");
+        assert badTestMethod("=4;");
+        assert badTestMethod("a()=5;");
+        assert badTestMethod("a[]=4;");
+        assert badTestMethod("a[3]=a[];");
+    }
+
+    /**
+     * Tests some incorrect dispatch expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badDispatch() throws Exception {
+        assert badTestMethod("a.();");
+        assert badTestMethod("a.b(.c);");
+        assert badTestMethod("a(,);");
+        assert badTestMethod("a.b(a,);");
+        assert badTestMethod("c.(a,b;");
+        assert badTestMethod("c(.a,b);");
+    }
+
+    /**
+     * Tests some incorrect new expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badNew() throws Exception {
+        assert badTestMethod("new id (;");
+        assert badTestMethod("new id(3);");
+        assert badTestMethod("new id[];");
+        assert badTestMethod("new id[(;");
+        assert badTestMethod("new thing id (;");
+        assert badTestMethod("new id.();");
+        assert badTestMethod("new thing[3][4];");
+    }
+
+    /**
+     * Tests some incorrect instanceof expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badInstanceOf() throws Exception {
+        assert badTestMethod("x instanceof ;");
+        assert badTestMethod("x instanceof instanceof y;");
+        assert badTestMethod("x instanceof 4;");
+        assert badTestMethod("x instanceof thing[;");
+        assert badTestMethod("x instancof thing;");
+    }
+
+    /**
+     * Tests some incorrect casting expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badCast() throws Exception {
+        assert badTestMethod("x=int) (thing);");
+        assert badTestMethod("x= (int[) (thing);");
+        assert badTestMethod("x=(int] (thing);");
+        assert badTestMethod("x=(int) 5;");
+        assert badTestMethod("x=(int) thing);");
+        assert badTestMethod("x=(int[]) (thing[);");
+    }
+
+    /**
+     * Tests some incorrect arithmetic expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badArithExpr() throws Exception {
+        String[] ops = {"+","-","*","/","%"};
+        for(int i = 0;i<5;i++){
+            assert badTestMethod("class"+ops[i]+"4;");
+            assert badTestMethod("4"+ops[i]+";");
+        }
+    }
+
+    /**
+     * Tests some incorrect binary comparison expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badBinaryComp() throws Exception {
+        String[] ops = {"==","!=","<",">","<=",">="};
+        for(int i = 0;i<6;i++){
+            assert badTestMethod("class"+ops[i]+"4;");
+            assert badTestMethod(ops[i]+"4;");
+        }
+    }
+
+    /**
+     * Tests some incorrect binary logic expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badBinaryLogic() throws Exception {
+        assert badTestMethod("3||;");
+        assert badTestMethod("3|| 4 &&;");
+        assert badTestMethod("3&&if;");
+    }
+
+    /**
+     * Tests some incorrect unary minus expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void unaryMinus() throws Exception {
+        assert badTestMethod("x-;");
+        assert badTestMethod("-class;");
+    }
+
+    /**
+     * Tests some incorrect not expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badNot() throws Exception {
+        assert badTestMethod("x!;");
+        assert badTestMethod("!if;");
+    }
+
+    /**
+     * Tests some incorrect Incr and Decr expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badIncrDecr() throws Exception {
+        assert badTestMethod("int x = --;");
+        assert badTestMethod("--;");
+        assert badTestMethod("y----------------------x;");
+        assert badTestMethod("int x = ++;");
+        assert badTestMethod("++;");
+        assert badTestMethod("y++++++++++++++++++++++x;");
+    }
+
+    /**
+     * Tests some incorrect VarExpr expressions
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void badVarExpr() throws Exception {
+        assert badTestMethod("a.b.c.d.e.g;");
+        assert badTestMethod("x[] = 3;");
+        assert badTestMethod("[3];");
+        assert badTestMethod("[3]x;");
+        assert badTestMethod("3.3;");
+        assert badTestMethod("x[3;");
+    }
+
+
 
 
 
