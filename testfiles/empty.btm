@@ -1,6 +1,10 @@
- class Main {
-    String x;
-    int y = 5;
-    Boolean[] z;
-    int[] a = b;
- }
+class Main{
+    int method () {
+        if( 3 == 4 ){
+            int x =4;
+        }
+        else{
+            int x=4;
+        }
+    }
+}

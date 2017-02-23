@@ -196,23 +196,151 @@ public class ParserTest
                 "}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(1, stmtList.getSize());
-        assertEquals("boolean", stmtList.get(0));
-
-
-        //this.fieldTest("boolean", "flag", true, stmtList.get(0));
+        DeclStmt statement = (DeclStmt) stmtList.get(0);
+        assertEquals("boolean", statement.getType());
+        assertEquals("flag", statement.getName());
+        assertNotNull(statement.getInit());
 
     }
 
     @Test
     public void arrayDeclStmt() throws Exception{
-        String program = "int[] method () { boolean flag = true; }";
+        String program = "class Main{int method () { boolean[] flag = true; }}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(1, stmtList.getSize());
-        this.fieldTest("boolean", "flag", true, (Field)stmtList.get(0));
-
+        DeclStmt statement = (DeclStmt) stmtList.get(0);
+        assertEquals("boolean[]", statement.getType());
+        assertEquals("flag", statement.getName());
+        assertNotNull(statement.getInit());
     }
 
 
+    @Test
+    public void ifWithElse() throws Exception{
+        String program = "class Main{int method () { if(true) break; else return; }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(1, stmtList.getSize());
+        IfStmt statement = (IfStmt) stmtList.get(0);
+        assertEquals("true", ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
+        assert statement.getThenStmt() instanceof BreakStmt;
+        assert statement.getElseStmt() instanceof ReturnStmt;
+    }
+
+    @Test
+    public void ifNoElse() throws Exception{
+        String program = "class Main{int method () { if(true) break; return; }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(2, stmtList.getSize());
+        IfStmt statement = (IfStmt) stmtList.get(0);
+        assertEquals("true", ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
+        assert statement.getThenStmt() instanceof BreakStmt;
+        assert stmtList.get(1) instanceof ReturnStmt;
+    }
+
+    @Test
+    public void whileAndBreakStatement() throws Exception{
+        String program = "class Main{int method () { while(true) break; }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(1, stmtList.getSize());
+        WhileStmt statement = (WhileStmt) stmtList.get(0);
+        assertEquals("true", ((ConstBooleanExpr) statement.getPredExpr()).getConstant());
+        assert statement.getBodyStmt() instanceof BreakStmt;
+    }
+
+    @Test
+    public void forStatement() throws Exception{
+        String[] strings = {"for(;;){}","for(a;;){}","for(;a;){}","for(a;a;){}"
+                            ,"for(;;a){}","for(a;;a){}","for(;a;a){}","for(a;a;a){}"};
+        for(int i = 0; i< 8;i++) {
+            String program = "class Main{int method () {"+strings[i]+"}}";
+            StmtList stmtList = this.getMethodBody(0, 0, program);
+            assertEquals(1, stmtList.getSize());
+            ForStmt statement = (ForStmt) stmtList.get(0);
+            if(i%2==0){
+                assertNull(statement.getInitExpr());
+            }
+            else{
+                assertEquals("a",((VarExpr)statement.getInitExpr()).getName());
+            }
+            if(i/2%2==0){
+                assertNull(statement.getPredExpr());
+            }
+            else{
+                assertEquals("a",((VarExpr)statement.getPredExpr()).getName());
+            }
+            if(i<4){
+                assertNull(statement.getUpdateExpr());
+            }
+            else{
+                assertEquals("a",((VarExpr)statement.getUpdateExpr()).getName());
+            }
+        }
+    }
+
+    @Test
+    public void returnStatement() throws Exception{
+        String program = "class Main{int method () { return; return 7; }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(2, stmtList.getSize());
+        assert stmtList.get(0) instanceof ReturnStmt;
+        ReturnStmt stmt2 = (ReturnStmt) stmtList.get(1);
+        assertEquals("7", ((ConstIntExpr) stmt2.getExpr()).getConstant());
+    }
+
+    @Test
+    public void emptyBlockStatment() throws Exception{
+        String program = "class Main{int method () { {} }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(1, stmtList.getSize());
+        BlockStmt stmt = (BlockStmt) stmtList.get(0);
+        assertEquals(0,stmt.getStmtList().getSize());
+    }
+
+    @Test
+    public void assignExpr() throws Exception{
+        String program = "class Main{int method () { this.a = 4; a[3]=4; }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(2, stmtList.getSize());
+        AssignExpr stmt1 = (AssignExpr) ((ExprStmt)stmtList.get(0)).getExpr();
+        ArrayAssignExpr stmt2 = (ArrayAssignExpr) ((ExprStmt)stmtList.get(1)).getExpr();
+        assertEquals("a", stmt1.getName());
+        assertEquals("4", ((ConstIntExpr)stmt1.getExpr()).getConstant());
+        assertEquals("this", stmt1.getRefName());
+        assertEquals("a", stmt2.getName());
+        assertEquals("4", ((ConstIntExpr)stmt2.getExpr()).getConstant());
+        assertEquals("3", ((ConstIntExpr)stmt2.getIndex()).getConstant());
+    }
+
+    @Test
+    public void dispatchExpr() throws Exception{
+        String program = "class Main{int method () { a.b().c(7); d.e(x,y); }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(2, stmtList.getSize());
+        DispatchExpr expr1 = (DispatchExpr) ((ExprStmt)stmtList.get(0)).getExpr();
+        DispatchExpr expr2 = (DispatchExpr) ((ExprStmt)stmtList.get(1)).getExpr();
+        assertEquals("c",expr1.getMethodName());
+        assertEquals(1,expr1.getActualList().getSize());
+        assertEquals("7",((ConstIntExpr)expr1.getActualList().get(0)).getConstant());
+        //a.b()
+        DispatchExpr expr3 = (DispatchExpr) expr1.getRefExpr();
+        assertEquals("b",expr3.getMethodName());
+        assertEquals(0,expr3.getActualList().getSize());
+        assertEquals("a",((VarExpr)expr3.getRefExpr()).getName());
+        assertEquals("e",expr2.getMethodName());
+        assertEquals(2,expr2.getActualList().getSize());
+        assertEquals("d",((VarExpr)expr2.getRefExpr()).getName());
+    }
+    @Test
+    public void newExpr() throws Exception{
+        String program = "class Main{int method () { new a(); new a[3]; }}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(2, stmtList.getSize());
+        NewExpr expr1 = (NewExpr) ((ExprStmt)stmtList.get(0)).getExpr();
+        NewArrayExpr expr2 = (NewArrayExpr) ((ExprStmt)stmtList.get(1)).getExpr();
+        assertEquals("a", expr1.getType());
+        assertEquals("a", expr2.getType());
+        assertEquals("3", ((ConstIntExpr) expr2.getSize()).getConstant());
+    }
 
 
     /* INVALID CODE TESTS ----------------------------------------------------------*/
