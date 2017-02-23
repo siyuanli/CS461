@@ -578,7 +578,7 @@ public class ParserTest
     }
 
 
-    public boolean badTest(String str) throws Exception {
+    private boolean badTest(String str) throws Exception {
         try {
             Parser parser = new Parser(new Lexer(new StringReader(str)));
             parser.parse();
