@@ -577,11 +577,65 @@ public class ParserTest
         assertTrue(thrown);
     }
 
+
+    public boolean badTest(String str) throws Exception {
+        try {
+            Parser parser = new Parser(new Lexer(new StringReader(str)));
+            parser.parse();
+        }
+        catch (RuntimeException e){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean badTestClass(String str) throws Exception{
+        return badTest("class Main{"+str+"}");
+    }
+
+    private boolean badTestMethod(String str) throws Exception{
+        return badTestClass("void main(){"+str+"}");
+    }
+
+
     @Test
     public void emptyFile() throws Exception {
-        Parser parser = new Parser(new Lexer(new StringReader("")));
-        thrown.expect(RuntimeException.class);
-        parser.parse();
+        assert badTest("");
     }
+
+    @Test
+    public void missingSemicolon() throws Exception {
+        assert badTest("class Main{int x = 4 int main(){}}");
+    }
+
+    @Test
+    public void notAClass() throws Exception {
+        assert badTest("interface X{}");
+    }
+
+    @Test
+    public void missingMethodID() throws Exception {
+        assert badTest("class Main{int (int x, int y){x = 4;}}");
+    }
+
+    @Test
+    public void lexError() throws Exception {
+        assert badTest("class Main{~~~~~}");
+        assert badTest("class _Main{}");
+        assert badTest("class 3Main{}");
+        assert badTest("class Main{String x = \"asdf;lhwlwer;");
+        assert badTest("class/*12345M Main {}");
+        assert badTest("class Main{String x =\"123\\4\"}");
+        assert badTest("class Main{int x = 111111111111111111111111111111111111111111;}");
+        String s = "class Main{String x = \"L";
+        for(int i = 0;i <50000;i++){
+            s = s +"O";
+        }
+        s=s+"L\";}";
+        assert badTest(s);
+    }
+
+
+
 
 }
