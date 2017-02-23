@@ -362,13 +362,34 @@ public class ParserTest
     public void castArray() throws Exception{
         String program = "class Main{ " +
                 "int method () { " +
-                    "(int) (); " +
-                    "y instanceof int[]; } " +
+                    "(int) (num); " +
+                    "(int[]) (num); } " +
                 "}";
-//        StmtList stmtList = this.getMethodBody(0, 0, program);
-        //InstanceofExpr expr1 = (InstanceofExpr)this.getExpr(stmtList, 0);
-        //InstanceofExpr expr2 = (InstanceofExpr)this.getExpr(stmtList, 1);
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        CastExpr expr1 = (CastExpr)this.getExpr(stmtList, 0);
+        CastExpr expr2 = (CastExpr)this.getExpr(stmtList, 1);
+        assertEquals("int", expr1.getType());
+        assertEquals("num", ((VarExpr)expr1.getExpr()).getName());
+        assertEquals("int[]", expr2.getType());
+        assertEquals("num", ((VarExpr)expr2.getExpr()).getName());
 
+    }
+
+    @Test
+    public void dataTypes() throws Exception{
+        String program = "class Main{ " +
+                "int method () { " +
+                    "50; " +
+                    "true; " +
+                    "\"hi\"; } " +
+                "}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        ConstIntExpr expr1 = (ConstIntExpr)this.getExpr(stmtList, 0);
+        ConstBooleanExpr expr2 = (ConstBooleanExpr)this.getExpr(stmtList, 1);
+        ConstStringExpr expr3 = (ConstStringExpr)this.getExpr(stmtList, 2);
+        assertEquals("50",  expr1.getConstant());
+        assertEquals("true",  expr2.getConstant());
+        assertEquals("\"hi\"",  expr3.getConstant());
     }
 
     private Expr getExpr(StmtList stmtList, int index) {
