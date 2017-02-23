@@ -611,7 +611,12 @@ public class ParserTest
         assertTrue(thrown);
     }
 
-
+    /**
+     * tests the legality of a given program
+     * @param str the program
+     * @return if the program is legal
+     * @throws Exception if the parser crashed
+     */
     private boolean badTest(String str) throws Exception {
         try {
             Parser parser = new Parser(new Lexer(new StringReader(str)));
@@ -623,34 +628,173 @@ public class ParserTest
         return false;
     }
 
+    /**
+     * tests if the given body of the class is legal
+     * @param str the body of the class
+     * @return if the test fails
+     * @throws Exception if the test fails or the parser crashed
+     */
     private boolean badTestClass(String str) throws Exception{
         return badTest("class Main{"+str+"}");
     }
 
+    /**
+     * tests if the given body of the method is legal
+     * @param str the body of the method
+     * @return if the test fails
+     * @throws Exception the test fails or the parser crashed
+     */
     private boolean badTestMethod(String str) throws Exception{
         return badTestClass("void main(){"+str+"}");
     }
 
-
+    /**
+     * test incorrect syntax for a class
+     * @throws Exception if the test fails or the parser crashed
+     */
     @Test
-    public void emptyFile() throws Exception {
+    public void classErrors() throws Exception {
         assert badTest("");
-    }
-
-    @Test
-    public void missingSemicolon() throws Exception {
-        assert badTest("class Main{int x = 4 int main(){}}");
-    }
-
-    @Test
-    public void notAClass() throws Exception {
+        assert badTest("class Main{");
+        assert badTest("class Main{ class Test{}}");
         assert badTest("interface X{}");
     }
 
+    /**
+     * tests incorrect syntax for a method
+     * @throws Exception if the test fails or the parser crashed
+     */
     @Test
-    public void missingMethodID() throws Exception {
-        assert badTest("class Main{int (int x, int y){x = 4;}}");
+    public void methodErrors() throws Exception{
+        assert badTestClass("int (int x, int y){x = 4;}"); //missing id
+        assert badTestClass("int (int x, int y){ "); //missing closing {
+        assert badTestClass("int (int x int y){x = 4;}"); //missing comma in params
     }
+
+    /**
+     * tests incorrect syntax for a field
+     * @throws Exception if the test fails or the parser crashed
+     */
+    @Test
+    public void fieldError() throws Exception{
+        assert badTestClass("int ;"); //missing id
+        assert badTestClass("[] x ;"); //missing id
+        assert badTestClass("int[] x"); //missing ;
+        assert badTestClass("int[ x;"); //missing closing ]
+        assert badTestClass("int[] x =;"); //missing assignment statement
+        assert badTestClass("int[] x = class Main{};"); //missing assignment statement
+    }
+
+    /**
+     * tests detection of missing semicolon
+     * @throws Exception if the tests fails or the parser crashed
+     */
+    @Test
+    public void missingSemicolon() throws Exception {
+        assert badTestMethod("x + 6");
+    }
+
+    /**
+     * Tests incorrect declaration statement syntax
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void declStmtError() throws Exception{
+        assert badTestMethod("int x = ;");
+        assert badTestMethod("int[ x = 10;");
+        assert badTestMethod("10 = int x;");
+        assert badTestMethod("int x = 3 53 5;");
+        assert badTestMethod("int 10 = 3;");
+        assert badTestMethod("10 int = 2;");
+        assert badTestMethod("int] x = 4;");
+        assert badTestMethod("int y = 5");
+        assert badTestMethod("int z  7;");
+        assert badTestMethod("int p = class Main{};");
+    }
+
+    /**
+     * tests incorrect if statement syntax
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void ifStatementError() throws Exception{
+        assert badTestMethod("if (x) 3");
+        assert badTestMethod("if (x 3;");
+        assert badTestMethod("if x (x) {3;}");
+        assert badTestMethod("if (x) 2 {3;}");
+        assert badTestMethod("Gif (x)  {3;}");
+        assert badTestMethod("if if (x)  {3;}");
+        assert badTestMethod("if (x) 3; else ");
+        assert badTestMethod("if (x) else {x;}");
+        assert badTestMethod("(x) 3; else {x;} ");
+    }
+
+    /**
+     * Tests invalid while loop syntax
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void whileError() throws Exception{
+        assert badTestMethod("while (x) ");
+        assert badTestMethod("x while (x) {}");
+        assert badTestMethod("while (break;) {}");
+        assert badTestMethod( "while (x {}");
+        assert badTestMethod( "whi (x) {}");
+    }
+
+    /**
+     * Tests invalid for loop syntax
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void forError() throws Exception{
+        assert badTestMethod("for (;; {x;}");
+        assert badTestMethod("x for (;;) {x;}");
+        assert badTestMethod("for (;) {x;}");
+        assert badTestMethod("for (;;) x {x;}");
+        assert badTestMethod("for  x (;;) {x;}");
+        assert badTestMethod("for (;;;) {x;}");
+        assert badTestMethod("for (;;) ");
+        assert badTestMethod("fr (;;) {x;}");
+        assert badTestMethod("for ( x= ; 3; 6) {x;};");
+    }
+
+    /**
+     * Tests incorrect syntax of break statements
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void breakError() throws Exception{
+        assert badTestMethod("break");
+        assert badTestMethod("hi break");
+        assert badTestMethod("break kirqlh;");
+    }
+
+    /**
+     * Tests incorrect syntax of block statements
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void blockError() throws Exception{
+        assert badTestMethod("{id anotherId id3;}");
+        assert badTestMethod("{int methodInside(){}}");
+        assert badTestMethod("{");
+        assert badTestMethod("}{");
+    }
+
+    /**
+     * Tests incorrect syntax of expressions.
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void exprError() throws Exception{
+        assert badTestMethod("{(class Main{})}");
+        assert badTestMethod("{(break;)}");
+        assert badTestMethod("{(()}");
+        assert badTestMethod("{(return x;)}");
+    }
+
+
 
     /**
      * Tests some expressions with lexErrors
