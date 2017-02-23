@@ -177,7 +177,7 @@ public class ParserTest
         this.methodTest("int", "method1", noParams, 0, (Method)memberList.get(1));
     }
 
-    /** tests the case of one thing in Class */
+    /** tests the case of one item in Class */
     @Test
     public void singleItemMemberList() throws Exception{
         String program = " class Main{" +
@@ -188,6 +188,30 @@ public class ParserTest
         assertEquals(1, memberList.getSize());
         this.fieldTest("int", "y", true, (Field)memberList.get(0));
     }
+
+    @Test
+    public void noArrayDeclStmt() throws Exception{
+        String program = " class Main{" +
+                " void method () { boolean flag = true; }" +
+                "}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(1, stmtList.getSize());
+        assertEquals("boolean", stmtList.get(0));
+
+
+        //this.fieldTest("boolean", "flag", true, stmtList.get(0));
+
+    }
+
+    @Test
+    public void arrayDeclStmt() throws Exception{
+        String program = "int[] method () { boolean flag = true; }";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(1, stmtList.getSize());
+        this.fieldTest("boolean", "flag", true, (Field)stmtList.get(0));
+
+    }
+
 
 
 
