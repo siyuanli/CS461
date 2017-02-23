@@ -10,7 +10,6 @@ import org.junit.rules.ExpectedException;
 import bantam.util.ErrorHandler;
 
 import java.io.StringReader;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -301,8 +300,8 @@ public class ParserTest
         String program = "class Main{int method () { this.a = 4; a[3]=4; }}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(2, stmtList.getSize());
-        AssignExpr stmt1 = (AssignExpr) ((ExprStmt)stmtList.get(0)).getExpr();
-        ArrayAssignExpr stmt2 = (ArrayAssignExpr) ((ExprStmt)stmtList.get(1)).getExpr();
+        AssignExpr stmt1 = (AssignExpr) this.getExpr(stmtList, 0);
+        ArrayAssignExpr stmt2 = (ArrayAssignExpr) this.getExpr(stmtList, 1);
         assertEquals("a", stmt1.getName());
         assertEquals("4", ((ConstIntExpr)stmt1.getExpr()).getConstant());
         assertEquals("this", stmt1.getRefName());
@@ -316,8 +315,8 @@ public class ParserTest
         String program = "class Main{int method () { a.b().c(7); d.e(x,y); }}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(2, stmtList.getSize());
-        DispatchExpr expr1 = (DispatchExpr) ((ExprStmt)stmtList.get(0)).getExpr();
-        DispatchExpr expr2 = (DispatchExpr) ((ExprStmt)stmtList.get(1)).getExpr();
+        DispatchExpr expr1 = (DispatchExpr) this.getExpr(stmtList, 0);
+        DispatchExpr expr2 = (DispatchExpr) this.getExpr(stmtList, 1);
         assertEquals("c",expr1.getMethodName());
         assertEquals(1,expr1.getActualList().getSize());
         assertEquals("7",((ConstIntExpr)expr1.getActualList().get(0)).getConstant());
@@ -330,13 +329,14 @@ public class ParserTest
         assertEquals(2,expr2.getActualList().getSize());
         assertEquals("d",((VarExpr)expr2.getRefExpr()).getName());
     }
+
     @Test
     public void newExpr() throws Exception{
         String program = "class Main{int method () { new a(); new a[3]; }}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(2, stmtList.getSize());
-        NewExpr expr1 = (NewExpr) ((ExprStmt)stmtList.get(0)).getExpr();
-        NewArrayExpr expr2 = (NewArrayExpr) ((ExprStmt)stmtList.get(1)).getExpr();
+        NewExpr expr1 = (NewExpr) this.getExpr(stmtList, 0);
+        NewArrayExpr expr2 = (NewArrayExpr) this.getExpr(stmtList, 1);
         assertEquals("a", expr1.getType());
         assertEquals("a", expr2.getType());
         assertEquals("3", ((ConstIntExpr) expr2.getSize()).getConstant());
@@ -350,8 +350,8 @@ public class ParserTest
                                 "y instanceof int[]; } " +
                          "}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        InstanceofExpr expr1 = (InstanceofExpr)((ExprStmt)stmtList.get(0)).getExpr();
-        InstanceofExpr expr2 = (InstanceofExpr)((ExprStmt)stmtList.get(1)).getExpr();
+        InstanceofExpr expr1 = (InstanceofExpr)this.getExpr(stmtList, 0);
+        InstanceofExpr expr2 = (InstanceofExpr)this.getExpr(stmtList, 1);
         assertEquals("x", ((VarExpr)expr1.getExpr()).getName());
         assertEquals("int", expr1.getType());
         assertEquals("y", ((VarExpr)expr2.getExpr()).getName());
@@ -365,11 +365,71 @@ public class ParserTest
                     "(int) (); " +
                     "y instanceof int[]; } " +
                 "}";
-        StmtList stmtList = this.getMethodBody(0, 0, program);
-        InstanceofExpr expr1 = (InstanceofExpr)((ExprStmt)stmtList.get(0)).getExpr();
-        InstanceofExpr expr2 = (InstanceofExpr)((ExprStmt)stmtList.get(1)).getExpr();
+//        StmtList stmtList = this.getMethodBody(0, 0, program);
+        //InstanceofExpr expr1 = (InstanceofExpr)this.getExpr(stmtList, 0);
+        //InstanceofExpr expr2 = (InstanceofExpr)this.getExpr(stmtList, 1);
 
     }
+
+    private Expr getExpr(StmtList stmtList, int index) {
+        return ((ExprStmt)stmtList.get(index)).getExpr();
+    }
+
+    @Test
+    public void unaryOperatorsTest() throws Exception{
+        String program = "class Main{int method () { " +
+                "z++;" +
+                "++z;" +
+                "!z;" +
+                "-z;" +
+                "--z;" +
+                "z--;" +
+                "}}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        //UnaryExpr postIncr = this.getExpr()
+
+
+    }
+
+    public void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
+        assertEquals(name, varExpr.getName());
+        if (hasReference){
+            assertNotNull(varExpr.getRef());
+        }
+        else{
+            assertNull(varExpr.getRef());
+        }
+    }
+
+    public void arrayExprTest(String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
+        assertEquals(name, arrayExpr.getName());
+        if (hasReference){
+            assertNotNull(arrayExpr.getRef());
+        }
+        else{
+            assertNull(arrayExpr.getRef());
+        }
+        assertEquals(index, ((ConstIntExpr)arrayExpr.getIndex()).getIntConstant());
+    }
+
+
+    @Test
+    public void varExprTest() throws Exception {
+        String program = "class Main{ int method(){" +
+                "a;" +
+                "this.b;" +
+//                "this.d[2];" +
+//                "c[1];" +
+                "}}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        this.varExprTest("a", false, (VarExpr)this.getExpr(stmtList, 0));
+        this.varExprTest("b", true, (VarExpr)this.getExpr(stmtList, 1));
+//        this.arrayExprTest("d", true, 2, (ArrayExpr)((ExprStmt)stmtList.get(0)).getExpr());
+//        this.arrayExprTest("c", false, 1, (ArrayExpr) ((ExprStmt)stmtList.get(0)).getExpr());
+
+
+    }
+
 
     /* INVALID CODE TESTS ----------------------------------------------------------*/
     /**

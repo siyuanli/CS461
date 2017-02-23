@@ -636,7 +636,7 @@ array_expr
     ID:name LSQBRACE expr:index RSQBRACE
         {: new ArrayExpr(name.getLineNum(), null, name.getAttribute(), index); :}
     /*When there is a reference*/
-    | ID:ref ID:name LSQBRACE expr:index RSQBRACE
+    | ID:ref DOT ID:name LSQBRACE expr:index RSQBRACE
         {: new ArrayExpr(name.getLineNum(), new VarExpr(ref.getLineNum(), null, ref.getAttribute()), name.getAttribute(), index); :}
     ;
 
