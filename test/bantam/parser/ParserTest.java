@@ -143,10 +143,10 @@ public class ParserTest
     /**
      * Tests whether the given field has the specified name, field and whether it has
      * an assignment as well
-     * @param type
-     * @param name
-     * @param hasAssignment
-     * @param field
+     * @param type the type the field should have
+     * @param name the name the field should have
+     * @param hasAssignment if it should have an assignment
+     * @param field the field that it is checking
      */
     private void fieldTest(String type, String name, Boolean hasAssignment, Field field){
         assertEquals(type, field.getType());
@@ -424,7 +424,7 @@ public class ParserTest
      */
     @Test
     public void assignExpr() throws Exception{
-        String program = "class Main{int method () { this.a = 4; a[3]=4; }}";
+        String program = "class Main{int method () { this.a = (4); a[3]=4; }}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         assertEquals(2, stmtList.getSize());
         AssignExpr stmt1 = (AssignExpr) this.getExpr(stmtList, 0);
