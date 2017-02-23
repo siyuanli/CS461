@@ -376,19 +376,82 @@ public class ParserTest
     }
 
     @Test
+    public void binaryCompTest() throws  Exception{
+        String program = "class Main{int method () { " +
+                "a == b;" +
+                "c != d;" +
+                "e < f;" +
+                "g <= h;" +
+                "i > j;" +
+                "k >= l;" +
+                "}}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        BinaryExpr eq = (BinaryExpr)this.getExpr(stmtList, 0);
+        assert eq instanceof BinaryCompEqExpr;
+
+        BinaryExpr ne = (BinaryExpr)this.getExpr(stmtList, 1);
+        assert ne instanceof BinaryCompNeExpr;
+
+        BinaryExpr lt = (BinaryExpr)this.getExpr(stmtList, 2);
+        assert lt instanceof BinaryCompLtExpr;
+
+        BinaryExpr leq = (BinaryExpr)this.getExpr(stmtList, 3);
+        assert leq instanceof BinaryCompLeqExpr;
+
+        BinaryExpr gt = (BinaryExpr)this.getExpr(stmtList, 4);
+        assert gt instanceof BinaryCompGtExpr;
+
+        BinaryExpr geq = (BinaryExpr)this.getExpr(stmtList, 5);
+        assert geq instanceof BinaryCompGeqExpr;
+    }
+
+    @Test
+    public void binaryLogicTest() throws  Exception{
+        String program = "class Main{int method () { " +
+                "a || b;" +
+                "c && d;" +
+                "}}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        BinaryExpr or = (BinaryExpr)this.getExpr(stmtList, 0);
+        assert or instanceof BinaryLogicOrExpr;
+
+        BinaryExpr and = (BinaryExpr)this.getExpr(stmtList, 1);
+        assert and instanceof BinaryLogicAndExpr;
+    }
+
+    @Test
     public void unaryOperatorsTest() throws Exception{
         String program = "class Main{int method () { " +
                 "z++;" +
                 "++z;" +
                 "!z;" +
                 "-z;" +
-                "--z;" +
                 "z--;" +
+                "--z;" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        //UnaryExpr postIncr = this.getExpr()
 
+        UnaryExpr postIncr = (UnaryExpr)this.getExpr(stmtList, 0);
+        assert postIncr instanceof UnaryIncrExpr;
+        assertEquals(true, postIncr.isPostfix());
 
+        UnaryExpr preIncr = (UnaryExpr)this.getExpr(stmtList, 1);
+        assert preIncr instanceof UnaryIncrExpr;
+        assertEquals(false, preIncr.isPostfix());
+
+        UnaryExpr not = (UnaryExpr)this.getExpr(stmtList, 2);
+        assert not instanceof UnaryNotExpr;
+
+        UnaryExpr unaryMinus = (UnaryExpr)this.getExpr(stmtList, 3);
+        assert unaryMinus instanceof UnaryNegExpr;
+
+        UnaryExpr postDecr = (UnaryExpr)this.getExpr(stmtList, 4);
+        assert postDecr instanceof UnaryDecrExpr;
+        assertEquals(true, postDecr.isPostfix());
+
+        UnaryExpr preDecr = (UnaryExpr)this.getExpr(stmtList, 5);
+        assert preDecr instanceof UnaryDecrExpr;
+        assertEquals(false, preDecr.isPostfix());
     }
 
     public void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
