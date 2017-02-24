@@ -383,6 +383,7 @@ public class Main {
                 MainMainVisitor visitor = new MainMainVisitor();
                 System.out.println("program has Main class with main method: "+
                         visitor.hasMain((Program) result.value));
+                System.exit(1);
             }
             if(stringConstVisitor){
                 StringConstantsVisitor visitor = new StringConstantsVisitor();
@@ -391,6 +392,7 @@ public class Main {
                 for(Map.Entry<String,String> entry: map.entrySet()){
                     System.out.println(entry.getKey()+" : "+entry.getValue());
                 }
+                System.exit(1);
             }
             if(varVisitor){
                 NumLocalVarsVisitor visitor = new NumLocalVarsVisitor();
@@ -399,6 +401,7 @@ public class Main {
                 for(Map.Entry<String,Integer> entry: map.entrySet()){
                     System.out.println(entry.getKey()+" : "+entry.getValue());
                 }
+                System.exit(1);
             }
             if (stopAfterParsing) {
                 // if stopAfterParsing==true, then print AST and exit
