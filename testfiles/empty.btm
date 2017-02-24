@@ -3,12 +3,15 @@ class Empty{
     void main(){}
 }
 
-class test {
+class Main {
     int main;
     int main = 8;
     void mexico(){}
     int main() {}
+    void main(int x) {}
+    int main(int x) {}
 }
 class Main{
-    void main() {}
+    //void main() {}
 }
+

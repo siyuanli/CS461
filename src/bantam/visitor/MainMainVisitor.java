@@ -53,7 +53,8 @@ public class MainMainVisitor extends Visitor {
     public Object visit(Method node) {
         boolean nameMain = node.getName().toLowerCase().equals("main");
         boolean typeVoid = node.getReturnType().toLowerCase().equals("void");
-        if (nameMain && typeVoid){
+        boolean noParams = node.getFormalList().getSize() == 0;
+        if (nameMain && typeVoid && noParams){
             return true;
         }
         return false;
