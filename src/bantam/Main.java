@@ -38,6 +38,7 @@ import bantam.codegenjvm.JVMCodeGenerator;
 import bantam.codegenmips.MipsCodeGenerator;
 import bantam.codegenx86.X86CodeGenerator;
 import bantam.interp.Interpreter;
+import bantam.visitor.MainMainVisitor;
 import java_cup.runtime.Symbol;
 import bantam.lexer.Lexer;
 import bantam.opt.Optimizer;
@@ -384,7 +385,7 @@ public class Main {
                 System.out.println("program has Main class with main method: "+
                         visitor.hasMain((Program) result.value));
                 System.exit(1);
-            }
+            }/*
             if(stringConstVisitor){
                 StringConstantsVisitor visitor = new StringConstantsVisitor();
                 Map<String,String> map = visitor.getStringConstants((Program) result.value);
@@ -402,7 +403,7 @@ public class Main {
                     System.out.println(entry.getKey()+" : "+entry.getValue());
                 }
                 System.exit(1);
-            }
+            }*/
             if (stopAfterParsing) {
                 // if stopAfterParsing==true, then print AST and exit
                 PrintVisitor visitor = new PrintVisitor(/*start at indent 0*/0,

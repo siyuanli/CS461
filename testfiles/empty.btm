@@ -1,23 +1,14 @@
-class Main {
-    void main() {
-	int[] array = new int[10];
-	for (i = 0; i < 100; ++i) {
-	    array[0]--;
-	    --array[1];
-	    print(++i);
-	    print(n++);
-	    if (i >= 49) {
-		int c = 4;
-		break;
-	    }
-	}
-	(new TextIO()).putInt(array[0]).putString("\n");
-	(new TextIO()).putInt(array[1]).putString("\n");
-	return;
-    }
+class Empty{
+    void test(){}
+    void main(){}
+}
 
-    void print(int n) {
-	(new TextIO()).putInt(n).putString("\n");
-	return;
-    }
+class test {
+    int main;
+    int main = 8;
+    void mexico(){}
+    int main() {}
+}
+class Main{
+    void main() {}
 }
