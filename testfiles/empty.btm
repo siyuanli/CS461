@@ -1,17 +1,17 @@
 class Empty{
-    void test(){}
-    void main(){}
-}
+    String const = "StringThing";
+    void main(){
+        int x = "hey dale";
+        "abc"+"def";
+    }
 
-class Main {
-    int main;
-    int main = 8;
-    void mexico(){}
-    int main() {}
-    void main(int x) {}
-    int main(int x) {}
+    void void(){
+        "hey dale";
+        array["things"] = new thing["other things"];
+        for("why";"am I";"doing this"){
+            return "somethign";
+        }
+        !"a thing";
+        int x = 3%"modulus";
+    }
 }
-class Main{
-    //void main() {}
-}
-

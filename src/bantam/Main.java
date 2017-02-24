@@ -46,7 +46,7 @@ import bantam.parser.Parser;
 import bantam.semant.SemanticAnalyzer;
 import bantam.treedrawer.Drawer;
 import bantam.util.ClassTreeNode;
-import bantam.visitor.PrintVisitor;
+import bantam.visitor.*;
 
 import java.util.Map;
 
@@ -385,7 +385,7 @@ public class Main {
                 System.out.println("program has Main class with main method: "+
                         visitor.hasMain((Program) result.value));
                 System.exit(1);
-            }/*
+            }
             if(stringConstVisitor){
                 StringConstantsVisitor visitor = new StringConstantsVisitor();
                 Map<String,String> map = visitor.getStringConstants((Program) result.value);
@@ -394,7 +394,7 @@ public class Main {
                     System.out.println(entry.getKey()+" : "+entry.getValue());
                 }
                 System.exit(1);
-            }
+            }/*
             if(varVisitor){
                 NumLocalVarsVisitor visitor = new NumLocalVarsVisitor();
                 Map<String,Integer> map = visitor.getNumLocalVars((Program) result.value);
