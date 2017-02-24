@@ -27,6 +27,11 @@ package bantam;/* Bantam Java Compiler and Language Toolset.
    Changes were added by DJS to permit drawing of the AST using
    the drawer package.
 */
+/*
+ * We (Siyuan Li, Phoebe Hughes, and Joseph Malionek) added some extra flags to this
+ * compiler to allow parse trees to be used by some specific visitors.
+ * (specifically, -lv, -sc, and -mm)
+ */
 
 import bantam.ast.Program;
 import bantam.codegenjvm.JVMCodeGenerator;
@@ -41,6 +46,8 @@ import bantam.semant.SemanticAnalyzer;
 import bantam.treedrawer.Drawer;
 import bantam.util.ClassTreeNode;
 import bantam.visitor.PrintVisitor;
+
+import java.util.Map;
 
 /**
  * bantam.Main class that runs the Bantam compiler
@@ -66,6 +73,12 @@ public class Main {
      * intermediate representation of the phase before exiting
      */
     private static boolean stopAfterLexing, stopAfterParsing, stopAfterSemant, stopAfterOpt;
+
+    /**
+     *
+     */
+    private static boolean mainMainVisitor, stringConstVisitor, varVisitor;
+
     /**
      * Debugging flags for each phase of the compiler
      */
@@ -107,7 +120,8 @@ public class Main {
     private static void showHelp() {
         System.err.println("Usage: bantamc [-h] [-o <output_file>] [-t <architecture>]");
         System.err.println("               [-gc] [-int] [-bantam.opt <num>] [-dt] [-dl] [-dp] [-ds]");
-        System.err.println("               [-di] [-do] [-dc] [-sl] [-sp] [-ss] [-so] <input_files>");
+        System.err.println("               [-di] [-do] [-dc] [-sl] [-sp] [-ss] [-so] ");
+        System.err.println("               [-sc] [-mm] [lv] <input files>");
         System.err.println("man bantamc for more details");
         System.exit(1);
     }
@@ -286,6 +300,20 @@ public class Main {
 		        */
             }
 
+            // if one of these, then we are using visitors on the parse tree
+            //-mm for MainMainVisitor
+            else if (args[i].equals("-mm")){
+                mainMainVisitor = true;
+            }
+            //-sc for StringConstantsVisitor
+            else if (args[i].equals("-sc")){
+                stringConstVisitor = true;
+            }
+            //-lv for NumLocalVarsVisitor
+            else if (args[i].equals("-lv")){
+                varVisitor = true;
+            }
+
             // any other arguments must be input files
 
             // check if argument ends in .btm
@@ -350,6 +378,27 @@ public class Main {
                 System.out.println(e.getMessage());
                 parser.getErrorHandler().printErrors();
                 System.exit(1);
+            }
+            if(mainMainVisitor){
+                MainMainVisitor visitor = new MainMainVisitor();
+                System.out.println("program has Main class with main method: "+
+                        visitor.hasMain((Program) result.value));
+            }
+            if(stringConstVisitor){
+                StringConstantsVisitor visitor = new StringConstantsVisitor();
+                Map<String,String> map = visitor.getStringConstants((Program) result.value);
+                System.out.println("The string constants in the program are:");
+                for(Map.Entry<String,String> entry: map.entrySet()){
+                    System.out.println(entry.getKey()+" : "+entry.getValue());
+                }
+            }
+            if(varVisitor){
+                NumLocalVarsVisitor visitor = new NumLocalVarsVisitor();
+                Map<String,Integer> map = visitor.getNumLocalVars((Program) result.value);
+                System.out.println("The local variables in the program are:");
+                for(Map.Entry<String,Integer> entry: map.entrySet()){
+                    System.out.println(entry.getKey()+" : "+entry.getValue());
+                }
             }
             if (stopAfterParsing) {
                 // if stopAfterParsing==true, then print AST and exit
