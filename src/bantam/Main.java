@@ -394,7 +394,7 @@ public class Main {
                     System.out.println(entry.getKey()+" : "+entry.getValue());
                 }
                 System.exit(1);
-            }/*
+            }
             if(varVisitor){
                 NumLocalVarsVisitor visitor = new NumLocalVarsVisitor();
                 Map<String,Integer> map = visitor.getNumLocalVars((Program) result.value);
@@ -403,7 +403,7 @@ public class Main {
                     System.out.println(entry.getKey()+" : "+entry.getValue());
                 }
                 System.exit(1);
-            }*/
+            }
             if (stopAfterParsing) {
                 // if stopAfterParsing==true, then print AST and exit
                 PrintVisitor visitor = new PrintVisitor(/*start at indent 0*/0,

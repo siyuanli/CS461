@@ -5,13 +5,45 @@ class Empty{
         "abc"+"def";
     }
 
-    void void(){
+    void void(void l, int w, String int){
         "hey dale";
         array["things"] = new thing["other things"];
         for("why";"am I";"doing this"){
+            String p = "hi";
             return "somethign";
         }
+
         !"a thing";
-        int x = 3%"modulus";
+
+        {int x = 3%"modulus";
+        int y = 3%"modulus";
+        int e = 3%"modulus";}
+
+        while (x = 6){
+            int s = 3%"modulus";
+        }
+
+        break;
+
+        return null;
+
+        if ( x == 10){
+            int[] y = 6;
+        }
+
+        {{int x = 3%"modulus";}}
+
     }
+}
+
+class Main{
+
+    void testing(int x){
+        int e = 4;
+    }
+
+     void test(int x, int h){
+         int e = 4;
+     }
+
 }
