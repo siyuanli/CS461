@@ -1,3 +1,10 @@
+/*
+ * File: NumLocalVarsVisitor.java
+ * CS461 Project 2.5
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 2/28/17
+ */
+
 package bantam.visitor;
 
 import bantam.ast.*;
@@ -7,9 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Phoebe Hughes on 2/27/2017.
- */
+
 public class NumLocalVarsVisitor extends Visitor {
 
     private Map<String, Integer> localVars;
