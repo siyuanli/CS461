@@ -38,7 +38,7 @@ class Empty{
 
 class Main{
 
-    void testing(int x){
+    void phoebe(int x){
         int e = 4;
     }
 
