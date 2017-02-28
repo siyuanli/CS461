@@ -31,12 +31,12 @@
 */
 
 /* code below is copied to the file containing the bantam.parser */
-/*
- * File: ParserTest.java
- * CS461 Project 2
- * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek,
- * Date: 2/23/17
- */
+
+//File: ParserTest.java
+//CS461 Project 2
+//Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek,
+//Date: 2/23/17
+
 package bantam.parser;
 
 /* import the AST and utility class files */
