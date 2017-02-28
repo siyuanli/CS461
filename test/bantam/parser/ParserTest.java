@@ -43,71 +43,6 @@ public class ParserTest
          you might want to initialize some fields here. */
     }
 
-    /**
-     * Helper method to get the root of a parse tree of the given string
-     * @param program the string to be parsed
-     * @return the root of the parse tree
-     * @throws Exception if something bad happened while parsing
-     */
-    private Symbol getParseTreeRoot(String program) throws Exception{
-        Parser parser = new Parser(new Lexer(new StringReader(program)));
-        Symbol result = parser.parse();
-        assertEquals(0, parser.getErrorHandler().getErrorList().size());
-        assertNotNull(result);
-        return result;
-    }
-
-    /**
-     * Helper method to get the body of a specific class from a java program
-     * @param classIndex the index of the class in the program
-     * @param program the string containing the java program
-     * @return the list of classes
-     * @throws Exception if something bad happened while parsing
-     */
-    private MemberList getClassBody(int classIndex, String program) throws Exception{
-        Symbol result = this.getParseTreeRoot(program);
-        ClassList classes = ((Program) result.value).getClassList();
-        Class_ mainClass = (Class_) classes.get(classIndex);
-        return mainClass.getMemberList();
-    }
-
-    /**
-     * Gets the body of a specific method, given a java program,
-     * the index of the class in the program, and the index of the method in the class
-     * @param classIndex the index of the class
-     * @param memberIndex the index of the member
-     * @param program the string containing the Java program
-     * @return the body of the method
-     * @throws Exception if something bad happened while parsing
-     */
-    private StmtList getMethodBody(
-            int classIndex, int memberIndex, String program) throws Exception{
-        MemberList memberList = this.getClassBody(classIndex, program);
-        Method method = (Method)memberList.get(memberIndex);
-        return method.getStmtList();
-    }
-
-    /**
-     * Returns the expression of the expression statement at the given index in the
-     * statement list
-     * @param stmtList the statement list
-     * @param index the index of the ExprStmt
-     * @return the Expression
-     */
-    private Expr getExpr(StmtList stmtList, int index) {
-        return ((ExprStmt)stmtList.get(index)).getExpr();
-    }
-
-    /**
-     * tests whether a class is empty and has the given name
-     * @param mainClass the class
-     * @param className the name of the class
-     */
-    private void testClass(Class_ mainClass, String className ){
-        assertEquals(className, mainClass.getName());
-        assertEquals(0, mainClass.getMemberList().getSize());
-    }
-
     /** tests the case of a Main class with no members */
     @Test
     public void emptyMainClassTest() throws Exception {
@@ -140,26 +75,6 @@ public class ParserTest
         assertEquals(mainClass.getParent(), "Test");
     }
 
-    /**
-     * Tests whether the given field has the specified name, field and whether it has
-     * an assignment as well
-     * @param type the type the field should have
-     * @param name the name the field should have
-     * @param hasAssignment if it should have an assignment
-     * @param field the field that it is checking
-     */
-    private void fieldTest(String type, String name, Boolean hasAssignment, Field field){
-        assertEquals(type, field.getType());
-        assertEquals(name, field.getName());
-        if (hasAssignment) {
-            assertNotNull(hasAssignment.toString(), field.getInit());
-        }
-        else{
-            assertNull(hasAssignment.toString(), field.getInit());
-        }
-
-    }
-
     /** tests the case of a Main class with no members */
     @Test
     public void fieldsTest() throws Exception {
@@ -180,39 +95,6 @@ public class ParserTest
                                                     (Field)memberList.get(2));
         this.fieldTest("int[]", "a", true,
                                                     (Field)memberList.get(3));
-    }
-
-    /**
-     * Tests whether the given FormalList has the given properties
-     * @param formalProperties The doubly-indexed array of properties
-     * @param formalList The formal list
-     */
-    private void formalListTest(String[][] formalProperties, FormalList formalList){
-        assertEquals(formalProperties.length, formalList.getSize());
-        for (int i =0; i< formalList.getSize(); i++){
-            Formal formal = (Formal) formalList.get(i);
-            assertEquals(formalProperties[i][0], formal.getType());
-            assertEquals(formalProperties[i][1], formal.getName());
-            i++;
-        }
-    }
-
-    /**
-     * Tests whether a method has the given return type, name, parameters, and number of
-     * statements in its body
-     * @param returnType the return type
-     * @param name the name
-     * @param params the parameters
-     * @param stmtListSize the size of the body
-     * @param method the method object
-     */
-    private void methodTest(String returnType, String name,
-                            String[][] params, int stmtListSize, Method method ){
-        assertEquals(returnType, method.getReturnType());
-        assertEquals(name, method.getName());
-        this.formalListTest(params, method.getFormalList());
-        assertEquals(stmtListSize, method.getStmtList().getSize());
-
     }
 
     /** tests the case of a Method */
@@ -246,7 +128,6 @@ public class ParserTest
                                                     (Method)memberList.get(5));
     }
 
-
     /** test the case of both Method and Field  */
     @Test
     public void methodsFieldTest() throws Exception{
@@ -263,6 +144,7 @@ public class ParserTest
         this.methodTest("int", "method1", noParams, 0,
                                                     (Method)memberList.get(1));
     }
+
 
     /** tests the case of one item in Class */
     @Test
@@ -663,43 +545,6 @@ public class ParserTest
     }
 
     /**
-     * Tests if the name and if the var has a reference matches the properties of the
-     * VarExpr
-     * @param name the name the VarExpr should have
-     * @param hasReference if the VarExpr should have a reference
-     * @param varExpr the VarExpr being tested
-     */
-    private void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
-        assertEquals(name, varExpr.getName());
-        if (hasReference){
-            assertNotNull(varExpr.getRef());
-        }
-        else{
-            assertNull(varExpr.getRef());
-        }
-    }
-
-    /**
-     * tests if the name, index, and if the array has a reference matches the ArrayExpr
-     * @param name the name the ArrayExpr should have
-     * @param hasReference if the ArrayExpr should have a reference
-     * @param index the index the ArrayExpr should have
-     * @param arrayExpr the ArrayExpr being tested
-     */
-    private void arrayExprTest(
-            String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
-        assertEquals(name, arrayExpr.getName());
-        if (hasReference){
-            assertNotNull(arrayExpr.getRef());
-        }
-        else{
-            assertNull(arrayExpr.getRef());
-        }
-        assertEquals(index, ((ConstIntExpr)arrayExpr.getIndex()).getIntConstant());
-    }
-
-
-    /**
      * test VarExpr and ArrayExprs
      * @throws Exception if the test fails
      */
@@ -726,6 +571,8 @@ public class ParserTest
 
 
     /* INVALID CODE TESTS ----------------------------------------------------------*/
+
+
     /**
      * tests the case of a missing right brace at end of a class def
      * using an ExpectedException Rule
@@ -737,7 +584,6 @@ public class ParserTest
         thrown.expectMessage("Bantam parser found errors.");
         parser.parse();
     }
-
     /**
      * tests the case of a missing right brace at end of a class def.
      * This version is like unmatchedLeftBraceTest1 except that it
@@ -758,43 +604,6 @@ public class ParserTest
             }
         }
         assertTrue(thrown);
-    }
-
-    /**
-     * tests the legality of a given program
-     * @param str the program
-     * @return if the program is legal
-     * @throws Exception if the parser crashed
-     */
-    private boolean badTest(String str) throws Exception {
-        try {
-            Parser parser = new Parser(new Lexer(new StringReader(str)));
-            parser.parse();
-        }
-        catch (RuntimeException e){
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * tests if the given body of the class is legal
-     * @param str the body of the class
-     * @return if the test fails
-     * @throws Exception if the test fails or the parser crashed
-     */
-    private boolean badTestClass(String str) throws Exception{
-        return badTest("class Main{"+str+"}");
-    }
-
-    /**
-     * tests if the given body of the method is legal
-     * @param str the body of the method
-     * @return if the test fails
-     * @throws Exception the test fails or the parser crashed
-     */
-    private boolean badTestMethod(String str) throws Exception{
-        return badTestClass("void main(){"+str+"}");
     }
 
     /**
@@ -943,8 +752,6 @@ public class ParserTest
         assert badTestMethod("{(return x;)}");
     }
 
-
-
     /**
      * Tests some expressions with lexErrors
      * @throws Exception if the test fails
@@ -980,6 +787,8 @@ public class ParserTest
         assert badTestMethod("a[]=4;");
         assert badTestMethod("a[3]=a[];");
     }
+
+
 
     /**
      * Tests some incorrect dispatch expressions
@@ -1120,6 +929,199 @@ public class ParserTest
         assert badTestMethod("[3]x;");
         assert badTestMethod("3.3;");
         assert badTestMethod("x[3;");
+    }
+
+    /**
+     * tests the legality of a given program
+     * @param str the program
+     * @return if the program is legal
+     * @throws Exception if the parser crashed
+     */
+    private boolean badTest(String str) throws Exception {
+        try {
+            Parser parser = new Parser(new Lexer(new StringReader(str)));
+            parser.parse();
+        }
+        catch (RuntimeException e){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * tests if the given body of the class is legal
+     * @param str the body of the class
+     * @return if the test fails
+     * @throws Exception if the test fails or the parser crashed
+     */
+    private boolean badTestClass(String str) throws Exception{
+        return badTest("class Main{"+str+"}");
+    }
+
+    /**
+     * tests if the given body of the method is legal
+     * @param str the body of the method
+     * @return if the test fails
+     * @throws Exception the test fails or the parser crashed
+     */
+    private boolean badTestMethod(String str) throws Exception{
+        return badTestClass("void main(){"+str+"}");
+    }
+
+    /**
+     * Helper method to get the root of a parse tree of the given string
+     * @param program the string to be parsed
+     * @return the root of the parse tree
+     * @throws Exception if something bad happened while parsing
+     */
+    private Symbol getParseTreeRoot(String program) throws Exception{
+        Parser parser = new Parser(new Lexer(new StringReader(program)));
+        Symbol result = parser.parse();
+        assertEquals(0, parser.getErrorHandler().getErrorList().size());
+        assertNotNull(result);
+        return result;
+    }
+
+    /**
+     * Helper method to get the body of a specific class from a java program
+     * @param classIndex the index of the class in the program
+     * @param program the string containing the java program
+     * @return the list of classes
+     * @throws Exception if something bad happened while parsing
+     */
+    private MemberList getClassBody(int classIndex, String program) throws Exception{
+        Symbol result = this.getParseTreeRoot(program);
+        ClassList classes = ((Program) result.value).getClassList();
+        Class_ mainClass = (Class_) classes.get(classIndex);
+        return mainClass.getMemberList();
+    }
+
+    /**
+     * Gets the body of a specific method, given a java program,
+     * the index of the class in the program, and the index of the method in the class
+     * @param classIndex the index of the class
+     * @param memberIndex the index of the member
+     * @param program the string containing the Java program
+     * @return the body of the method
+     * @throws Exception if something bad happened while parsing
+     */
+    private StmtList getMethodBody(
+            int classIndex, int memberIndex, String program) throws Exception{
+        MemberList memberList = this.getClassBody(classIndex, program);
+        Method method = (Method)memberList.get(memberIndex);
+        return method.getStmtList();
+    }
+
+    /**
+     * Returns the expression of the expression statement at the given index in the
+     * statement list
+     * @param stmtList the statement list
+     * @param index the index of the ExprStmt
+     * @return the Expression
+     */
+    private Expr getExpr(StmtList stmtList, int index) {
+        return ((ExprStmt)stmtList.get(index)).getExpr();
+    }
+
+    /**
+     * tests whether a class is empty and has the given name
+     * @param mainClass the class
+     * @param className the name of the class
+     */
+    private void testClass(Class_ mainClass, String className ){
+        assertEquals(className, mainClass.getName());
+        assertEquals(0, mainClass.getMemberList().getSize());
+    }
+
+
+    /**
+     * Tests whether the given FormalList has the given properties
+     * @param formalProperties The doubly-indexed array of properties
+     * @param formalList The formal list
+     */
+    private void formalListTest(String[][] formalProperties, FormalList formalList){
+        assertEquals(formalProperties.length, formalList.getSize());
+        for (int i =0; i< formalList.getSize(); i++){
+            Formal formal = (Formal) formalList.get(i);
+            assertEquals(formalProperties[i][0], formal.getType());
+            assertEquals(formalProperties[i][1], formal.getName());
+            i++;
+        }
+    }
+
+    /**
+     * Tests whether a method has the given return type, name, parameters, and number of
+     * statements in its body
+     * @param returnType the return type
+     * @param name the name
+     * @param params the parameters
+     * @param stmtListSize the size of the body
+     * @param method the method object
+     */
+    private void methodTest(String returnType, String name,
+                            String[][] params, int stmtListSize, Method method ){
+        assertEquals(returnType, method.getReturnType());
+        assertEquals(name, method.getName());
+        this.formalListTest(params, method.getFormalList());
+        assertEquals(stmtListSize, method.getStmtList().getSize());
+
+    }
+
+
+    /**
+     * Tests whether the given field has the specified name, field and whether it has
+     * an assignment as well
+     * @param type the type the field should have
+     * @param name the name the field should have
+     * @param hasAssignment if it should have an assignment
+     * @param field the field that it is checking
+     */
+    private void fieldTest(String type, String name, Boolean hasAssignment, Field field){
+        assertEquals(type, field.getType());
+        assertEquals(name, field.getName());
+        if (hasAssignment) {
+            assertNotNull(hasAssignment.toString(), field.getInit());
+        }
+        else{
+            assertNull(hasAssignment.toString(), field.getInit());
+        }
+
+    }
+
+    /**
+     * Tests if the name and if the var has a reference matches the properties of the
+     * VarExpr
+     * @param name the name the VarExpr should have
+     * @param hasReference if the VarExpr should have a reference
+     * @param varExpr the VarExpr being tested
+     */
+    private void varExprTest(String name, Boolean hasReference, VarExpr varExpr){
+        assertEquals(name, varExpr.getName());
+        if (hasReference){
+            assertNotNull(varExpr.getRef());
+        }
+        else{
+            assertNull(varExpr.getRef());
+        }
+    }
+
+    /**
+     * tests if the name, index, and if the array has a reference matches the ArrayExpr
+     * @param name the name the ArrayExpr should have
+     * @param hasReference if the ArrayExpr should have a reference
+     * @param index the index the ArrayExpr should have
+     * @param arrayExpr the ArrayExpr being tested
+     */
+    private void arrayExprTest(
+            String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
+        assertEquals(name, arrayExpr.getName());
+        if (hasReference){
+            assertNotNull(arrayExpr.getRef());
+        }
+        else{
+            assertNull(arrayExpr.getRef());
+        }
+        assertEquals(index, ((ConstIntExpr)arrayExpr.getIndex()).getIntConstant());
     }
 
 }
