@@ -65,7 +65,7 @@ public class MainMainVisitor extends Visitor {
      */
     @Override
     public Object visit(Class_ node) {
-        boolean nameMain = node.getName().toLowerCase().equals("main");
+        boolean nameMain = node.getName().equals("Main");
         if (nameMain){
             return node.getMemberList().accept(this);
         }
@@ -99,7 +99,7 @@ public class MainMainVisitor extends Visitor {
      */
     @Override
     public Object visit(Method node) {
-        boolean nameMain = node.getName().toLowerCase().equals("main");
+        boolean nameMain = node.getName().equals("main");
         boolean typeVoid = node.getReturnType().toLowerCase().equals("void");
         boolean noParams = node.getFormalList().getSize() == 0;
         if (nameMain && typeVoid && noParams){
