@@ -28,6 +28,8 @@ package bantam.semant;
 
 import bantam.ast.*;
 import bantam.util.*;
+import bantam.visitor.MainMainVisitor;
+import bantam.visitor.MemberAdderVisitor;
 
 import java.util.*;
 
@@ -59,6 +61,8 @@ public class SemanticAnalyzer {
 	/** Maximum number of inherited and non-inherited fields that can be defined for any one class */
 	private final int MAX_NUM_FIELDS = 1500;
 
+	private Set<String> disallowedNames;
+
 	/** SemanticAnalyzer constructor
 	 * @param program root of the AST
 	 * @param debug boolean indicating whether debugging is enabled
@@ -66,6 +70,8 @@ public class SemanticAnalyzer {
 	public SemanticAnalyzer(Program program, boolean debug) {
 		this.program = program;
 		this.debug = debug;
+		this.disallowedNames = new HashSet<>(Arrays.asList(
+						new String[]{"null", "void", "super", "this", "boolean", "int"}));
 	}
 
 	/** Analyze the AST checking for semantic errors and annotating the tree
@@ -85,13 +91,100 @@ public class SemanticAnalyzer {
 		// 1 - add built in classes to class tree
 		updateBuiltins();
 
-		// comment out
-		throw new RuntimeException("Semantic analyzer unimplemented");
+		// 2 - build and check the class hierarchy tree
+		buildTree();
+		checkHierarchy();
 
-		// add code below...
+		// 3 - build the environment for each class (adding class members only) and check
+		// that members are declared properly
+		buildEnvironment();
 
-		// uncomment out
-		// return root;
+		// 4 - check that the bantam.Main class and main method are declared properly
+		checkMainMain();
+
+		// 5 - type check each class member
+
+
+
+		return root;
+	}
+
+	private void buildTree() {
+		//puts each classes into hashmap
+		for (ASTNode node: this.program.getClassList()){
+			Class_ classNode = (Class_)node;
+			String className = classNode.getName();
+			ClassTreeNode classTreeNode = new ClassTreeNode(classNode,
+					false, true, this.classMap);
+			this.classMap.put(className, classTreeNode);
+			if (this.disallowedNames.contains(className)){
+				this.errorHandler.register(2, classNode.getFilename(),
+						classNode.getLineNum(), "Reserved word, " + className
+								+ ", cannot be used as a class name.");
+			}
+		}
+		//update parent nodes/descendants
+		for (ClassTreeNode node: this.classMap.values()){
+			Class_ astNode = node.getASTNode();
+			String parent = astNode.getParent();
+			if (parent!= null) {
+				ClassTreeNode parentTreeNode = this.classMap.get(parent);
+				if (parentTreeNode.isExtendable()) {
+					node.setParent(parentTreeNode);
+				}
+				else{
+					this.errorHandler.register(2, astNode.getFilename(),
+							astNode.getLineNum(), "Cannot extend " + parent);
+				}
+			}
+			else{
+				node.setParent(this.root);
+			}
+		}
+	}
+
+	private void checkHierarchy(){
+		Stack<ClassTreeNode> unchecked = new Stack<>();
+		Set<ClassTreeNode> checked = new HashSet<>();
+
+		unchecked.add(this.root);
+
+		while(!unchecked.empty()){
+			ClassTreeNode popped = unchecked.pop();
+			Class_ astNode = popped.getASTNode();
+
+			if (checked.contains(popped)){
+				this.errorHandler.register(2, astNode.getFilename(),
+						astNode.getLineNum(),
+						"Illegal Tree Structure!");
+				return;
+			}
+			else{
+				checked.add(popped);
+			}
+		}
+	}
+
+	private void buildEnvironment(){
+		MemberAdderVisitor visitor = new MemberAdderVisitor(this.errorHandler,
+				this.disallowedNames);
+		for (ClassTreeNode node: this.classMap.values()){
+			Class_ astClassNode = node.getASTNode();
+			visitor.getSymbolTables(astClassNode, node.getVarSymbolTable(),
+					node.getMethodSymbolTable());
+			node.getVarSymbolTable().setParent(node.getParent().getVarSymbolTable());
+			node.getMethodSymbolTable().setParent(node.getParent().getMethodSymbolTable());
+		}
+	}
+
+	private void checkMainMain(){
+		MainMainVisitor mainMainVisitor = new MainMainVisitor();
+		boolean hasMain = mainMainVisitor.hasMain(this.program);
+		if (!hasMain){
+			this.errorHandler.register(2, "Valid programs must have a "
+					+ "'Main' class with a 'main' method.");
+		}
+
 	}
 
 	/**
