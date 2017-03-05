@@ -329,6 +329,16 @@ public class TypeCheckVisitor extends Visitor {
         Expr refExpr = dispatchExpr.getRefExpr();
         List<String> params = null;
         if (refExpr != null){
+            if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
+                params = ((Pair<String, List<String>>)this.classTreeNode
+                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0))
+                        .getValue();
+            }
+            if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
+                params = ((Pair<String, List<String>>)this.classTreeNode.getParent()
+                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0))
+                        .getValue();
+            }
             refExpr.accept(this);
             String typeReference = refExpr.getExprType();
             ClassTreeNode refNode = this.classTreeNode.getClassMap().get(typeReference);
@@ -348,7 +358,7 @@ public class TypeCheckVisitor extends Visitor {
                     .getValue();
         }
 
-        List<String> actualParams = (List)dispatchExpr.getActualList().accept(this);
+        List<String> actualParams = (List<String>)dispatchExpr.getActualList().accept(this);
 
         if (params != null) {
             if (actualParams.size() != params.size()) {
