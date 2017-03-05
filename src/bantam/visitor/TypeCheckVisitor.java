@@ -103,10 +103,17 @@ public class TypeCheckVisitor extends Visitor{
 
     @Override
     public Object visit(DeclStmt stmt){
+        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         registerErrorIfInvalidType(stmt.getType(),stmt.getLineNum());
         registerErrorIfReservedName(stmt.getName(),stmt.getLineNum());
         stmt.getInit().accept(this);
-        this.classTreeNode.getVarSymbolTable().add(stmt.getName(),stmt.getType());
+        for(int i = varSymbolTable.getCurrScopeLevel();i>0;i--){
+            if(varSymbolTable.peek(stmt.getName(),i)!=null){
+                this.errorHandler.register(2,this.filename,stmt.getLineNum(),
+                        "Variable already declared");
+            }
+        }
+        varSymbolTable.add(stmt.getName(),stmt.getType());
         if(!isAncestorOf(stmt.getType(),stmt.getInit().getExprType())){
             this.errorHandler.register(2, this.filename,stmt.getLineNum(),
                     "Type of variable incompatible with assignment.");
