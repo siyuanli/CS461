@@ -1,6 +1,7 @@
 package bantam.visitor;
 
 import bantam.ast.*;
+import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
 import bantam.util.SymbolTable;
 import javafx.util.Pair;
@@ -14,10 +15,8 @@ import java.util.Set;
  */
 public class MemberAdderVisitor extends Visitor {
 
-    private SymbolTable varSymbolTable;
-    private SymbolTable methodSymbolTable;
+    private ClassTreeNode classTreeNode;
     private ErrorHandler errorHandler;
-    private String filename;
     private Set<String> disallowedNames;
 
     public MemberAdderVisitor(ErrorHandler errorHandler, Set<String> disallowedNames){
@@ -25,53 +24,65 @@ public class MemberAdderVisitor extends Visitor {
         this.disallowedNames = disallowedNames;
     }
 
-    public void getSymbolTables(Class_ classNode, SymbolTable varSymbolTable,
-                                SymbolTable methodSymbolTable){
-        this.varSymbolTable = varSymbolTable;
-        this.varSymbolTable.enterScope();
-
-        this.methodSymbolTable = methodSymbolTable;
-        this.methodSymbolTable.enterScope();
-        this.filename = classNode.getFilename();
-        classNode.accept(this);
+    public void getSymbolTables(ClassTreeNode classTreeNode){
+        this.classTreeNode = classTreeNode;
+        this.classTreeNode.getVarSymbolTable().enterScope();
+        this.classTreeNode.getMethodSymbolTable().enterScope();
+        this.classTreeNode.getASTNode().accept(this);
     }
     
     @Override
     public Object visit(Field node) {
+        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         String name = node.getName();
         int lineNum = node.getLineNum();
-        if (this.varSymbolTable.peek(name) != null) {
-            this.checkIfReservedName(name,lineNum);
-            this.varSymbolTable.add(name, node.getType());
+        this.registerErrorIfInvalidType(node.getType(),node.getLineNum());
+        if (varSymbolTable.peek(name) == null) {
+            this.registerErrorIfReservedName(name,lineNum);
+            varSymbolTable.add(name, node.getType());
         }
         else{
-            errorHandler.register(2, filename, lineNum,"Field already declared." );
+            this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
+                    lineNum,"Field already declared." );
         }
         return null;
     }
     
     @Override
     public Object visit(Method node) {
+        SymbolTable methodSymbolTable = this.classTreeNode.getMethodSymbolTable();
         String name = node.getName();
         int lineNum = node.getLineNum();
-        if (this.methodSymbolTable.peek(name) != null) {
-            checkIfReservedName(name,lineNum );
+        this.registerErrorIfInvalidType(node.getReturnType(),node.getLineNum());
+        if (methodSymbolTable.peek(name) == null) {
+            registerErrorIfReservedName(name,lineNum );
             List<String> paramTypes = (List) node.getFormalList().accept(this);
             Pair<String, List<String>> methodData = new Pair<>(node.getReturnType(), paramTypes);
-            this.methodSymbolTable.add(name, methodData);
-
+            methodSymbolTable.add(name, methodData);
         }
         else{
-            errorHandler.register(2, filename, lineNum,"Method already declared." );
+            this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
+                    lineNum,"Method already declared." );
         }
        return null;
     }
 
-    private void checkIfReservedName(String name, int lineNum){
+    private void registerErrorIfReservedName(String name, int lineNum){
         if (disallowedNames.contains(name)){
-            errorHandler.register(2, filename, lineNum,
-                    "Reserved word, " + name
-                            + ", cannot be used as a field or method name");
+            this.errorHandler.register(
+                    2, this.classTreeNode.getASTNode().getFilename(), lineNum,
+                    "Reserved word, "+name+", cannot be used as a field or method name");
+        }
+    }
+
+    private void registerErrorIfInvalidType(String type, int lineNum){
+        if(type.endsWith("[]")){
+            type = type.substring(0,type.length()-2);
+        }
+        if(!this.classTreeNode.getClassMap().containsKey(type)
+                && !type.equals("int") && !type.equals("boolean")){
+            this.errorHandler.register(2,this.classTreeNode.getASTNode().getFilename(),
+                    lineNum, "Invalid Type");
         }
     }
 
@@ -85,6 +96,7 @@ public class MemberAdderVisitor extends Visitor {
     }
 
     public Object visit(Formal node){
+        this.registerErrorIfInvalidType(node.getType(),node.getLineNum());
         return node.getType();
     }
 }

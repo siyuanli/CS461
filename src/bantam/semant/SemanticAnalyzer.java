@@ -170,8 +170,7 @@ public class SemanticAnalyzer {
 				this.disallowedNames);
 		for (ClassTreeNode node: this.classMap.values()){
 			Class_ astClassNode = node.getASTNode();
-			visitor.getSymbolTables(astClassNode, node.getVarSymbolTable(),
-					node.getMethodSymbolTable());
+			visitor.getSymbolTables(node);
 			node.getVarSymbolTable().setParent(node.getParent().getVarSymbolTable());
 			node.getMethodSymbolTable().setParent(node.getParent().getMethodSymbolTable());
 		}
