@@ -5,6 +5,8 @@ import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
 import bantam.util.SymbolTable;
 import javafx.util.Pair;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -18,7 +20,6 @@ public class TypeCheckVisitor extends Visitor {
     private ErrorHandler errorHandler;
     private String currentMethodReturnType;
     private boolean inLoop;
-    private List<String> params;
     private Set<String> disallowedNames;
 
 
@@ -262,12 +263,12 @@ public class TypeCheckVisitor extends Visitor {
     public Object visit(AssignExpr assignExpr){
         assignExpr.accept(this);
         checkAssignment(assignExpr.getRefName(), assignExpr.getName(),
-                assignExpr.getExprType(), assignExpr.getLineNum());
+                assignExpr.getExprType(), assignExpr.getLineNum(), false);
 
         return null;
     }
 
-    private void checkAssignment(String refName, String name, String exprType, int lineNum) {
+    private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
         String variableType = (String)this.findMember(this.classTreeNode.getVarSymbolTable(),
                 this.classTreeNode.getParent().getVarSymbolTable(),
                 refName, name, lineNum);
@@ -277,7 +278,7 @@ public class TypeCheckVisitor extends Visitor {
             this.registerError(lineNum, "Cannot find variable.");
         }
         else{
-            if (variableType.endsWith("[]")){
+            if (isArrayElementAssign){
                 variableType = variableType.substring(0,variableType.length()-2);
             }
             if(!this.compatibleType(variableType, exprType)){
@@ -319,14 +320,14 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         checkAssignment(arrayAssignExpr.getRefName(), arrayAssignExpr.getName(),
-                arrayAssignExpr.getExprType(), arrayAssignExpr.getLineNum());
+                arrayAssignExpr.getExprType(), arrayAssignExpr.getLineNum(), true);
         return null;
     }
 
     @Override
     public Object visit(DispatchExpr dispatchExpr){
         Expr refExpr = dispatchExpr.getRefExpr();
-        List<String> oldParams = this.params;
+        List<String> params = null;
         if (refExpr != null){
             refExpr.accept(this);
             String typeReference = refExpr.getExprType();
@@ -334,49 +335,46 @@ public class TypeCheckVisitor extends Visitor {
             if (refNode == null){
                 this.registerError(dispatchExpr.getLineNum(),
                         "Reference does not contain given method.");
-                this.params = null;
             }
             else {
-                this.params = ((Pair<String, List<String>>)this.findMember(
-                        refNode.getMethodSymbolTable(), null, null,
-                        dispatchExpr.getMethodName(), dispatchExpr.getLineNum())).getValue();
+                params = ((Pair<String, List<String>>)this.classTreeNode
+                        .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()))
+                        .getValue();
             }
         }
         else{
-            this.params = ((Pair<String, List<String>>)this.findMember(
-                    this.classTreeNode.getMethodSymbolTable(), null, null,
-                    dispatchExpr.getMethodName(), dispatchExpr.getLineNum())).getValue();
+            params = ((Pair<String, List<String>>)this.classTreeNode
+                    .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()))
+                    .getValue();
         }
 
-        dispatchExpr.getActualList().accept(this);
+        List<String> actualParams = (List)dispatchExpr.getActualList().accept(this);
 
-        this.params = oldParams;
-        return null;
-    }
-
-    @Override
-    public Object visit(ExprList exprList){
-
-        for(ASTNode node: exprList){
-            node.accept(this);
-        }
-        if (this.params != null) {
-            if (exprList.getSize() != this.params.size()) {
-                this.registerError(exprList.getLineNum(), "Wrong number of parameters");
+        if (params != null) {
+            if (actualParams.size() != params.size()) {
+                this.registerError(dispatchExpr.getLineNum(), "Wrong number of parameters");
             }
             for (int i = 0; i < params.size(); i++) {
-                if (i >= exprList.getSize()) {
+                if (i >= actualParams.size()) {
                     break;
                 } else {
-                    String expectedType = params.get(i);
-                    String givenType = ((Expr) exprList.get(i)).getExprType();
-                    if (!this.compatibleType(expectedType, givenType)) {
-                        this.registerError(exprList.getLineNum(),
+                    if (!this.compatibleType(params.get(i), actualParams.get(i))) {
+                        this.registerError(dispatchExpr.getLineNum(),
                                 "Value passed in has incompatible type with parameter.");
                     }
                 }
             }
         }
         return null;
+    }
+
+    @Override
+    public Object visit(ExprList exprList){
+        List<String> paramTypes = new ArrayList<>();
+        for(ASTNode node: exprList){
+            node.accept(this);
+            paramTypes.add(((Expr)node).getExprType());
+        }
+        return paramTypes;
     }
 }
