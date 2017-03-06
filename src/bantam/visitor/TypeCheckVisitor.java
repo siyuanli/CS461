@@ -263,8 +263,8 @@ public class TypeCheckVisitor extends Visitor {
     public Object visit(AssignExpr assignExpr){
         assignExpr.accept(this);
         checkAssignment(assignExpr.getRefName(), assignExpr.getName(),
-                assignExpr.getExprType(), assignExpr.getLineNum(), false);
-
+                assignExpr.getExpr().getExprType(), assignExpr.getLineNum(), false);
+        assignExpr.setExprType(assignExpr.getExpr().getExprType());
         return null;
     }
 
@@ -320,24 +320,29 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         checkAssignment(arrayAssignExpr.getRefName(), arrayAssignExpr.getName(),
-                arrayAssignExpr.getExprType(), arrayAssignExpr.getLineNum(), true);
+                arrayAssignExpr.getExpr().getExprType(), arrayAssignExpr.getLineNum(), true);
+        arrayAssignExpr.setExprType(arrayAssignExpr.getExpr().getExprType());
         return null;
     }
 
     @Override
     public Object visit(DispatchExpr dispatchExpr){
         Expr refExpr = dispatchExpr.getRefExpr();
+        String exprType = null;
+        Pair<String, List<String>> methodPair = null;
         List<String> params = null;
         if (refExpr != null){
             if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
-                params = ((Pair<String, List<String>>)this.classTreeNode
-                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0))
-                        .getValue();
+                methodPair = ((Pair<String, List<String>>)this.classTreeNode
+                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0));
+                params = methodPair.getValue();
+                exprType = methodPair.getKey();
             }
             if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
-                params = ((Pair<String, List<String>>)this.classTreeNode.getParent()
-                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0))
-                        .getValue();
+                methodPair = ((Pair<String, List<String>>)this.classTreeNode.getParent()
+                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0));
+                params = methodPair.getValue();
+                exprType = methodPair.getKey();
             }
             refExpr.accept(this);
             String typeReference = refExpr.getExprType();
@@ -347,15 +352,17 @@ public class TypeCheckVisitor extends Visitor {
                         "Reference does not contain given method.");
             }
             else {
-                params = ((Pair<String, List<String>>)this.classTreeNode
-                        .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()))
-                        .getValue();
+                methodPair = ((Pair<String, List<String>>)this.classTreeNode
+                        .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()));
+                params = methodPair.getValue();
+                exprType = methodPair.getKey();
             }
         }
         else{
-            params = ((Pair<String, List<String>>)this.classTreeNode
-                    .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()))
-                    .getValue();
+            methodPair = ((Pair<String, List<String>>)this.classTreeNode
+                    .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()));
+            params = methodPair.getValue();
+            exprType = methodPair.getKey();
         }
 
         List<String> actualParams = (List<String>)dispatchExpr.getActualList().accept(this);
@@ -375,6 +382,7 @@ public class TypeCheckVisitor extends Visitor {
                 }
             }
         }
+        dispatchExpr.setExprType(exprType);
         return null;
     }
 
@@ -387,4 +395,133 @@ public class TypeCheckVisitor extends Visitor {
         }
         return paramTypes;
     }
+
+    @Override
+    public Object visit(NewExpr newExpr){
+        if (!this.classTreeNode.getClassMap().containsKey(newExpr.getType())){
+            this.registerError(newExpr.getLineNum(), "Object type undefined.");
+        }
+        newExpr.setExprType(newExpr.getType());
+        return null;
+    }
+
+    @Override
+    public Object visit(NewArrayExpr newArrayExpr){
+        if (!this.classTreeNode.getClassMap().containsKey(newArrayExpr.getType())){
+            this.registerError(newArrayExpr.getLineNum(), "Object type undefined.");
+        }
+        newArrayExpr.getSize().accept(this);
+        if (!newArrayExpr.getSize().getExprType().equals("int")){
+            registerError(newArrayExpr.getLineNum(), "Array size is not int.");
+        }
+        newArrayExpr.setExprType(newArrayExpr.getType());
+        return null;
+    }
+
+    @Override
+    public Object visit(InstanceofExpr instanceofExpr){
+
+        if (!this.classTreeNode.getClassMap().containsKey(instanceofExpr.getType())){
+            this.registerError(instanceofExpr.getLineNum(), "Unknown instanceof type.");
+        }
+        instanceofExpr.getExpr().accept(this);
+
+        if (this.compatibleType(instanceofExpr.getType(), instanceofExpr.getExpr().getExprType())){
+            instanceofExpr.setUpCheck(true);
+        }
+        else if (this.compatibleType(instanceofExpr.getExpr().getExprType(),instanceofExpr.getType())){
+            instanceofExpr.setUpCheck(false);
+        }
+        else{
+            this.registerError(instanceofExpr.getLineNum(),"Incompatible types in instanceof.");
+
+        }
+        instanceofExpr.setExprType("boolean");
+        return null;
+    }
+
+    @Override
+    public Object visit(CastExpr castExpr){
+
+        if(!this.classTreeNode.getClassMap().containsKey(castExpr.getType())){
+            this.registerError(castExpr.getLineNum(),"Unknown cast type.");
+        }
+        castExpr.getExpr().accept(this);
+        if (this.compatibleType(castExpr.getType(), castExpr.getExpr().getExprType())){
+            castExpr.setUpCast(true);
+        }
+        else if (this.compatibleType(castExpr.getExpr().getExprType(),castExpr.getType())){
+            castExpr.setUpCast(false);
+        }
+        else{
+            this.registerError(castExpr.getLineNum(),"Incompatible types in instanceof.");
+
+        }
+        castExpr.setExprType(castExpr.getType());
+
+        return null;
+    }
+
+    @Override
+    public Object visit(ConstIntExpr constIntExpr){
+        constIntExpr.setExprType("int");
+        return null;
+    }
+
+    @Override
+    public Object visit(ConstBooleanExpr constBooleanExpr){
+        constBooleanExpr.setExprType("boolean");
+        return null;
+    }
+
+    @Override
+    public Object visit(ConstStringExpr constStringExpr){
+        constStringExpr.setExprType("String");
+        return null;
+    }
+
+    private void binaryArithExpr(BinaryArithExpr binaryArithExpr){
+        binaryArithExpr.getLeftExpr().accept(this);
+        binaryArithExpr.getRightExpr().accept(this);
+        if(!binaryArithExpr.getLeftExpr().getExprType().equals("int") ||
+                !binaryArithExpr.getRightExpr().getExprType().equals("int")){
+            this.registerError(binaryArithExpr.getLineNum(), "Both operands must be int.");
+        }
+        binaryArithExpr.setExprType("int");
+    }
+
+    @Override
+    public Object visit(BinaryArithPlusExpr binaryArithPlusExprExpr){
+        this.binaryArithExpr(binaryArithPlusExprExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryArithMinusExpr binaryArithMinusExprExpr){
+        this.binaryArithExpr(binaryArithMinusExprExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryArithTimesExpr binaryArithTimesExpr){
+        this.binaryArithExpr(binaryArithTimesExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryArithDivideExpr binaryArithDivideExpr){
+        this.binaryArithExpr(binaryArithDivideExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryArithModulusExpr binaryArithModulusExpr){
+        this.binaryArithExpr(binaryArithModulusExpr);
+        return null;
+    }
+
+
+
+
+
 }
