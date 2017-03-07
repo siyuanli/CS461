@@ -269,9 +269,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
-        String variableType = (String)this.findMember(this.classTreeNode.getVarSymbolTable(),
-                this.classTreeNode.getParent().getVarSymbolTable(),
-                refName, name, lineNum);
+        String variableType = this.findVariableType(refName, name, lineNum);
 
         //checking if types are compatible
         if (variableType == null){
@@ -287,26 +285,25 @@ public class TypeCheckVisitor extends Visitor {
         }
     }
 
-    private Object findMember(SymbolTable symbolTable, SymbolTable parentSymbolTable,
-                              String refName, String name, int lineNum) {
-        Object value = null;
-        //finding the value of the variable
+    private String findVariableType(String refName, String name, int lineNum) {
+        Object type = null;
+        //finding the type of the variable
         if (refName == null){
-            value = symbolTable.lookup(name);
+            type = this.classTreeNode.getVarSymbolTable().lookup(name);
         }
         else{ //refName != null
             if (refName.equals("this")){
-                value = symbolTable.peek(name,0);
+                type = this.classTreeNode.getVarSymbolTable().peek(name,0);
             }
             else if (refName.equals("super")){
-                value = parentSymbolTable.lookup(name);
+                type = this.classTreeNode.getParent().getVarSymbolTable().lookup(name);
             }
             else{
                 this.registerError(lineNum,
                         "Can only use 'this' or 'super' when referencing.");
             }
         }
-        return value;
+        return (String)type;
     }
 
     @Override
@@ -319,7 +316,7 @@ public class TypeCheckVisitor extends Visitor {
                     "Index of array must be an integer.");
         }
 
-        checkAssignment(arrayAssignExpr.getRefName(), arrayAssignExpr.getName(),
+        this.checkAssignment(arrayAssignExpr.getRefName(), arrayAssignExpr.getName(),
                 arrayAssignExpr.getExpr().getExprType(), arrayAssignExpr.getLineNum(), true);
         arrayAssignExpr.setExprType(arrayAssignExpr.getExpr().getExprType());
         return null;
@@ -480,48 +477,211 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
-    private void binaryArithExpr(BinaryArithExpr binaryArithExpr){
-        binaryArithExpr.getLeftExpr().accept(this);
-        binaryArithExpr.getRightExpr().accept(this);
-        if(!binaryArithExpr.getLeftExpr().getExprType().equals("int") ||
-                !binaryArithExpr.getRightExpr().getExprType().equals("int")){
-            this.registerError(binaryArithExpr.getLineNum(), "Both operands must be int.");
+    public void binaryExprTypeChecker(BinaryExpr binaryExpr, String desiredType, String exprType){
+        binaryExpr.getLeftExpr().accept(this);
+        binaryExpr.getRightExpr().accept(this);
+        if(!binaryExpr.getLeftExpr().getExprType().equals(desiredType) ||
+                !binaryExpr.getRightExpr().getExprType().equals(desiredType)){
+            this.registerError(binaryExpr.getLineNum(),
+                    "Both operands must be " + desiredType);
         }
-        binaryArithExpr.setExprType("int");
+        binaryExpr.setExprType(desiredType);
+
     }
 
     @Override
     public Object visit(BinaryArithPlusExpr binaryArithPlusExprExpr){
-        this.binaryArithExpr(binaryArithPlusExprExpr);
+        this.binaryExprTypeChecker(binaryArithPlusExprExpr, "int", "int");
         return null;
     }
 
     @Override
     public Object visit(BinaryArithMinusExpr binaryArithMinusExprExpr){
-        this.binaryArithExpr(binaryArithMinusExprExpr);
+        this.binaryExprTypeChecker(binaryArithMinusExprExpr, "int", "int");
         return null;
     }
 
     @Override
     public Object visit(BinaryArithTimesExpr binaryArithTimesExpr){
-        this.binaryArithExpr(binaryArithTimesExpr);
+        this.binaryExprTypeChecker(binaryArithTimesExpr, "int", "int");
         return null;
     }
 
     @Override
     public Object visit(BinaryArithDivideExpr binaryArithDivideExpr){
-        this.binaryArithExpr(binaryArithDivideExpr);
+        this.binaryExprTypeChecker(binaryArithDivideExpr, "int", "int");
         return null;
     }
 
     @Override
     public Object visit(BinaryArithModulusExpr binaryArithModulusExpr){
-        this.binaryArithExpr(binaryArithModulusExpr);
+        this.binaryExprTypeChecker(binaryArithModulusExpr, "int", "int");
+        return null;
+    }
+
+    private void binaryCompEqualityChecker(BinaryCompExpr binaryCompExpr){
+        Expr left = binaryCompExpr.getLeftExpr();
+        Expr right = binaryCompExpr.getRightExpr();
+        left.accept(this);
+        right.accept(this);
+
+        if (!this.compatibleType(left.getExprType(), right.getExprType()) &&
+                !this.compatibleType(right.getExprType(), left.getExprType())){
+            this.registerError(binaryCompExpr.getLineNum(),
+                    "Both expressions in comparison must be compatible types.");
+        }
+        binaryCompExpr.setExprType("boolean");
+
+    }
+
+    @Override
+    public Object visit(BinaryCompEqExpr binaryCompEqExpr) {
+        this.binaryCompEqualityChecker(binaryCompEqExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryCompNeExpr binaryCompNeExpr) {
+        this.binaryCompEqualityChecker(binaryCompNeExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryCompLtExpr binaryCompLtExpr) {
+        this.binaryExprTypeChecker(binaryCompLtExpr, "int", "boolean");
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryCompLeqExpr binaryCompLeqExpr) {
+        this.binaryExprTypeChecker(binaryCompLeqExpr, "int", "boolean");
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryCompGtExpr binaryCompGtExpr) {
+        this.binaryExprTypeChecker(binaryCompGtExpr, "int", "boolean");
+        return null;
+    }
+
+    @Override
+    public Object visit(BinaryCompGeqExpr binaryCompGeqExpr) {
+        this.binaryExprTypeChecker(binaryCompGeqExpr, "int", "boolean");
         return null;
     }
 
 
+    @Override
+    public Object visit(BinaryLogicAndExpr binaryLogicAndExpr) {
+        this.binaryExprTypeChecker(binaryLogicAndExpr, "boolean", "boolean");
+        return null;
+    }
 
+    @Override
+    public Object visit(BinaryLogicOrExpr binaryLogicOrExpr) {
+        this.binaryExprTypeChecker(binaryLogicOrExpr, "boolean", "boolean");
+        return null;
+    }
+
+
+    private void negNotChecker(UnaryExpr unaryExpr, String desiredType, String error){
+        unaryExpr.getExpr().accept(this);
+        if(!unaryExpr.getExpr().getExprType().equals(desiredType)){
+            this.registerError(unaryExpr.getLineNum(), error);
+        }
+        unaryExpr.setExprType(desiredType);
+
+    }
+
+    @Override
+    public Object visit(UnaryNegExpr unaryNegExpr){
+        this.negNotChecker(unaryNegExpr, "int",
+                "Type of arithmetically negated expression must be int.");
+        return null;
+    }
+
+    @Override
+    public Object visit(UnaryNotExpr unaryNotExpr){
+        this.negNotChecker(unaryNotExpr, "boolean",
+                "Type of logically negated expression must be boolean.");
+        return null;
+    }
+
+    private void incrDecrChecker(UnaryExpr unaryExpr){
+        Expr expr = unaryExpr.getExpr();
+        expr.accept(this);
+        String type = null;
+        if (expr instanceof  VarExpr){
+            VarExpr varExpr = (VarExpr)expr;
+            type = this.findVariableType(((VarExpr)varExpr.getRef()).getName(),
+                    varExpr.getName(), varExpr.getLineNum());
+
+        }
+        else if (expr instanceof ArrayExpr){
+            ArrayExpr arrayExpr = (ArrayExpr)expr;
+            type = this.findVariableType(((ArrayExpr)arrayExpr.getRef()).getName(),
+                    arrayExpr.getName(), arrayExpr.getLineNum());
+            type = type.substring(0, type.length()-2);
+
+        }
+        else{
+            this.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented expressions must be variables.");
+        }
+
+        if (type == null){
+            this.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented variable not defined");
+        }
+        else if (!type.equals("int")){
+            this.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented variable must be an int.");
+        }
+
+        unaryExpr.setExprType("int");
+    }
+
+    @Override
+    public Object visit(UnaryIncrExpr unaryIncrExpr){
+        this.incrDecrChecker(unaryIncrExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(UnaryDecrExpr unaryDecrExpr){
+        this.incrDecrChecker(unaryDecrExpr);
+        return null;
+    }
+
+    @Override
+    public Object visit(VarExpr varExpr){
+        String type = null;
+        String refName=null;
+        if(varExpr.getRef()!=null){
+            refName = ((VarExpr) varExpr.getRef()).getName();
+        }
+        if (varExpr.getName().equals("length") && !"this".equals(refName) &&
+                !"super".equals(refName) && refName!=null) {
+            type = this.findVariableType(null, refName, varExpr.getLineNum());
+            if (!type.endsWith("[]")) {
+                this.registerError(varExpr.getLineNum(),
+                        "Only array variables have length attribute.");
+            } else {
+                type = type.substring(0, type.length() - 2);
+            }
+        }
+        else {
+            this.registerErrorIfReservedName(varExpr.getName(),varExpr.getLineNum());
+            type=this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
+        }
+        if(type==null){
+            this.registerError(varExpr.getLineNum(),"Undeclared variable access.");
+        }
+        else{
+            varExpr.setExprType(type);
+        }
+        return null;
+    }
 
 
 }
