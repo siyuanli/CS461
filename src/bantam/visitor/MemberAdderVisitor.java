@@ -29,6 +29,30 @@ public class MemberAdderVisitor extends Visitor {
         this.classTreeNode.getVarSymbolTable().enterScope();
         this.classTreeNode.getMethodSymbolTable().enterScope();
         this.classTreeNode.getASTNode().accept(this);
+        System.out.println("Member adder visitor");
+        System.out.println(this.classTreeNode.getName());
+    }
+
+    private void registerErrorIfReservedName(String name, int lineNum) {
+        if (disallowedNames.contains(name)) {
+            this.registerError(lineNum,
+                    "Reserved word," + name + ",cannot be used as a field or method name");
+        }
+    }
+
+    private void registerErrorIfInvalidType(String type, int lineNum) {
+        if (type.endsWith("[]")) {
+            type = type.substring(0, type.length() - 2);
+        }
+        if (!this.classTreeNode.getClassMap().containsKey(type)
+                && !type.equals("int") && !type.equals("boolean")) {
+            this.registerError(lineNum, "Invalid Type");
+        }
+    }
+
+    private void registerError(int lineNum, String error) {
+        this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
+                lineNum, error);
     }
     
     @Override
@@ -42,9 +66,12 @@ public class MemberAdderVisitor extends Visitor {
             varSymbolTable.add(name, node.getType());
         }
         else{
-            this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
-                    lineNum,"Field already declared." );
+            this.registerError(lineNum,"Field already declared." );
         }
+
+        node.getInit().accept(new RegisterForwardReferenceVisitor(this.classTreeNode,
+                this.errorHandler, node.getName()));
+
         return null;
     }
     
@@ -61,29 +88,9 @@ public class MemberAdderVisitor extends Visitor {
             methodSymbolTable.add(name, methodData);
         }
         else{
-            this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
-                    lineNum,"Method already declared." );
+            this.registerError(lineNum,"Method already declared." );
         }
        return null;
-    }
-
-    private void registerErrorIfReservedName(String name, int lineNum){
-        if (disallowedNames.contains(name)){
-            this.errorHandler.register(
-                    2, this.classTreeNode.getASTNode().getFilename(), lineNum,
-                    "Reserved word, "+name+", cannot be used as a field or method name");
-        }
-    }
-
-    private void registerErrorIfInvalidType(String type, int lineNum){
-        if(type.endsWith("[]")){
-            type = type.substring(0,type.length()-2);
-        }
-        if(!this.classTreeNode.getClassMap().containsKey(type)
-                && !type.equals("int") && !type.equals("boolean")){
-            this.errorHandler.register(2,this.classTreeNode.getASTNode().getFilename(),
-                    lineNum, "Invalid Type");
-        }
     }
 
     @Override
@@ -95,6 +102,7 @@ public class MemberAdderVisitor extends Visitor {
         return paramTypes;
     }
 
+    @Override
     public Object visit(Formal node){
         this.registerErrorIfInvalidType(node.getType(),node.getLineNum());
         return node.getType();

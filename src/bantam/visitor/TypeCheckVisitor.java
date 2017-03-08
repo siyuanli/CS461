@@ -4,6 +4,7 @@ import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
 import bantam.util.SymbolTable;
+import java_cup.runtime.Symbol;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -26,6 +27,12 @@ public class TypeCheckVisitor extends Visitor {
     public TypeCheckVisitor(ErrorHandler errorHandler, Set<String> disallowedNames) {
         this.disallowedNames = disallowedNames;
         this.errorHandler = errorHandler;
+    }
+
+    public void checkTypes(ClassTreeNode classTreeNode) {
+        this.classTreeNode = classTreeNode;
+        Class_ classASTNode = this.classTreeNode.getASTNode();
+        classASTNode.accept(this);
     }
 
     /**
@@ -79,11 +86,113 @@ public class TypeCheckVisitor extends Visitor {
                 lineNum, error);
     }
 
-    public void checkTypes(ClassTreeNode classTreeNode) {
-        this.classTreeNode = classTreeNode;
-        Class_ classASTNode = this.classTreeNode.getASTNode();
-        classASTNode.accept(this);
+    private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
+        String variableType = this.findVariableType(refName, name, lineNum);
+
+        //checking if types are compatible
+        if (variableType == null){
+            this.registerError(lineNum, "Cannot find variable.");
+        }
+        else{
+            if (isArrayElementAssign){
+                variableType = variableType.substring(0,variableType.length()-2);
+            }
+            if(!this.compatibleType(variableType, exprType)){
+                this.registerError(lineNum, "Incompatible variableType assignment.");
+            }
+        }
     }
+    private String findVariableType(String refName, String name, int lineNum) {
+        Object type = null;
+        //finding the type of the variable
+        if (refName == null){
+            type = this.classTreeNode.getVarSymbolTable().lookup(name);
+        }
+        else{ //refName != null
+            if (refName.equals("this")){
+                type = this.classTreeNode.getVarSymbolTable().peek(name,0);
+            }
+            else if (refName.equals("super")){
+                type = this.classTreeNode.getParent().getVarSymbolTable().lookup(name);
+            }
+            else{
+                this.registerError(lineNum,
+                        "Can only use 'this' or 'super' when referencing.");
+            }
+        }
+        return (String)type;
+    }
+
+    private void binaryExprTypeChecker(BinaryExpr binaryExpr, String desiredType,
+                                       String exprType){
+        binaryExpr.getLeftExpr().accept(this);
+        binaryExpr.getRightExpr().accept(this);
+        if(!binaryExpr.getLeftExpr().getExprType().equals(desiredType) ||
+                !binaryExpr.getRightExpr().getExprType().equals(desiredType)){
+            this.registerError(binaryExpr.getLineNum(),
+                    "Both operands must be " + desiredType);
+        }
+        binaryExpr.setExprType(exprType);
+
+    }
+
+    private void binaryCompEqualityChecker(BinaryCompExpr binaryCompExpr){
+        Expr left = binaryCompExpr.getLeftExpr();
+        Expr right = binaryCompExpr.getRightExpr();
+        left.accept(this);
+        right.accept(this);
+
+        if (!this.compatibleType(left.getExprType(), right.getExprType()) &&
+                !this.compatibleType(right.getExprType(), left.getExprType())){
+            this.registerError(binaryCompExpr.getLineNum(),
+                    "Both expressions in comparison must be compatible types.");
+        }
+        binaryCompExpr.setExprType("boolean");
+    }
+
+    private void negNotChecker(UnaryExpr unaryExpr, String desiredType, String error){
+        unaryExpr.getExpr().accept(this);
+        if(!unaryExpr.getExpr().getExprType().equals(desiredType)){
+            this.registerError(unaryExpr.getLineNum(), error);
+        }
+        unaryExpr.setExprType(desiredType);
+
+    }
+
+    private void incrDecrChecker(UnaryExpr unaryExpr){
+        Expr expr = unaryExpr.getExpr();
+        expr.accept(this);
+        String type = null;
+        if (expr instanceof  VarExpr){
+            VarExpr varExpr = (VarExpr)expr;
+            type = this.findVariableType(((VarExpr)varExpr.getRef()).getName(),
+                    varExpr.getName(), varExpr.getLineNum());
+
+        }
+        else if (expr instanceof ArrayExpr){
+            ArrayExpr arrayExpr = (ArrayExpr)expr;
+            type = this.findVariableType(((ArrayExpr)arrayExpr.getRef()).getName(),
+                    arrayExpr.getName(), arrayExpr.getLineNum());
+            type = type.substring(0, type.length()-2);
+
+        }
+        else{
+            this.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented expressions must be variables.");
+        }
+
+        if (type == null){
+            this.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented variable not defined");
+        }
+        else if (!type.equals("int")){
+            this.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented variable must be an int.");
+        }
+
+        unaryExpr.setExprType("int");
+    }
+
 
     @Override
     public Object visit(Field field) {
@@ -222,7 +331,7 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(BreakStmt breakStmt){
-        if (this.inLoop != true){
+        if (!this.inLoop){
             this.registerError(breakStmt.getLineNum(),
                     "Break statements must be in loops.");
         }
@@ -268,44 +377,6 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
-    private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
-        String variableType = this.findVariableType(refName, name, lineNum);
-
-        //checking if types are compatible
-        if (variableType == null){
-            this.registerError(lineNum, "Cannot find variable.");
-        }
-        else{
-            if (isArrayElementAssign){
-                variableType = variableType.substring(0,variableType.length()-2);
-            }
-            if(!this.compatibleType(variableType, exprType)){
-                this.registerError(lineNum, "Incompatible variableType assignment.");
-            }
-        }
-    }
-
-    private String findVariableType(String refName, String name, int lineNum) {
-        Object type = null;
-        //finding the type of the variable
-        if (refName == null){
-            type = this.classTreeNode.getVarSymbolTable().lookup(name);
-        }
-        else{ //refName != null
-            if (refName.equals("this")){
-                type = this.classTreeNode.getVarSymbolTable().peek(name,0);
-            }
-            else if (refName.equals("super")){
-                type = this.classTreeNode.getParent().getVarSymbolTable().lookup(name);
-            }
-            else{
-                this.registerError(lineNum,
-                        "Can only use 'this' or 'super' when referencing.");
-            }
-        }
-        return (String)type;
-    }
-
     @Override
     public Object visit(ArrayAssignExpr arrayAssignExpr){
         arrayAssignExpr.getExpr().accept(this);
@@ -325,39 +396,37 @@ public class TypeCheckVisitor extends Visitor {
     @Override
     public Object visit(DispatchExpr dispatchExpr){
         Expr refExpr = dispatchExpr.getRefExpr();
-        String exprType = null;
+
+        SymbolTable methodTable = this.classTreeNode.getMethodSymbolTable();
+
         Pair<String, List<String>> methodPair = null;
-        List<String> params = null;
         if (refExpr != null){
             if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
-                methodPair = ((Pair<String, List<String>>)this.classTreeNode
-                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0));
-                params = methodPair.getValue();
-                exprType = methodPair.getKey();
+                methodPair = ((Pair<String, List<String>>)methodTable.peek(dispatchExpr.getMethodName(),0));
             }
-            if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
+            else if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
                 methodPair = ((Pair<String, List<String>>)this.classTreeNode.getParent()
                         .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0));
-                params = methodPair.getValue();
-                exprType = methodPair.getKey();
-            }
-            refExpr.accept(this);
-            String typeReference = refExpr.getExprType();
-            ClassTreeNode refNode = this.classTreeNode.getClassMap().get(typeReference);
-            if (refNode == null){
-                this.registerError(dispatchExpr.getLineNum(),
-                        "Reference does not contain given method.");
             }
             else {
-                methodPair = ((Pair<String, List<String>>)this.classTreeNode
-                        .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()));
-                params = methodPair.getValue();
-                exprType = methodPair.getKey();
+                refExpr.accept(this);
+                String typeReference = refExpr.getExprType();
+                ClassTreeNode refNode = this.classTreeNode.getClassMap().get(typeReference);
+                if (refNode == null) {
+                    this.registerError(dispatchExpr.getLineNum(),
+                            "Reference does not contain given method.");
+                }
+                methodPair = ((Pair<String, List<String>>) methodTable.lookup(dispatchExpr.getMethodName()));
             }
         }
         else{
-            methodPair = ((Pair<String, List<String>>)this.classTreeNode
-                    .getMethodSymbolTable().lookup(dispatchExpr.getMethodName()));
+            methodPair = ((Pair<String, List<String>>)methodTable.lookup(dispatchExpr.getMethodName()));
+        }
+
+
+        List<String> params = null;
+        String exprType = null;
+        if (methodPair != null) {
             params = methodPair.getValue();
             exprType = methodPair.getKey();
         }
@@ -477,17 +546,6 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
-    public void binaryExprTypeChecker(BinaryExpr binaryExpr, String desiredType, String exprType){
-        binaryExpr.getLeftExpr().accept(this);
-        binaryExpr.getRightExpr().accept(this);
-        if(!binaryExpr.getLeftExpr().getExprType().equals(desiredType) ||
-                !binaryExpr.getRightExpr().getExprType().equals(desiredType)){
-            this.registerError(binaryExpr.getLineNum(),
-                    "Both operands must be " + desiredType);
-        }
-        binaryExpr.setExprType(desiredType);
-
-    }
 
     @Override
     public Object visit(BinaryArithPlusExpr binaryArithPlusExprExpr){
@@ -517,21 +575,6 @@ public class TypeCheckVisitor extends Visitor {
     public Object visit(BinaryArithModulusExpr binaryArithModulusExpr){
         this.binaryExprTypeChecker(binaryArithModulusExpr, "int", "int");
         return null;
-    }
-
-    private void binaryCompEqualityChecker(BinaryCompExpr binaryCompExpr){
-        Expr left = binaryCompExpr.getLeftExpr();
-        Expr right = binaryCompExpr.getRightExpr();
-        left.accept(this);
-        right.accept(this);
-
-        if (!this.compatibleType(left.getExprType(), right.getExprType()) &&
-                !this.compatibleType(right.getExprType(), left.getExprType())){
-            this.registerError(binaryCompExpr.getLineNum(),
-                    "Both expressions in comparison must be compatible types.");
-        }
-        binaryCompExpr.setExprType("boolean");
-
     }
 
     @Override
@@ -583,16 +626,6 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
-
-    private void negNotChecker(UnaryExpr unaryExpr, String desiredType, String error){
-        unaryExpr.getExpr().accept(this);
-        if(!unaryExpr.getExpr().getExprType().equals(desiredType)){
-            this.registerError(unaryExpr.getLineNum(), error);
-        }
-        unaryExpr.setExprType(desiredType);
-
-    }
-
     @Override
     public Object visit(UnaryNegExpr unaryNegExpr){
         this.negNotChecker(unaryNegExpr, "int",
@@ -605,40 +638,6 @@ public class TypeCheckVisitor extends Visitor {
         this.negNotChecker(unaryNotExpr, "boolean",
                 "Type of logically negated expression must be boolean.");
         return null;
-    }
-
-    private void incrDecrChecker(UnaryExpr unaryExpr){
-        Expr expr = unaryExpr.getExpr();
-        expr.accept(this);
-        String type = null;
-        if (expr instanceof  VarExpr){
-            VarExpr varExpr = (VarExpr)expr;
-            type = this.findVariableType(((VarExpr)varExpr.getRef()).getName(),
-                    varExpr.getName(), varExpr.getLineNum());
-
-        }
-        else if (expr instanceof ArrayExpr){
-            ArrayExpr arrayExpr = (ArrayExpr)expr;
-            type = this.findVariableType(((ArrayExpr)arrayExpr.getRef()).getName(),
-                    arrayExpr.getName(), arrayExpr.getLineNum());
-            type = type.substring(0, type.length()-2);
-
-        }
-        else{
-            this.registerError(unaryExpr.getLineNum(),
-                    "Incremented or decremented expressions must be variables.");
-        }
-
-        if (type == null){
-            this.registerError(unaryExpr.getLineNum(),
-                    "Incremented or decremented variable not defined");
-        }
-        else if (!type.equals("int")){
-            this.registerError(unaryExpr.getLineNum(),
-                    "Incremented or decremented variable must be an int.");
-        }
-
-        unaryExpr.setExprType("int");
     }
 
     @Override
@@ -660,6 +659,7 @@ public class TypeCheckVisitor extends Visitor {
         if(varExpr.getRef()!=null){
             refName = ((VarExpr) varExpr.getRef()).getName();
         }
+
         if (varExpr.getName().equals("length") && !"this".equals(refName) &&
                 !"super".equals(refName) && refName!=null) {
             type = this.findVariableType(null, refName, varExpr.getLineNum());
@@ -674,12 +674,40 @@ public class TypeCheckVisitor extends Visitor {
             this.registerErrorIfReservedName(varExpr.getName(),varExpr.getLineNum());
             type=this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
         }
+
         if(type==null){
             this.registerError(varExpr.getLineNum(),"Undeclared variable access.");
         }
-        else{
-            varExpr.setExprType(type);
+        varExpr.setExprType(type);
+
+        return null;
+    }
+
+    @Override
+    public Object visit(ArrayExpr arrayExpr){
+        arrayExpr.getIndex().accept(this);
+        if (!arrayExpr.getIndex().getExprType().equals("int")){
+            this.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
         }
+
+        String ref = null;
+        if (arrayExpr.getRef() != null){
+            ref = ((VarExpr)arrayExpr.getRef()).getName();
+        }
+
+        String type = this.findVariableType(ref, arrayExpr.getName(),
+                arrayExpr.getLineNum());
+
+        if (type == null){
+            this.registerError(arrayExpr.getLineNum(), "Undeclared variable access.");
+        }
+        else if (!type.endsWith("[]")){
+            this.registerError(arrayExpr.getLineNum(),
+                    "Indexed variable must be an array type.");
+        }
+
+        arrayExpr.setExprType(type);
+
         return null;
     }
 

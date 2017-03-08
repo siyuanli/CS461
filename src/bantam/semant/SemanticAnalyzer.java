@@ -30,6 +30,7 @@ import bantam.ast.*;
 import bantam.util.*;
 import bantam.visitor.MainMainVisitor;
 import bantam.visitor.MemberAdderVisitor;
+import bantam.visitor.TypeCheckVisitor;
 
 import java.util.*;
 
@@ -89,21 +90,21 @@ public class SemanticAnalyzer {
 	 * */
 	public ClassTreeNode analyze() {
 		// 1 - add built in classes to class tree
-		updateBuiltins();
+		this.updateBuiltins();
 
 		// 2 - build and check the class hierarchy tree
-		buildTree();
-		checkHierarchy();
+		this.buildTree();
+		this.checkHierarchy();
 
 		// 3 - build the environment for each class (adding class members only) and check
 		// that members are declared properly
-		buildEnvironment();
+		this.buildEnvironment();
 
 		// 4 - check that the bantam.Main class and main method are declared properly
-		checkMainMain();
+		this.checkMainMain();
 
 		// 5 - type check each class member
-
+		this.checkTypes();
 
 
 		return root;
@@ -162,18 +163,34 @@ public class SemanticAnalyzer {
 			else{
 				checked.add(popped);
 			}
+
+			Iterator childrenIterator = popped.getChildrenList();
+			while (childrenIterator.hasNext()){
+				ClassTreeNode child = (ClassTreeNode)childrenIterator.next();
+				unchecked.push(child);
+				childrenIterator.next();
+			}
 		}
 	}
 
 	private void buildEnvironment(){
 		MemberAdderVisitor visitor = new MemberAdderVisitor(this.errorHandler,
 				this.disallowedNames);
-		for (ClassTreeNode node: this.classMap.values()){
-			Class_ astClassNode = node.getASTNode();
-			visitor.getSymbolTables(node);
-			node.getVarSymbolTable().setParent(node.getParent().getVarSymbolTable());
-			node.getMethodSymbolTable().setParent(node.getParent().getMethodSymbolTable());
+
+		this.buildSymbolTables(this.root, visitor);
+	}
+
+	private void buildSymbolTables(ClassTreeNode classTreeNode, MemberAdderVisitor memberAdderVisitor) {
+		Iterator<ClassTreeNode> iterator = classTreeNode.getChildrenList();
+		while(iterator.hasNext()) {
+			ClassTreeNode child = iterator.next();
+			memberAdderVisitor.getSymbolTables(child);
+			child.getVarSymbolTable().setParent(child.getParent().getVarSymbolTable());
+			child.getMethodSymbolTable().setParent(child.getParent().getMethodSymbolTable());
+			this.buildSymbolTables(child, memberAdderVisitor);
+			iterator.next();
 		}
+
 	}
 
 	private void checkMainMain(){
@@ -184,6 +201,12 @@ public class SemanticAnalyzer {
 					+ "'Main' class with a 'main' method.");
 		}
 
+	}
+
+	private void checkTypes(){
+		TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(
+				this.errorHandler, this.disallowedNames);
+		typeCheckVisitor.checkTypes(this.root);
 	}
 
 	/**
