@@ -5,7 +5,7 @@ class Empty{
         "abc"+"def";
     }
 
-    void void(void l, int w, String int){
+    void thing(int l, int w, String int){
         "hey dale";
         array["things"] = new thing["other things"];
         for("why";"am I";"doing this"){
@@ -44,6 +44,10 @@ class Main{
 
      void test(int x, int h){
          int e = 4;
-     }
+
+         }
+    void main(){
+        int x =5;
+    }
 
 }

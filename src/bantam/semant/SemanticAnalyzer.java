@@ -31,6 +31,7 @@ import bantam.util.*;
 import bantam.visitor.MainMainVisitor;
 import bantam.visitor.MemberAdderVisitor;
 import bantam.visitor.TypeCheckVisitor;
+import java_cup.runtime.Symbol;
 
 import java.util.*;
 
@@ -93,19 +94,24 @@ public class SemanticAnalyzer {
 		this.updateBuiltins();
 
 		// 2 - build and check the class hierarchy tree
+		System.out.println("Step 2");
 		this.buildTree();
 		this.checkHierarchy();
 
 		// 3 - build the environment for each class (adding class members only) and check
 		// that members are declared properly
+		System.out.println("Step 3");
 		this.buildEnvironment();
 
 		// 4 - check that the bantam.Main class and main method are declared properly
+		System.out.println("Step 4");
 		this.checkMainMain();
 
 		// 5 - type check each class member
+		System.out.println("Step 5");
 		this.checkTypes();
 
+		System.out.println("After Step 5");
 
 		return root;
 	}
@@ -126,9 +132,13 @@ public class SemanticAnalyzer {
 		}
 		//update parent nodes/descendants
 		for (ClassTreeNode node: this.classMap.values()){
+			if (node.getName().equals("Object")){
+				break;
+			}
+
 			Class_ astNode = node.getASTNode();
 			String parent = astNode.getParent();
-			if (parent!= null) {
+			if (parent != null) {
 				ClassTreeNode parentTreeNode = this.classMap.get(parent);
 				if (parentTreeNode.isExtendable()) {
 					node.setParent(parentTreeNode);

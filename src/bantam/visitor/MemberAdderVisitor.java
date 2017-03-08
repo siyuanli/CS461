@@ -29,8 +29,6 @@ public class MemberAdderVisitor extends Visitor {
         this.classTreeNode.getVarSymbolTable().enterScope();
         this.classTreeNode.getMethodSymbolTable().enterScope();
         this.classTreeNode.getASTNode().accept(this);
-        System.out.println("Member adder visitor");
-        System.out.println(this.classTreeNode.getName());
     }
 
     private void registerErrorIfReservedName(String name, int lineNum) {
@@ -80,7 +78,9 @@ public class MemberAdderVisitor extends Visitor {
         SymbolTable methodSymbolTable = this.classTreeNode.getMethodSymbolTable();
         String name = node.getName();
         int lineNum = node.getLineNum();
-        this.registerErrorIfInvalidType(node.getReturnType(),node.getLineNum());
+        if(!node.getReturnType().equals("void")) {
+            this.registerErrorIfInvalidType(node.getReturnType(), node.getLineNum());
+        }
         if (methodSymbolTable.peek(name) == null) {
             registerErrorIfReservedName(name,lineNum );
             List<String> paramTypes = (List) node.getFormalList().accept(this);

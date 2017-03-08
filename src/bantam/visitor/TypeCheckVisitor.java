@@ -47,7 +47,7 @@ public class TypeCheckVisitor extends Visitor {
         else if (type1.equals("int") || type1.equals("boolean")){
             return false;
         }
-        else if (type2.equals("null")){
+        else if ("null".equals(type2)){
             return true;
         }
 
