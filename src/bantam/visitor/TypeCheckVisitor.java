@@ -228,12 +228,6 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
-    //TODO : Figure out what we do with exprStmt, modify grammar or disallow certain exprs
-    /*
-    @Override
-    public Object visit(ExprStmt exprStmt){
-    }*/
-
     @Override
     public Object visit(DeclStmt stmt) {
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();

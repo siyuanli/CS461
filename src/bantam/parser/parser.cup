@@ -349,8 +349,20 @@ stmt
 
 expr_stmt
     ::=
-    expr:e SEMI
-        {: RESULT = new ExprStmt(e.getLineNum(), e);:}
+    assign_expr:ae SEMI
+        {: RESULT = new ExprStmt(ae.getLineNum(), ae);:}
+    | array_assign_expr:aae SEMI
+        {: RESULT = new ExprStmt(aae.getLineNum(), aae);:}
+    | unary_incr_expr:uie SEMI
+        {: RESULT = new ExprStmt(uie.getLineNum(), uie);:}
+    | unary_decr_expr:ude SEMI
+        {: RESULT = new ExprStmt(ude.getLineNum(), ude);:}
+    | new_expr:ne SEMI
+        {: RESULT = new ExprStmt(ne.getLineNum(), ne);:}
+    | new_array_expr:nae SEMI
+        {: RESULT = new ExprStmt(nae.getLineNum(), nae);:}
+    | dispatch_expr:de SEMI
+        {: RESULT = new ExprStmt(de.getLineNum(), de);:}
     ;
 
 decl_stmt
