@@ -33,8 +33,8 @@ public class TypeCheckVisitor extends Visitor {
     public void checkTypes(ClassTreeNode classTreeNode) {
         this.classTreeNode = classTreeNode;
         Class_ classASTNode = this.classTreeNode.getASTNode();
-        this.fieldScope = this.classTreeNode.getVarSymbolTable().getCurrScopeLevel();
-        this.methodScope = this.classTreeNode.getMethodSymbolTable().getCurrScopeLevel();
+        this.fieldScope = this.classTreeNode.getVarSymbolTable().getCurrScopeLevel() -1;
+        this.methodScope = this.classTreeNode.getMethodSymbolTable().getCurrScopeLevel() -1;
         classASTNode.accept(this);
     }
 
@@ -91,7 +91,6 @@ public class TypeCheckVisitor extends Visitor {
 
     private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
         String variableType = this.findVariableType(refName, name, lineNum);
-
         //checking if types are compatible
         if (variableType == null){
             this.registerError(lineNum, "Cannot find variable.");
@@ -701,11 +700,6 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(ArrayExpr arrayExpr){
-        arrayExpr.getIndex().accept(this);
-        if (!arrayExpr.getIndex().getExprType().equals("int")){
-            this.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
-        }
-
         String ref = null;
         if (arrayExpr.getRef() != null){
             ref = ((VarExpr)arrayExpr.getRef()).getName();
@@ -720,6 +714,14 @@ public class TypeCheckVisitor extends Visitor {
         else if (!type.endsWith("[]")){
             this.registerError(arrayExpr.getLineNum(),
                     "Indexed variable must be an array type.");
+        }
+
+        if (arrayExpr.getIndex() != null) {
+            arrayExpr.getIndex().accept(this);
+            if (!arrayExpr.getIndex().getExprType().equals("int")) {
+                this.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
+            }
+            type = type.substring(0, type.length()-2);
         }
 
         arrayExpr.setExprType(type);
