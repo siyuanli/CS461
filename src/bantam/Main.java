@@ -351,7 +351,7 @@ public class Main {
      *
      * @param args list of commandline arguments
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args){
         // process flags
         processFlags(args);
 
@@ -427,11 +427,9 @@ public class Main {
                 classTree = semanticAnalyzer.analyze();
             } catch (Exception e) {
                 // there were semantic errors, so report them and exit
-                System.out.println("IN try cathc");
                 System.out.println(e.getMessage());
                 semanticAnalyzer.getErrorHandler().printErrors();
-                throw e;
-                //System.exit(1);
+                System.exit(1);
             }
             if (stopAfterSemant) {
                 // if stopAfterSemant==true, then print AST (with types) and exit
@@ -479,8 +477,7 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Internal error within compiler: stopping compilation");
-            throw e;
-            //System.exit(1);
+            System.exit(1);
         }
     }
 }

@@ -2,7 +2,7 @@ class Empty{
     String const = "StringThing";
     void main(){
         int x = "hey dale";
-        String x = "abc"+"def";
+        String x = const;
     }
 
     void thing(int l, int w, String int){

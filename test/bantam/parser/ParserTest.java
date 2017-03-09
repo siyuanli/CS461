@@ -193,6 +193,37 @@ public class ParserTest
     }
 
     /**
+     * Tests whether the case where you have assignment statements, incr/decr, method
+     * calls, and new objects as part of the exprStmt
+     * @throws Exception if the tests or parser fail
+     */
+    @Test
+    public void exprStmt() throws Exception {
+        String program = "class Main{int method () { " +
+                "y = true; " +
+                "flag[9] = true; " +
+                "z++; " +
+                "++z; " +
+                "z--; " +
+                "--z; " +
+                "o(); " +
+                "new Tree(); " +
+                "new Tree[7]; " +
+                "}}";
+        StmtList stmtList = this.getMethodBody(0, 0, program);
+        assertEquals(9, stmtList.getSize());
+        assert this.getExpr(stmtList, 0) instanceof AssignExpr;
+        assert this.getExpr(stmtList, 1) instanceof ArrayAssignExpr;
+        assert this.getExpr(stmtList, 2) instanceof UnaryIncrExpr;
+        assert this.getExpr(stmtList, 3) instanceof UnaryIncrExpr;
+        assert this.getExpr(stmtList, 4) instanceof UnaryDecrExpr;
+        assert this.getExpr(stmtList, 5) instanceof UnaryDecrExpr;
+        assert this.getExpr(stmtList, 6) instanceof DispatchExpr;
+        assert this.getExpr(stmtList, 7) instanceof NewExpr;
+        assert this.getExpr(stmtList, 8) instanceof NewArrayExpr;
+    }
+
+    /**
      * Tests whether an if statement with an else clause will be parsed correctly
      * @throws Exception if the tests or parser fail
      */
@@ -368,12 +399,12 @@ public class ParserTest
     public void instanceOfTest() throws Exception{
         String program = "class Main{ " +
                             "int method () { " +
-                                "x instanceof int; " +
-                                "y instanceof int[]; } " +
+                                "boolean y = x instanceof int; " +
+                                "int z = y instanceof int[]; } " +
                          "}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        InstanceofExpr expr1 = (InstanceofExpr)this.getExpr(stmtList, 0);
-        InstanceofExpr expr2 = (InstanceofExpr)this.getExpr(stmtList, 1);
+        InstanceofExpr expr1 = (InstanceofExpr)this.getExprFromDecl(stmtList, 0);
+        InstanceofExpr expr2 = (InstanceofExpr)this.getExprFromDecl(stmtList, 1);
         assertEquals("x", ((VarExpr)expr1.getExpr()).getName());
         assertEquals("int", expr1.getType());
         assertEquals("y", ((VarExpr)expr2.getExpr()).getName());
@@ -388,12 +419,12 @@ public class ParserTest
     public void castTest() throws Exception{
         String program = "class Main{ " +
                 "int method () { " +
-                    "(int) (num); " +
-                    "(int[]) (num); } " +
+                    "int x = (int) (num); " +
+                    "int[] y = (int[]) (num); } " +
                 "}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        CastExpr expr1 = (CastExpr)this.getExpr(stmtList, 0);
-        CastExpr expr2 = (CastExpr)this.getExpr(stmtList, 1);
+        CastExpr expr1 = (CastExpr)this.getExprFromDecl(stmtList, 0);
+        CastExpr expr2 = (CastExpr)this.getExprFromDecl(stmtList, 1);
         assertEquals("int", expr1.getType());
         assertEquals("num", ((VarExpr)expr1.getExpr()).getName());
         assertEquals("int[]", expr2.getType());
@@ -409,14 +440,14 @@ public class ParserTest
     public void dataTypesTest() throws Exception{
         String program = "class Main{ " +
                 "int method () { " +
-                    "50; " +
-                    "true; " +
-                    "\"hi\"; } " +
+                    "int x = 50; " +
+                    "boolean e = true; " +
+                    "String t = \"hi\"; } " +
                 "}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        ConstIntExpr expr1 = (ConstIntExpr)this.getExpr(stmtList, 0);
-        ConstBooleanExpr expr2 = (ConstBooleanExpr)this.getExpr(stmtList, 1);
-        ConstStringExpr expr3 = (ConstStringExpr)this.getExpr(stmtList, 2);
+        ConstIntExpr expr1 = (ConstIntExpr)this.getExprFromDecl(stmtList, 0);
+        ConstBooleanExpr expr2 = (ConstBooleanExpr)this.getExprFromDecl(stmtList, 1);
+        ConstStringExpr expr3 = (ConstStringExpr)this.getExprFromDecl(stmtList, 2);
         assertEquals("50",  expr1.getConstant());
         assertEquals("true",  expr2.getConstant());
         assertEquals("\"hi\"",  expr3.getConstant());
@@ -429,27 +460,27 @@ public class ParserTest
     @Test
     public void arithmeticCompTest() throws  Exception {
         String program = "class Main{int method () { " +
-                "a + b;" +
-                "c - d;" +
-                "e * f;" +
-                "g / h;" +
-                "i % j;" +
+                "int x = a + b;" +
+                "int y = c - d;" +
+                "int c = e * f;" +
+                "int d = g / h;" +
+                "int e = i % j;" +
                 "}}";
 
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        BinaryExpr plus = (BinaryExpr)this.getExpr(stmtList, 0);
+        BinaryExpr plus = (BinaryExpr)this.getExprFromDecl(stmtList, 0);
         assert plus instanceof BinaryArithPlusExpr;
 
-        BinaryExpr minus = (BinaryExpr)this.getExpr(stmtList, 1);
+        BinaryExpr minus = (BinaryExpr)this.getExprFromDecl(stmtList, 1);
         assert minus instanceof BinaryArithMinusExpr;
 
-        BinaryExpr times = (BinaryExpr)this.getExpr(stmtList, 2);
+        BinaryExpr times = (BinaryExpr)this.getExprFromDecl(stmtList, 2);
         assert times instanceof BinaryArithTimesExpr;
 
-        BinaryExpr divide = (BinaryExpr)this.getExpr(stmtList, 3);
+        BinaryExpr divide = (BinaryExpr)this.getExprFromDecl(stmtList, 3);
         assert divide instanceof BinaryArithDivideExpr;
 
-        BinaryExpr modulus = (BinaryExpr)this.getExpr(stmtList, 4);
+        BinaryExpr modulus = (BinaryExpr)this.getExprFromDecl(stmtList, 4);
         assert modulus instanceof BinaryArithModulusExpr;
     }
 
@@ -460,30 +491,30 @@ public class ParserTest
     @Test
     public void binaryCompTest() throws  Exception{
         String program = "class Main{int method () { " +
-                "a == b;" +
-                "c != d;" +
-                "e < f;" +
-                "g <= h;" +
-                "i > j;" +
-                "k >= l;" +
+                "boolean x = a == b;" +
+                "boolean x = c != d;" +
+                "boolean x = e < f;" +
+                "boolean x = g <= h;" +
+                "boolean x = i > j;" +
+                "boolean x = k >= l;" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        BinaryExpr eq = (BinaryExpr)this.getExpr(stmtList, 0);
+        BinaryExpr eq = (BinaryExpr)this.getExprFromDecl(stmtList, 0);;
         assert eq instanceof BinaryCompEqExpr;
 
-        BinaryExpr ne = (BinaryExpr)this.getExpr(stmtList, 1);
+        BinaryExpr ne = (BinaryExpr)this.getExprFromDecl(stmtList, 1);
         assert ne instanceof BinaryCompNeExpr;
 
-        BinaryExpr lt = (BinaryExpr)this.getExpr(stmtList, 2);
+        BinaryExpr lt = (BinaryExpr)this.getExprFromDecl(stmtList, 2);
         assert lt instanceof BinaryCompLtExpr;
 
-        BinaryExpr leq = (BinaryExpr)this.getExpr(stmtList, 3);
+        BinaryExpr leq = (BinaryExpr)this.getExprFromDecl(stmtList, 3);
         assert leq instanceof BinaryCompLeqExpr;
 
-        BinaryExpr gt = (BinaryExpr)this.getExpr(stmtList, 4);
+        BinaryExpr gt = (BinaryExpr)this.getExprFromDecl(stmtList, 4);
         assert gt instanceof BinaryCompGtExpr;
 
-        BinaryExpr geq = (BinaryExpr)this.getExpr(stmtList, 5);
+        BinaryExpr geq = (BinaryExpr)this.getExprFromDecl(stmtList, 5);
         assert geq instanceof BinaryCompGeqExpr;
     }
 
@@ -494,14 +525,14 @@ public class ParserTest
     @Test
     public void binaryLogicTest() throws  Exception{
         String program = "class Main{int method () { " +
-                "a || b;" +
-                "c && d;" +
+                "boolean x = a || b;" +
+                "boolean y = c && d;" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        BinaryExpr or = (BinaryExpr)this.getExpr(stmtList, 0);
+        BinaryExpr or = (BinaryExpr)this.getExprFromDecl(stmtList, 0);
         assert or instanceof BinaryLogicOrExpr;
 
-        BinaryExpr and = (BinaryExpr)this.getExpr(stmtList, 1);
+        BinaryExpr and = (BinaryExpr)this.getExprFromDecl(stmtList, 1);
         assert and instanceof BinaryLogicAndExpr;
     }
 
@@ -514,8 +545,8 @@ public class ParserTest
         String program = "class Main{int method () { " +
                 "z++;" +
                 "++z;" +
-                "!z;" +
-                "-z;" +
+                "int x = !z;" +
+                "boolean d = -z;" +
                 "z--;" +
                 "--z;" +
                 "}}";
@@ -529,10 +560,10 @@ public class ParserTest
         assert preIncr instanceof UnaryIncrExpr;
         assertEquals(false, preIncr.isPostfix());
 
-        UnaryExpr not = (UnaryExpr)this.getExpr(stmtList, 2);
+        UnaryExpr not = (UnaryExpr)this.getExprFromDecl(stmtList, 2);
         assert not instanceof UnaryNotExpr;
 
-        UnaryExpr unaryMinus = (UnaryExpr)this.getExpr(stmtList, 3);
+        UnaryExpr unaryMinus = (UnaryExpr)this.getExprFromDecl(stmtList, 3);
         assert unaryMinus instanceof UnaryNegExpr;
 
         UnaryExpr postDecr = (UnaryExpr)this.getExpr(stmtList, 4);
@@ -551,20 +582,20 @@ public class ParserTest
     @Test
     public void varExprTest() throws Exception {
         String program = "class Main{ int method(){" +
-                "a;" +
-                "this.b;" +
-                "this.d[2];" +
-                "c[1];" +
+                "int x = a;" +
+                "int y = this.b;" +
+                "int z = this.d[2];" +
+                "int d = c[1];" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
         this.varExprTest("a", false,
-                            (VarExpr)this.getExpr(stmtList, 0));
+                            (VarExpr)this.getExprFromDecl(stmtList, 0));
         this.varExprTest("b", true,
-                            (VarExpr)this.getExpr(stmtList, 1));
+                            (VarExpr)this.getExprFromDecl(stmtList, 1));
         this.arrayExprTest("d", true, 2,
-                            (ArrayExpr)this.getExpr(stmtList,2));
+                            (ArrayExpr)this.getExprFromDecl(stmtList, 2));
         this.arrayExprTest("c", false, 1,
-                            (ArrayExpr) this.getExpr(stmtList,3));
+                            (ArrayExpr)this.getExprFromDecl(stmtList, 3));
 
 
     }
@@ -650,6 +681,37 @@ public class ParserTest
     @Test
     public void missingSemicolon() throws Exception {
         assert badTestMethod("x + 6");
+    }
+
+    /**
+     * tests detection of invalid exprs in exprStmt
+     * @throws Exception if the test fails or the parser crashes
+     */
+    @Test
+    public void exprStmtError() throws Exception{
+        assert badTestMethod("x instance of y" );
+        assert badTestMethod("(x)(y)" );
+        assert badTestMethod("x + 3 " );
+        assert badTestMethod("x - 3 " );
+        assert badTestMethod("x * 3 " );
+        assert badTestMethod("x / 3 " );
+        assert badTestMethod("x % 3 " );
+        assert badTestMethod("x == 3 " );
+        assert badTestMethod("x != 3 " );
+        assert badTestMethod("x < 3 " );
+        assert badTestMethod("x <= 3 " );
+        assert badTestMethod("x > 3 " );
+        assert badTestMethod("x >=  3 " );
+        assert badTestMethod("x && 3 " );
+        assert badTestMethod("x ||  3 " );
+        assert badTestMethod("-x" );
+        assert badTestMethod("!x" );
+        assert badTestMethod("true" );
+        assert badTestMethod("\"hi\"" );
+        assert badTestMethod("5" );
+        assert badTestMethod("x" );
+        assert badTestMethod("x[4]" );
+        assert badTestMethod("(d)" );
     }
 
     /**
@@ -1024,6 +1086,16 @@ public class ParserTest
     }
 
     /**
+     * Return the value assigned to a variable in a declStmt
+     * @param stmtList the stmt list containing the decl
+     * @param index the index of the decl
+     * @return the expression assigned to the variable
+     */
+    private Expr getExprFromDecl(StmtList stmtList, int index){
+        return ((DeclStmt)stmtList.get(index)).getInit();
+    }
+
+    /**
      * tests whether a class is empty and has the given name
      * @param mainClass the class
      * @param className the name of the class
@@ -1123,5 +1195,4 @@ public class ParserTest
         }
         assertEquals(index, ((ConstIntExpr)arrayExpr.getIndex()).getIntConstant());
     }
-
 }

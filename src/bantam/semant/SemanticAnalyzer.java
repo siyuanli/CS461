@@ -94,24 +94,19 @@ public class SemanticAnalyzer {
 		this.updateBuiltins();
 
 		// 2 - build and check the class hierarchy tree
-		System.out.println("Step 2");
 		this.buildTree();
 		this.checkHierarchy();
 
+
 		// 3 - build the environment for each class (adding class members only) and check
 		// that members are declared properly
-		System.out.println("Step 3");
 		this.buildEnvironment();
 
 		// 4 - check that the bantam.Main class and main method are declared properly
-		System.out.println("Step 4");
 		this.checkMainMain();
 
 		// 5 - type check each class member
-		System.out.println("Step 5");
 		this.checkTypes();
-
-		System.out.println("After Step 5");
 
 		this.errorHandler.checkErrors();
 		return root;
@@ -131,26 +126,23 @@ public class SemanticAnalyzer {
 								+ ", cannot be used as a class name.");
 			}
 		}
+
 		//update parent nodes/descendants
 		for (ClassTreeNode node: this.classMap.values()){
-			if (node.getName().equals("Object")){
-				break;
-			}
-
-			Class_ astNode = node.getASTNode();
-			String parent = astNode.getParent();
-			if (parent != null) {
-				ClassTreeNode parentTreeNode = this.classMap.get(parent);
-				if (parentTreeNode.isExtendable()) {
-					node.setParent(parentTreeNode);
+			if (!node.getName().equals("Object")) {
+				Class_ astNode = node.getASTNode();
+				String parent = astNode.getParent();
+				if (parent != null) {
+					ClassTreeNode parentTreeNode = this.classMap.get(parent);
+					if (parentTreeNode.isExtendable()) {
+						node.setParent(parentTreeNode);
+					} else {
+						this.errorHandler.register(2, astNode.getFilename(),
+								astNode.getLineNum(), "Cannot extend " + parent);
+					}
+				} else {
+					node.setParent(this.root);
 				}
-				else{
-					this.errorHandler.register(2, astNode.getFilename(),
-							astNode.getLineNum(), "Cannot extend " + parent);
-				}
-			}
-			else{
-				node.setParent(this.root);
 			}
 		}
 	}
@@ -179,7 +171,6 @@ public class SemanticAnalyzer {
 			while (childrenIterator.hasNext()){
 				ClassTreeNode child = (ClassTreeNode)childrenIterator.next();
 				unchecked.push(child);
-				childrenIterator.next();
 			}
 		}
 	}
@@ -187,7 +178,6 @@ public class SemanticAnalyzer {
 	private void buildEnvironment(){
 		MemberAdderVisitor visitor = new MemberAdderVisitor(this.errorHandler,
 				this.disallowedNames);
-
 
 		this.buildSymbolTables(this.root, visitor);
 	}
@@ -200,7 +190,6 @@ public class SemanticAnalyzer {
 			child.getVarSymbolTable().setParent(child.getParent().getVarSymbolTable());
 			child.getMethodSymbolTable().setParent(child.getParent().getMethodSymbolTable());
 			this.buildSymbolTables(child, memberAdderVisitor);
-			iterator.next();
 		}
 
 	}

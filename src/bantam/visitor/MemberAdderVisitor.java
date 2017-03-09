@@ -67,8 +67,10 @@ public class MemberAdderVisitor extends Visitor {
             this.registerError(lineNum,"Field already declared." );
         }
 
-        node.getInit().accept(new RegisterForwardReferenceVisitor(this.classTreeNode,
-                this.errorHandler, node.getName()));
+        if (node.getInit() != null) {
+            node.getInit().accept(new RegisterForwardReferenceVisitor(this.classTreeNode,
+                    this.errorHandler, node.getName()));
+        }
 
         return null;
     }
