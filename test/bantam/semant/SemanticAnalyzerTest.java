@@ -20,12 +20,13 @@ import static org.junit.Assert.assertTrue;
 public class SemanticAnalyzerTest
 {
 
-    /** tests the case of a Main class with no members.  This is illegal
-     * because a Bantam Java program must have a Main class with a main
-     * method. */
     @Test
-    public void testEmptyMainClass() throws Exception {
+    public void testMainMainClass() throws Exception {
         this.testInvalidProgram("class Main {  }");
+        this.testInvalidProgram("class Main{ int main(){ return 5;} }");
+        this.testValidProgram("class Main{ void main(){}}");
+        this.testValidProgram("class Test{ void main(){} }" +
+                "class Main extends Test{ }");
     }
 
     @Test

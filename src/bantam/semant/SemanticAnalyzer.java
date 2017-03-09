@@ -195,7 +195,7 @@ public class SemanticAnalyzer {
 	}
 
 	private void checkMainMain(){
-		MainMainVisitor mainMainVisitor = new MainMainVisitor();
+		MainMainVisitor mainMainVisitor = new MainMainVisitor(this.classMap);
 		boolean hasMain = mainMainVisitor.hasMain(this.program);
 		if (!hasMain){
 			this.errorHandler.register(2, "Valid programs must have a "

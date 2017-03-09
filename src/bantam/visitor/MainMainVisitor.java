@@ -8,12 +8,34 @@
 package bantam.visitor;
 
 import bantam.ast.*;
+import bantam.util.ClassTreeNode;
+
+import java.util.Hashtable;
 
 /**
  * Vistor class for checking a given program has a Main class
  * with a main method and a void return type
  */
 public class MainMainVisitor extends Visitor {
+
+    /**
+     * The class map that stores names of classes and their corresponding class tree nodes
+     */
+    private Hashtable<String,ClassTreeNode> classMap;
+
+    /**
+     * Creates a main main visitor than can check ancestors for main method
+     * @param classMap
+     */
+    public MainMainVisitor(Hashtable<String,ClassTreeNode> classMap){
+        this.classMap = classMap;
+    }
+
+    /**
+     * Creates a main main visitor
+     */
+    public MainMainVisitor(){;}
+
     /**
      * Check if root node has a Main class with a main method and a void return type
      * @param root the root node of the program
@@ -67,7 +89,17 @@ public class MainMainVisitor extends Visitor {
     public Object visit(Class_ node) {
         boolean nameMain = node.getName().equals("Main");
         if (nameMain){
-            return node.getMemberList().accept(this);
+            boolean hasMainMethod = (boolean)node.getMemberList().accept(this);
+
+            if (this.classMap != null) {
+                //checks if ancestors have main method
+                ClassTreeNode currentClassTreeNode = this.classMap.get("Main").getParent();
+                while (currentClassTreeNode != null && !hasMainMethod) {
+                    hasMainMethod = (boolean) currentClassTreeNode.getASTNode().getMemberList().accept(this);
+                    currentClassTreeNode = currentClassTreeNode.getParent();
+                }
+            }
+            return hasMainMethod;
         }
         return false;
     }
