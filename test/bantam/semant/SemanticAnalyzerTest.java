@@ -52,6 +52,7 @@ public class SemanticAnalyzerTest
         } catch (RuntimeException e) {
             thrown = true;
             try {
+                System.out.println(expectedMessage +"   ;  "+ e.getMessage());
                 assertEquals(expectedMessage, e.getMessage());
                 for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
                     System.out.println(err);
@@ -123,7 +124,7 @@ public class SemanticAnalyzerTest
         this.testValidProgram(
                 this.createMethod("if(3==4){int x = 3;} else {int y = 6;}"));
         this.testInvalidProgram(
-                this.createMethod("if(\"hi\"){ int x = 3;} "));
+                this.createMethod("if(\"Hi Dale\"){ int x = 3;} "));
         this.testInvalidProgram(
                 this.createMethod("if(11111){ int x = 3;} "));
         this.testInvalidProgram(
@@ -134,16 +135,16 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testWhileStmt() throws Exception{
-        //this.testValidProgram( this.createMethod("int x = 0; while(true){ x = x + 2; }"));
-
-        System.out.println(this.createMethod("int x = 6; while(x > 2){ x--; }"));
-        this.testValidProgram( this.createMethod("int x = 6; while(x > 2){}"));
-        /*this.testInvalidProgram( this.createMethod(
-                ""));
+        this.testValidProgram( this.createMethod(
+                "int x = 0; while(true){ x = x + 2; }"));
+        this.testValidProgram( this.createMethod(
+                "int x = 6; while(x > 2){ x = x - 2;}"));
         this.testInvalidProgram( this.createMethod(
-                ""));
+                "int x = 0; while(55){ x = x + 2; }"));
         this.testInvalidProgram( this.createMethod(
-                ""));*/
+                "int x = 0; while(\"Hi Dale\"){ x = x + 2; }"));
+        this.testInvalidProgram( this.createMethod(
+                "int x = 0; while(x = 5){ x = x + 2; }"));
     }
 
     @Test
