@@ -87,7 +87,9 @@ public class MainMainVisitor extends Visitor {
      */
     @Override
     public Object visit(Class_ node) {
+
         boolean nameMain = node.getName().equals("Main");
+
         if (nameMain){
             boolean hasMainMethod = (boolean)node.getMemberList().accept(this);
 
@@ -101,6 +103,9 @@ public class MainMainVisitor extends Visitor {
             }
             return hasMainMethod;
         }
+
+
+
         return false;
     }
 

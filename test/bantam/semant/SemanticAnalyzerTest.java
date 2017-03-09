@@ -20,21 +20,6 @@ import static org.junit.Assert.assertTrue;
 public class SemanticAnalyzerTest
 {
 
-    @Test
-    public void testMainMainClass() throws Exception {
-        this.testInvalidProgram("class Main {  }");
-        this.testInvalidProgram("class Main{ int main(){ return 5;} }");
-        this.testValidProgram("class Main{ void main(){}}");
-        this.testValidProgram("class Test{ void main(){} }" +
-                "class Main extends Test{ }");
-    }
-
-    @Test
-    public void testDeclStmt() throws Exception{
-        String program = this.createMethod("int x = \"lkesfjkw\"; ");
-        this.testInvalidProgram(program);
-    }
-
     private String createClass(String body){
         String program = "class Main { void main(){} " + body + "}";
         return program;
@@ -79,20 +64,26 @@ public class SemanticAnalyzerTest
         return thrown;
     }
 
+    @Test
+    public void testMainMainClass() throws Exception {
+        this.testInvalidProgram("class Main {  }");
+        this.testInvalidProgram("class Main{ int main(){ return 5;} }");
+        this.testValidProgram("class Main{ void main(){}}");
+        this.testValidProgram("class Test{ void main(){} }" +
+                "class Main extends Test{ }");
+    }
 
+    @Test
+    public void testDeclStmt() throws Exception{
+        String program = this.createMethod("int x = \"lkesfjkw\"; ");
+        this.testInvalidProgram(program);
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
+    @Test
+    public void testIfStmt() throws Exception{
+        String program = this.createMethod("if() ");
+        this.testInvalidProgram(program);
+    }
 
 
     @Test
