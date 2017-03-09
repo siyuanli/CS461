@@ -45,6 +45,11 @@ public class SemanticAnalyzerTest
         return program;
     }
 
+    private String createFieldsAndMethod(String fieldDecs, String methodBody){
+        String program = this.createClass(fieldDecs+"\n"+this.createMethod(methodBody));
+        return program;
+    }
+
     private void testValidProgram(String programString) throws  Exception{
         assertFalse(testProgram(programString, "null"));
     }
@@ -62,13 +67,47 @@ public class SemanticAnalyzerTest
             analyzer.analyze();
         } catch (RuntimeException e) {
             thrown = true;
-            assertEquals(expectedMessage, e.getMessage());
-            for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
-                System.out.println(err);
+            try {
+                assertEquals(expectedMessage, e.getMessage());
+            } catch (AssertionError assertE) {
+                for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
+                    System.out.println(err);
+                }
+                throw assertE;
             }
         }
         return thrown;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @Test
+    public void testArrayExpr() throws Exception{
+        this.testValidProgram(this.createMethod("int[] x = new int[3];" +
+                "x[3]=4;"));
+        this.testValidProgram(this.createMethod("Object[] x = new Object[3+4];" +
+                "x[3]=null;"));
+        this.testValidProgram(this.createMethod("Object[] x = new Object[3+4];" +
+                "x[3]=new Object();"));
+        this.testValidProgram(this.createFieldsAndMethod("int x[];",
+                "this.x = new int[4];" + "int x = this.x[4];"));
+    }
+
+
 
 
 }

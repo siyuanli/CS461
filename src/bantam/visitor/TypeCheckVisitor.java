@@ -216,7 +216,8 @@ public class TypeCheckVisitor extends Visitor {
         StmtList stmtList = method.getStmtList();
         stmtList.accept(this);
         if (!method.getReturnType().equals("void")) {
-            if (!(stmtList.get(stmtList.getSize() - 1) instanceof ReturnStmt)) {
+            if (stmtList.getSize()>0 &&
+                    !(stmtList.get(stmtList.getSize() - 1) instanceof ReturnStmt)) {
                 this.registerError(method.getLineNum(), "Missing return Statement");
             }
         }
