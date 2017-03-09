@@ -17,7 +17,7 @@ class Empty{
         int y = 3%"modulus";
         int e = 3%"modulus";}
 
-        while (x = 6){
+        while (x == 6){
             int s = 3%"modulus";
         }
 

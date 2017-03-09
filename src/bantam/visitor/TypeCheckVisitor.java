@@ -45,6 +45,7 @@ public class TypeCheckVisitor extends Visitor {
             return true;
         }
         else if (type1.equals("int") || type1.equals("boolean")){
+            System.out.println("Goes here!");
             return false;
         }
         else if ("null".equals(type2)){
@@ -197,16 +198,19 @@ public class TypeCheckVisitor extends Visitor {
     @Override
     public Object visit(Field field) {
         Expr init = field.getInit();
-        init.accept(this);
-        if (!compatibleType(field.getType(), init.getExprType())) {
-            this.registerError(field.getLineNum(),
-                    "Type of field incompatible with assignment.");
+        if(init!=null) {
+            init.accept(this);
+            if (!compatibleType(field.getType(), init.getExprType())) {
+                this.registerError(field.getLineNum(),
+                        "Type of field incompatible with assignment.");
+            }
         }
         return null;
     }
 
     @Override
     public Object visit(Method method) {
+        System.out.println("Entering method "+classTreeNode.getName()+"."+method.getName());
         this.currentMethodReturnType = method.getReturnType();
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         varSymbolTable.enterScope();
@@ -219,6 +223,7 @@ public class TypeCheckVisitor extends Visitor {
             }
         }
         varSymbolTable.exitScope();
+        System.out.println("Exiting method "+classTreeNode.getName()+"."+method.getName());
         return null;
     }
 
@@ -230,19 +235,27 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(DeclStmt stmt) {
+        System.out.println("DeclStmt happened on line "+stmt.getLineNum());
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         int lineNum = stmt.getLineNum();
         String type = stmt.getType();
         registerErrorIfInvalidType(type, lineNum);
         registerErrorIfReservedName(stmt.getName(), lineNum);
         stmt.getInit().accept(this);
-        for (int i = varSymbolTable.getCurrScopeLevel(); i > 0; i--) {
-            if (varSymbolTable.peek(stmt.getName(), i) != null) {
-                this.registerError(lineNum, "Variable already declared");
+        if(varSymbolTable.peek(stmt.getName())!=null) {
+            for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > 0; i--) {
+                if (varSymbolTable.peek(stmt.getName(), i) != null) {
+                    this.registerError(lineNum, "Variable already declared");
+                }
             }
         }
+        else{
+            this.registerError(lineNum, "Variable already declared");
+        }
         varSymbolTable.add(stmt.getName(), type);
+        System.out.println("type of variable:"+type+"; type of expr:"+stmt.getInit().getExprType());
         if (!compatibleType(type, stmt.getInit().getExprType())) {
+            System.out.println("REGISTERS ERROR!!!");
             this.registerError(lineNum, "Type of variable incompatible with assignment.");
         }
         return null;
@@ -338,6 +351,12 @@ public class TypeCheckVisitor extends Visitor {
         if (returnStmt.getExpr() != null) {
             returnStmt.getExpr().accept(this);
             String returnType = returnStmt.getExpr().getExprType();
+            if(returnType.equals("null") && (currentMethodReturnType.equals("boolean")
+                    || currentMethodReturnType.equals("int"))){
+                this.registerError(returnStmt.getLineNum(),
+                        "Cannot return null from int or boolean method");
+
+            }
             if (!this.compatibleType(this.currentMethodReturnType, returnType)) {
                 this.registerError(returnStmt.getLineNum(),
                         "Return statement type does not match method return type.");
@@ -364,7 +383,8 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(AssignExpr assignExpr){
-        assignExpr.accept(this);
+        System.out.println("An assignment happened on Line:"+assignExpr.getLineNum());
+        assignExpr.getExpr().accept(this);
         checkAssignment(assignExpr.getRefName(), assignExpr.getName(),
                 assignExpr.getExpr().getExprType(), assignExpr.getLineNum(), false);
         assignExpr.setExprType(assignExpr.getExpr().getExprType());
@@ -650,6 +670,18 @@ public class TypeCheckVisitor extends Visitor {
     public Object visit(VarExpr varExpr){
         String type = null;
         String refName=null;
+
+        if(varExpr.getName().equals("null")){
+            if(varExpr.getRef()!=null){
+                this.registerError(varExpr.getLineNum(),
+                        "Cannot reference reserved keyword null");
+            }
+            else{
+                varExpr.setExprType("null");
+                return null;
+            }
+        }
+
         if(varExpr.getRef()!=null){
             refName = ((VarExpr) varExpr.getRef()).getName();
         }

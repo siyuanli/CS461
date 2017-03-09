@@ -113,6 +113,7 @@ public class SemanticAnalyzer {
 
 		System.out.println("After Step 5");
 
+		this.errorHandler.checkErrors();
 		return root;
 	}
 
@@ -187,14 +188,15 @@ public class SemanticAnalyzer {
 		MemberAdderVisitor visitor = new MemberAdderVisitor(this.errorHandler,
 				this.disallowedNames);
 
+
 		this.buildSymbolTables(this.root, visitor);
 	}
 
 	private void buildSymbolTables(ClassTreeNode classTreeNode, MemberAdderVisitor memberAdderVisitor) {
 		Iterator<ClassTreeNode> iterator = classTreeNode.getChildrenList();
+		memberAdderVisitor.getSymbolTables(classTreeNode);
 		while(iterator.hasNext()) {
 			ClassTreeNode child = iterator.next();
-			memberAdderVisitor.getSymbolTables(child);
 			child.getVarSymbolTable().setParent(child.getParent().getVarSymbolTable());
 			child.getMethodSymbolTable().setParent(child.getParent().getMethodSymbolTable());
 			this.buildSymbolTables(child, memberAdderVisitor);
@@ -216,7 +218,9 @@ public class SemanticAnalyzer {
 	private void checkTypes(){
 		TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(
 				this.errorHandler, this.disallowedNames);
-		typeCheckVisitor.checkTypes(this.root);
+		for(ClassTreeNode treeNode : this.root.getClassMap().values()){
+			typeCheckVisitor.checkTypes(treeNode);
+		}
 	}
 
 	/**

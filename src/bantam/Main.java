@@ -427,8 +427,9 @@ public class Main {
                 classTree = semanticAnalyzer.analyze();
             } catch (Exception e) {
                 // there were semantic errors, so report them and exit
+                System.out.println("IN try cathc");
                 System.out.println(e.getMessage());
-                semanticAnalyzer.getErrorHandler().printErrors();;
+                semanticAnalyzer.getErrorHandler().printErrors();
                 throw e;
                 //System.exit(1);
             }
