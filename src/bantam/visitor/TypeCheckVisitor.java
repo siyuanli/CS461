@@ -4,7 +4,6 @@ import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
 import bantam.util.SymbolTable;
-import java_cup.runtime.Symbol;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -192,7 +191,6 @@ public class TypeCheckVisitor extends Visitor {
 
         unaryExpr.setExprType("int");
     }
-
 
     @Override
     public Object visit(Field field) {

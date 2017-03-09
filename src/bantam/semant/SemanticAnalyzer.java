@@ -31,7 +31,6 @@ import bantam.util.*;
 import bantam.visitor.MainMainVisitor;
 import bantam.visitor.MemberAdderVisitor;
 import bantam.visitor.TypeCheckVisitor;
-import java_cup.runtime.Symbol;
 
 import java.util.*;
 
@@ -119,12 +118,17 @@ public class SemanticAnalyzer {
 			String className = classNode.getName();
 			ClassTreeNode classTreeNode = new ClassTreeNode(classNode,
 					false, true, this.classMap);
-			this.classMap.put(className, classTreeNode);
-			if (this.disallowedNames.contains(className)){
-				this.errorHandler.register(2, classNode.getFilename(),
-						classNode.getLineNum(), "Reserved word, " + className
-								+ ", cannot be used as a class name.");
-			}
+            if (this.disallowedNames.contains(className)){
+                this.errorHandler.register(2, classNode.getFilename(),
+                        classNode.getLineNum(), "Reserved word, " + className
+                                + ", cannot be used as a class name.");
+            }
+            else if (this.classMap.containsKey(className)){
+                this.errorHandler.register(2, classNode.getFilename(),
+                        classNode.getLineNum(),
+                        "Class " + className + " already declared.");
+            }
+            this.classMap.put(className, classTreeNode);
 		}
 
 		//update parent nodes/descendants
@@ -134,11 +138,12 @@ public class SemanticAnalyzer {
 				String parent = astNode.getParent();
 				if (parent != null) {
 					ClassTreeNode parentTreeNode = this.classMap.get(parent);
-					if (parentTreeNode.isExtendable()) {
-						node.setParent(parentTreeNode);
-					} else {
-						this.errorHandler.register(2, astNode.getFilename(),
-								astNode.getLineNum(), "Cannot extend " + parent);
+					if (parentTreeNode == null || !parentTreeNode.isExtendable()){
+                        this.errorHandler.register(2, astNode.getFilename(),
+                                astNode.getLineNum(), "Cannot extend " + parent);
+                    }
+					else {
+                        node.setParent(parentTreeNode);
 					}
 				} else {
 					node.setParent(this.root);
@@ -173,6 +178,9 @@ public class SemanticAnalyzer {
 				unchecked.push(child);
 			}
 		}
+		if (checked.size() != this.classMap.size()){
+            this.errorHandler.register(2, "Illegal Tree Structure.");
+        }
 	}
 
 	private void buildEnvironment(){
@@ -207,7 +215,7 @@ public class SemanticAnalyzer {
 	private void checkTypes(){
 		TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(
 				this.errorHandler, this.disallowedNames);
-		for(ClassTreeNode treeNode : this.root.getClassMap().values()){
+		for(ClassTreeNode treeNode : this.classMap.values()){
 			typeCheckVisitor.checkTypes(treeNode);
 		}
 	}

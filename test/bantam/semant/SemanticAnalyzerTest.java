@@ -21,18 +21,15 @@ public class SemanticAnalyzerTest
 {
 
     private String createClass(String body){
-        String program = "class Main { void main(){} " + body + "}";
-        return program;
+        return "class Main { void main(){} " + body + "}";
     }
 
     private String createMethod(String methodBody){
-        String program = this.createClass("void test(){" + methodBody + "}");
-        return program;
+        return this.createClass("void test(){" + methodBody + "}");
     }
 
     private String createFieldsAndMethod(String fieldDecs, String methodBody){
-        String program = this.createClass(fieldDecs+"\n"+this.createMethod(methodBody));
-        return program;
+        return this.createClass(fieldDecs+"\n"+this.createMethod(methodBody));
     }
 
     private void testValidProgram(String programString) throws  Exception{
@@ -55,6 +52,9 @@ public class SemanticAnalyzerTest
             thrown = true;
             try {
                 assertEquals(expectedMessage, e.getMessage());
+                for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
+                    System.out.println(err);
+                }
             } catch (AssertionError assertE) {
                 for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
                     System.out.println(err);
@@ -66,9 +66,44 @@ public class SemanticAnalyzerTest
     }
 
     @Test
-    public void testMainMainClass() throws Exception {
+    public void testInvalidMainMainClass() throws Exception {
         this.testInvalidProgram("class Main {  }");
         this.testInvalidProgram("class Main{ int main(){ return 5;} }");
+    }
+
+    @Test
+    public void testIllegalInheritance() throws Exception{
+        this.testInvalidProgram("class Main extends Test{ void main(){} } " +
+                "class Test extends Bar {} " +
+                "class Bar extends Main {}");
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends Foo {} ");
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends Sys {} ");
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends String {} ");
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends TextIO { } ");
+    }
+
+    @Test
+    public void testInvalidClassNames() throws Exception{
+        this.testInvalidProgram("class Main{ void main(){} }" +
+                "class void{}" +
+                "class int{}");
+
+        this.testInvalidProgram("class Main{ void main(){} }" +
+                "class Foo{ void test(){}} " +
+                "class Foo{} ");
+
+    }
+
+    @Test
+    public void testValidClasses() throws Exception{
         this.testValidProgram("class Main{ void main(){}}");
         this.testValidProgram("class Test{ void main(){} }" +
                 "class Main extends Test{ }");
