@@ -40,10 +40,11 @@ public class SemanticAnalyzerTest
     }
 
     private void testInvalidProgram(String programString) throws Exception{
-        assertTrue(testProgram(programString, "Bantam semantic analyzer found errors."));
+        assertTrue(testProgram(programString,
+                "Bantam semantic analyzer found errors."));
     }
 
-    private boolean testProgram(String programString, String expectedMessage) throws  Exception{
+    private boolean testProgram(String programString, String expectedMessage) throws Exception{
         boolean thrown = false;
         Parser parser = new Parser(new Lexer(new StringReader(programString)));
         Program program = (Program) parser.parse().value;
@@ -81,10 +82,53 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testIfStmt() throws Exception{
-        String program = this.createMethod("if() ");
-        this.testInvalidProgram(program);
+        this.testValidProgram(
+                this.createMethod("if(3==3){int x = 3;} "));
+        this.testValidProgram(
+                this.createMethod("if(3==4){int x = 3;} else {int y = 6;}"));
+        this.testInvalidProgram(
+                this.createMethod("if(\"hi\"){ int x = 3;} "));
+        this.testInvalidProgram(
+                this.createMethod("if(11111){ int x = 3;} "));
+        this.testInvalidProgram(
+                this.createMethod("if(x = 5){ int x = 3;} "));
+        this.testInvalidProgram(
+                this.createMethod("if(1 == 1){ x = 3;} "));
     }
 
+    @Test
+    public void testWhileStmt() throws Exception{
+        //this.testValidProgram( this.createMethod("int x = 0; while(true){ x = x + 2; }"));
+
+        System.out.println(this.createMethod("int x = 6; while(x > 2){ x--; }"));
+        this.testValidProgram( this.createMethod("int x = 6; while(x > 2){}"));
+        /*this.testInvalidProgram( this.createMethod(
+                ""));
+        this.testInvalidProgram( this.createMethod(
+                ""));
+        this.testInvalidProgram( this.createMethod(
+                ""));*/
+    }
+
+    @Test
+    public void testForStmt() throws Exception{
+
+        this.testValidProgram( this.createMethod(""));
+        this.testValidProgram( this.createMethod(""));
+        this.testInvalidProgram( this.createMethod(""));
+        this.testInvalidProgram( this.createMethod(""));
+        this.testInvalidProgram( this.createMethod(""));
+    }
+
+    @Test
+    public void testBreakStmt() throws Exception{
+
+        this.testValidProgram( this.createMethod(""));
+        this.testValidProgram( this.createMethod(""));
+        this.testInvalidProgram( this.createMethod(""));
+        this.testInvalidProgram( this.createMethod(""));
+        this.testInvalidProgram( this.createMethod(""));
+    }
 
     @Test
     public void testArrayExpr() throws Exception{
