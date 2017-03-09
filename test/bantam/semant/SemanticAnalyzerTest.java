@@ -29,7 +29,8 @@ public class SemanticAnalyzerTest
     }
 
     private String createFieldsAndMethod(String fieldDecs, String methodBody){
-        return this.createClass(fieldDecs+"\n"+this.createMethod(methodBody));
+        String program = this.createClass(fieldDecs+"void test(){\n"+methodBody+"}");
+        return program;
     }
 
     private void testValidProgram(String programString) throws  Exception{
@@ -173,7 +174,9 @@ public class SemanticAnalyzerTest
                 "x[3]=null;"));
         this.testValidProgram(this.createMethod("Object[] x = new Object[3+4];" +
                 "x[3]=new Object();"));
-        this.testValidProgram(this.createFieldsAndMethod("int x[];",
+        System.out.println(this.createFieldsAndMethod("int[] x;",
+                "this.x = new int[4];" + "int x = this.x[4];"));
+        this.testValidProgram(this.createFieldsAndMethod("int[] x;",
                 "this.x = new int[4];" + "int x = this.x[4];"));
     }
 

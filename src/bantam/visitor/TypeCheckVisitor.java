@@ -21,6 +21,8 @@ public class TypeCheckVisitor extends Visitor {
     private String currentMethodReturnType;
     private boolean inLoop;
     private Set<String> disallowedNames;
+    private int fieldScope;
+    private int methodScope;
 
 
     public TypeCheckVisitor(ErrorHandler errorHandler, Set<String> disallowedNames) {
@@ -31,6 +33,8 @@ public class TypeCheckVisitor extends Visitor {
     public void checkTypes(ClassTreeNode classTreeNode) {
         this.classTreeNode = classTreeNode;
         Class_ classASTNode = this.classTreeNode.getASTNode();
+        this.fieldScope = this.classTreeNode.getVarSymbolTable().getCurrScopeLevel();
+        this.methodScope = this.classTreeNode.getMethodSymbolTable().getCurrScopeLevel();
         classASTNode.accept(this);
     }
 
@@ -97,10 +101,11 @@ public class TypeCheckVisitor extends Visitor {
                 variableType = variableType.substring(0,variableType.length()-2);
             }
             if(!this.compatibleType(variableType, exprType)){
-                this.registerError(lineNum, "Incompatible variableType assignment.");
+                this.registerError(lineNum, "Incompatible variable type assignment.");
             }
         }
     }
+
     private String findVariableType(String refName, String name, int lineNum) {
         Object type = null;
         //finding the type of the variable
@@ -109,10 +114,10 @@ public class TypeCheckVisitor extends Visitor {
         }
         else{ //refName != null
             if (refName.equals("this")){
-                type = this.classTreeNode.getVarSymbolTable().peek(name,0);
+                type = this.classTreeNode.getVarSymbolTable().peek(name,this.fieldScope);
             }
             else if (refName.equals("super")){
-                type = this.classTreeNode.getParent().getVarSymbolTable().lookup(name);
+                type = this.classTreeNode.getVarSymbolTable().lookup(name,this.fieldScope-1);
             }
             else{
                 this.registerError(lineNum,
@@ -237,15 +242,10 @@ public class TypeCheckVisitor extends Visitor {
         registerErrorIfInvalidType(type, lineNum);
         registerErrorIfReservedName(stmt.getName(), lineNum);
         stmt.getInit().accept(this);
-        if(varSymbolTable.peek(stmt.getName())==null) {
-            for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > 0; i--) {
-                if (varSymbolTable.peek(stmt.getName(), i) != null) {
-                    this.registerError(lineNum, "Variable already declared");
-                }
+        for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > this.fieldScope; i--) {
+            if (varSymbolTable.peek(stmt.getName(), i) != null) {
+                this.registerError(lineNum, "Variable already declared");
             }
-        }
-        else{
-            this.registerError(lineNum, "Variable already declared");
         }
         varSymbolTable.add(stmt.getName(), type);
         if (!compatibleType(type, stmt.getInit().getExprType())) {
@@ -408,11 +408,11 @@ public class TypeCheckVisitor extends Visitor {
         Pair<String, List<String>> methodPair = null;
         if (refExpr != null){
             if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
-                methodPair = ((Pair<String, List<String>>)methodTable.peek(dispatchExpr.getMethodName(),0));
+                methodPair = ((Pair<String, List<String>>)methodTable.peek(dispatchExpr.getMethodName(),this.methodScope));
             }
             else if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
-                methodPair = ((Pair<String, List<String>>)this.classTreeNode.getParent()
-                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),0));
+                methodPair = ((Pair<String, List<String>>)this.classTreeNode
+                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),this.methodScope-1));
             }
             else {
                 refExpr.accept(this);
@@ -479,9 +479,7 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(NewArrayExpr newArrayExpr){
-        if (!this.classTreeNode.getClassMap().containsKey(newArrayExpr.getType())){
-            this.registerError(newArrayExpr.getLineNum(), "Object type undefined.");
-        }
+        this.registerErrorIfInvalidType(newArrayExpr.getType(),newArrayExpr.getLineNum());
         newArrayExpr.getSize().accept(this);
         if (!newArrayExpr.getSize().getExprType().equals("int")){
             registerError(newArrayExpr.getLineNum(), "Array size is not int.");

@@ -532,7 +532,7 @@ new_expr
 new_array_expr
     ::=
     NEW ID:type LSQBRACE expr:e RSQBRACE
-        {: RESULT = new NewArrayExpr(type.getLineNum(), type.getAttribute(), e); :}
+        {: RESULT = new NewArrayExpr(type.getLineNum(), type.getAttribute()+"[]", e); :}
     ;
 
 instance_of_expr
