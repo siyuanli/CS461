@@ -253,6 +253,15 @@ public class SemanticAnalyzerTest
         this.testValidProgram("class Main { void main(){}}" +
                 "class Foo { int[] x; }" +
                 "class Bar extends Foo { void test(){ int z = super.x[1]; } } ");
+        this.testInvalidProgram("class Main { void main(){" +
+                "int[] array = new int[4];" +
+                "boolean thing = array[3]; } }");
+        this.testInvalidProgram("class Main { void main(){" +
+                "int[] array = new int[4];" +
+                "int thing = array[true]; } }");
+        this.testInvalidProgram("class Main { void main(){" +
+                "int[] array = new int[4];" +
+                "int thing = this.array[4]; } }");
     }
 
 

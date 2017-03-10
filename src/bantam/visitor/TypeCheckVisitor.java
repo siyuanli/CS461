@@ -721,6 +721,10 @@ public class TypeCheckVisitor extends Visitor {
             if (!arrayExpr.getIndex().getExprType().equals("int")) {
                 this.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
             }
+
+        }
+
+        if(type!=null && type.endsWith("[]")){
             type = type.substring(0, type.length()-2);
         }
 
