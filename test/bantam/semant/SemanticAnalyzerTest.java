@@ -226,10 +226,25 @@ public class SemanticAnalyzerTest
     @Test
     public void testAssignExpr() throws Exception{
         this.testValidProgram(this.createMethod(
-                "int x=null; int y=123; String a=\"aww\"; boolean z=true;"));
-        this.testValidProgram(this.createMethod(
-                ""));
+                "int x = 0; String a = null; boolean z = true;" +
+                        "x = 5; a = \"ahhhh\"; z = false;"));
+        this.testValidProgram("class Test{ int a = 0; }" +
+                "class Main extends Test{ int b = 1;  void main(){ " +
+                "int a = 0; super.a = 55; this.b = 66; }}");
+        this.testInvalidProgram(this.createMethod(
+                "int x = 0; String a = null; boolean z = true;" +
+                        "x = true; a = false; z = \"ahhhh\";"));
+        this.testInvalidProgram(this.createMethod(
+                "hi = 123; bye = false; this.x = true; super.y = 0;"));
+        this.testInvalidProgram("class Test{ int a = 0; }" +
+                "class Main extends Test{ int b = 1;  void main(){ " +
+                "int a = 0; this.a = 55; super.b = 66; }}");
+        this.testInvalidProgram("class Test{ }" +
+                "class Main extends Test{ int a = 0; void main(){ int b = 1; " +
+                " super.a = 55; this.b = 66; }}");
+
     }
+
 
     @Test
     public void testArrayAssignExpr() throws Exception{
