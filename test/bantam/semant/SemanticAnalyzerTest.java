@@ -118,18 +118,18 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testIfStmt() throws Exception{
-        this.testValidProgram(
-                this.createMethod("if(3==3){int x = 3;} "));
-        this.testValidProgram(
-                this.createMethod("if(3==4){int x = 3;} else {int y = 6;}"));
-        this.testInvalidProgram(
-                this.createMethod("if(\"Hi Dale\"){ int x = 3;} "));
-        this.testInvalidProgram(
-                this.createMethod("if(11111){ int x = 3;} "));
-        this.testInvalidProgram(
-                this.createMethod("if(x = 5){ int x = 3;} "));
-        this.testInvalidProgram(
-                this.createMethod("if(1 == 1){ x = 3;} "));
+        this.testValidProgram(this.createMethod(
+                "if(3==3){int x = 3;} "));
+        this.testValidProgram(this.createMethod(
+                "if(3==4){int x = 3;} else {int y = 6;}"));
+        this.testInvalidProgram(this.createMethod(
+                "if(\"Hi Dale\"){ int x = 3;} "));
+        this.testInvalidProgram(this.createMethod(
+                "if(11111){ int x = 3;} "));
+        this.testInvalidProgram(this.createMethod(
+                "if(x = 5){ int x = 3;} "));
+        this.testInvalidProgram(this.createMethod(
+                "if(1 == 1){ x = 3;} "));
     }
 
     @Test
@@ -148,32 +148,38 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testForStmt() throws Exception{
-
-        this.testValidProgram( this.createMethod(""));
-        this.testValidProgram( this.createMethod(""));
-        this.testInvalidProgram( this.createMethod(""));
-        this.testInvalidProgram( this.createMethod(""));
-        this.testInvalidProgram( this.createMethod(""));
+        this.testValidProgram( this.createMethod(
+                "int i = 0; for(i = 0;i<5;){i = i+3;}"));
+        this.testValidProgram( this.createMethod(
+                "int i = 0; for(567;true;i){i = i+3;}"));
+        this.testInvalidProgram( this.createMethod(
+                "int i = 0; for(567;i=4;i){i = i+3;}"));
+        this.testInvalidProgram( this.createMethod(
+                "int i = 0; for(i = 0;567;){i = i+3;}"));
+        this.testInvalidProgram( this.createMethod(
+                "int i = 0; for(i = 0;\"Hi Dale\";){i = i+3;}"));
     }
 
     @Test
     public void testBreakStmt() throws Exception{
-
-        this.testValidProgram( this.createMethod(""));
-        this.testValidProgram( this.createMethod(""));
-        this.testInvalidProgram( this.createMethod(""));
-        this.testInvalidProgram( this.createMethod(""));
-        this.testInvalidProgram( this.createMethod(""));
+        this.testValidProgram( this.createMethod(
+                "while(true){ break; }"));
+        this.testValidProgram( this.createMethod(
+                "int i = 0; for(i = 0;;){break;}"));
+        this.testInvalidProgram( this.createMethod(
+                "if(5==5){break;}"));
+        this.testInvalidProgram( this.createMethod(
+                "String x = \"Hi Dale\"; break;"));
     }
 
     @Test
     public void testArrayExpr() throws Exception{
-        this.testValidProgram(this.createMethod("int[] x = new int[3];" +
-                "x[3]=4;"));
-        this.testValidProgram(this.createMethod("Object[] x = new Object[3+4];" +
-                "x[3]=null;"));
-        this.testValidProgram(this.createMethod("Object[] x = new Object[3+4];" +
-                "x[3]=new Object();"));
+        this.testValidProgram(this.createMethod(
+                "int[] x = new int[3]; x[3]=4;"));
+        this.testValidProgram(this.createMethod(
+                "Object[] x = new Object[3+4]; x[3]=null;"));
+        this.testValidProgram(this.createMethod(
+                "Object[] x = new Object[3+4]; x[3]=new Object();"));
         this.testValidProgram(this.createFieldsAndMethod("int[] x;",
                 "this.x = new int[4];" + "int x = this.x[4];"));
         this.testValidProgram("class Main { void main(){}}" +

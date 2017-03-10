@@ -1,1 +1,1 @@
-class Main { void main(){} void test(){int x = 6; while(x > 2){ --x; }}}
+class Main { void main(){} void test(){ this.break;}}
