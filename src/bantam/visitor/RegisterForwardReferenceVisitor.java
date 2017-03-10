@@ -5,6 +5,8 @@ import bantam.ast.VarExpr;
 import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
 
+import java.util.Set;
+
 /**
  * Created by Phoebe Hughes on 3/7/2017.
  */
@@ -13,7 +15,6 @@ public class RegisterForwardReferenceVisitor extends Visitor {
     private ClassTreeNode classTreeNode;
     private ErrorHandler errorHandler;
     private String varName;
-
 
     public RegisterForwardReferenceVisitor(ClassTreeNode classTreeNode,
                                            ErrorHandler errorHandler, String varName){
@@ -28,7 +29,7 @@ public class RegisterForwardReferenceVisitor extends Visitor {
     }
 
     private void checkForwardReference(String exprName, int lineNum) {
-        if( exprName == null){
+        if (exprName == null){
             this.registerError(lineNum, "Illegal forward reference.");
         }
         else if(exprName.equals(this.varName) && this.classTreeNode.getVarSymbolTable().peek(exprName) != null){
@@ -38,8 +39,19 @@ public class RegisterForwardReferenceVisitor extends Visitor {
 
     @Override
     public Object visit(VarExpr varExpr){
-        String exprName = (String)this.classTreeNode.getVarSymbolTable().lookup(varExpr.getName());
+        String exprName;
+        if (varExpr.getName().equals("this") || varExpr.getName().equals("super")){
+            return null;
+        }
+        else if (varExpr.getName().equals("length")){
+            exprName = (String)this.classTreeNode.getVarSymbolTable().lookup(((VarExpr)varExpr.getRef()).getName());
+        }
+        else{
+            exprName = (String)this.classTreeNode.getVarSymbolTable().lookup(varExpr.getName());
+        }
+
         checkForwardReference(exprName, varExpr.getLineNum());
+
         return null;
     }
 

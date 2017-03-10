@@ -407,11 +407,12 @@ public class TypeCheckVisitor extends Visitor {
         Pair<String, List<String>> methodPair = null;
         if (refExpr != null){
             if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
-                methodPair = ((Pair<String, List<String>>)methodTable.peek(dispatchExpr.getMethodName(),this.methodScope));
+                methodPair = ((Pair<String, List<String>>)methodTable.lookup(dispatchExpr.getMethodName(),this.methodScope));
             }
             else if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
-                methodPair = ((Pair<String, List<String>>)this.classTreeNode
-                        .getMethodSymbolTable().peek(dispatchExpr.getMethodName(),this.methodScope-1));
+                methodPair = ((Pair<String, List<String>>) this.classTreeNode
+                            .getMethodSymbolTable().lookup(dispatchExpr.getMethodName(), this.methodScope -1));
+
             }
             else {
                 refExpr.accept(this);
@@ -715,6 +716,9 @@ public class TypeCheckVisitor extends Visitor {
             this.registerError(arrayExpr.getLineNum(),
                     "Indexed variable must be an array type.");
         }
+        else{
+            type = type.substring(0, type.length()-2);
+        }
 
         if (arrayExpr.getIndex() != null) {
             arrayExpr.getIndex().accept(this);
@@ -722,10 +726,6 @@ public class TypeCheckVisitor extends Visitor {
                 this.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
             }
 
-        }
-
-        if(type!=null && type.endsWith("[]")){
-            type = type.substring(0, type.length()-2);
         }
 
         arrayExpr.setExprType(type);

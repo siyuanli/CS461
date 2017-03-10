@@ -5,7 +5,6 @@ import bantam.lexer.Lexer;
 import org.junit.Test;
 import bantam.parser.Parser;
 import bantam.util.ErrorHandler;
-
 import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
@@ -89,6 +88,12 @@ public class SemanticAnalyzerTest
 
         this.testInvalidProgram("class Main{ void main(){} } " +
                 "class Bar extends TextIO { } ");
+
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends Foo { } " +
+                "class Foo extends Bar {} " +
+                "class Test extends Foo {} ");
     }
 
     @Test
@@ -107,7 +112,53 @@ public class SemanticAnalyzerTest
     public void testValidClasses() throws Exception{
         this.testValidProgram("class Main{ void main(){}}");
         this.testValidProgram("class Test{ void main(){} }" +
-                "class Main extends Test{ }");
+                "class Main extends Test{ }" +
+                "class Foo extends Test{} " +
+                "class Bar {} " +
+                "class Baz extends Foo{} ");
+    }
+
+    @Test
+    public void testFieldDeclaration() throws Exception{
+        this.testInvalidProgram(this.createFieldsAndMethod( "int x = \"hi\";", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int x = true;", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int null;", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int void;", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "void x;", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int x; int x; ", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x; String x; ", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x = new int[\"hi\"]; ", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x = new int[true];", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x = new String[6];", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "Foo j;", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "Foo j = new Foo();", ""));
+        this.testInvalidProgram(this.createFieldsAndMethod( "int x = y; int y = 5;", ""));
+
+        this.testValidProgram(this.createFieldsAndMethod( "int x = 7; String[] y = new String[5];", ""));
+        this.testValidProgram(this.createFieldsAndMethod( "int[] x = new int[6]; int y = 5;", ""));
+        this.testValidProgram(this.createFieldsAndMethod( "int[] x;", ""));
+        this.testValidProgram(this.createFieldsAndMethod( "int j;", ""));
+    }
+
+    @Test
+    public void testFieldMethodInheritance() throws Exception{
+        this.testValidProgram("class Main { " +
+                                "int x = 5; " +
+                                "int testMethod(int num){}" +
+                                "void main(){} } " +
+                            " class Test extends Main {" +
+                                "int method(){ " +
+                                    "super.main(); " +
+                                    "testMethod(x); " +
+                                    "return super.x; }}" +
+                            " class Child extends Test{" +
+                                "int y = super.x; " +
+                                "int z = x;" +
+                                "int j = super.testMethod(y);" +
+                                "int e = testMethod(y); }" );
+
+        this.testValidProgram(this.createFieldsAndMethod("int x;", "int j = this.x; int k = x;"));
+        //this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = this.x; int k = x;"));
     }
 
     @Test
