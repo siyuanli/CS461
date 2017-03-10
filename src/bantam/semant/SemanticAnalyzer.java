@@ -53,6 +53,8 @@ public class SemanticAnalyzer {
 	/** Maps class names to ClassTreeNode objects describing the class */
 	private Hashtable<String,ClassTreeNode> classMap = new Hashtable<String,ClassTreeNode>();
 
+	private HashSet<ClassTreeNode> nonLoopClasses = new HashSet<>();
+
 	/** Object for error handling */
 	private ErrorHandler errorHandler = new ErrorHandler();
 
@@ -169,6 +171,7 @@ public class SemanticAnalyzer {
 				return;
 			}
 			else{
+				this.nonLoopClasses.add(popped);
 				checked.add(popped);
 			}
 
@@ -215,7 +218,7 @@ public class SemanticAnalyzer {
 	private void checkTypes(){
 		TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(
 				this.errorHandler, this.disallowedNames);
-		for(ClassTreeNode treeNode : this.classMap.values()){
+		for(ClassTreeNode treeNode : this.nonLoopClasses){
 			typeCheckVisitor.checkTypes(treeNode);
 		}
 	}
