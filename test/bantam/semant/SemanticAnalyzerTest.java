@@ -173,6 +173,74 @@ public class SemanticAnalyzerTest
     }
 
     @Test
+    public void testAssignExpr() throws Exception{
+        this.testValidProgram(this.createMethod(
+                "int x=null; int y=123; String a=\"aww\"; boolean z=true;"));
+        this.testValidProgram(this.createMethod(
+                ""));
+    }
+
+    @Test
+    public void testArrayAssignExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testDispatchExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testNewExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testInstanceofExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testCastExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testBinaryArithExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testBinaryCompExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testBinaryLogicExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testUnaryNegExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testUnaryNotExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testIncrDecrExpr() throws Exception{
+
+    }
+
+    @Test
+    public void testVarExpr() throws Exception{
+
+    }
+
+    @Test
     public void testArrayExpr() throws Exception{
         this.testValidProgram(this.createMethod(
                 "int[] x = new int[3]; x[3]=4;"));
@@ -186,8 +254,6 @@ public class SemanticAnalyzerTest
                 "class Foo { int[] x; }" +
                 "class Bar extends Foo { void test(){ int z = super.x[1]; } } ");
     }
-
-
 
 
 }
