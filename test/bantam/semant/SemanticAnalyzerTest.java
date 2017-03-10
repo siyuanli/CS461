@@ -49,18 +49,12 @@ public class SemanticAnalyzerTest
             analyzer.analyze();
         } catch (RuntimeException e) {
             thrown = true;
-            try {
-                System.out.println(expectedMessage +"   ;  "+ e.getMessage());
-                assertEquals(expectedMessage, e.getMessage());
-                for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
-                    System.out.println(err);
-                }
-            } catch (AssertionError assertE) {
-                for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
-                    System.out.println(err);
-                }
-                throw assertE;
+            System.out.println(expectedMessage +"   ;  "+ e.getMessage());
+            System.out.println(e.getClass());
+            for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
+                System.out.println(err);
             }
+            assertEquals(expectedMessage, e.getMessage());
         }
         return thrown;
     }

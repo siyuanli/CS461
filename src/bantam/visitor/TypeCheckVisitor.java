@@ -168,16 +168,20 @@ public class TypeCheckVisitor extends Visitor {
         String type = null;
         if (expr instanceof  VarExpr){
             VarExpr varExpr = (VarExpr)expr;
-            type = this.findVariableType(((VarExpr)varExpr.getRef()).getName(),
-                    varExpr.getName(), varExpr.getLineNum());
+            String refName = null;
+            if(varExpr.getRef()!=null){
+                refName = ((VarExpr)varExpr.getRef()).getName();
+            }
+            type = this.findVariableType(refName, varExpr.getName(), varExpr.getLineNum());
 
         }
         else if (expr instanceof ArrayExpr){
             ArrayExpr arrayExpr = (ArrayExpr)expr;
             type = this.findVariableType(((ArrayExpr)arrayExpr.getRef()).getName(),
                     arrayExpr.getName(), arrayExpr.getLineNum());
-            type = type.substring(0, type.length()-2);
-
+            if(type!=null && type.endsWith("[]")){
+                type = type.substring(0,type.length()-2);
+            }
         }
         else{
             this.registerError(unaryExpr.getLineNum(),
