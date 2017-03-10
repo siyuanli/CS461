@@ -288,7 +288,30 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testVarExpr() throws Exception{
-
+        this.testValidProgram(this.createMethod(
+                "int x = 4;"));
+        this.testValidProgram(this.createMethod(
+                "int x = 4; int y = x; x = -y+x; x++;"));
+        this.testValidProgram(this.createMethod(
+                "boolean x = false;"));
+        this.testValidProgram(this.createFieldsAndMethod("int[] x;",
+                "this.x=null"));
+        this.testValidProgram("class Main { void main(){}}" +
+                "class Foo { int x; }" +
+                "class Bar extends Foo { void test(){ super.x = super.x; } } ");
+        this.testValidProgram("class Main { void main(){}}" +
+                "class Foo { int x; }" +
+                "class Bar extends Foo { void test(){ super.x = x; } } ");
+        this.testInvalidProgram(this.createMethod(
+                "int x = null;"));
+        this.testInvalidProgram(this.createMethod(
+                "boolean null = false;"));
+        this.testValidProgram("class Main { void main(){}}" +
+                "class Foo { int x; }" +
+                "class Bar extends Foo { void test(){ boolean y = super.x } } ");
+        this.testValidProgram("class Main { void main(){}}" +
+                "class Foo { int x; }" +
+                "class Bar extends Foo { void test(){ this.y = super.x } } ");
     }
 
     @Test
@@ -304,15 +327,21 @@ public class SemanticAnalyzerTest
         this.testValidProgram("class Main { void main(){}}" +
                 "class Foo { int[] x; }" +
                 "class Bar extends Foo { void test(){ int z = super.x[1]; } } ");
-        this.testInvalidProgram("class Main { void main(){" +
+        this.testInvalidProgram(this.createMethod(
                 "int[] array = new int[4];" +
-                "boolean thing = array[3]; } }");
-        this.testInvalidProgram("class Main { void main(){" +
+                "boolean thing = array[3];"));
+        this.testInvalidProgram(this.createMethod(
                 "int[] array = new int[4];" +
-                "int thing = array[true]; } }");
+                "int thing = array[true];"));
         this.testInvalidProgram("class Main { void main(){" +
                 "int[] array = new int[4];" +
                 "int thing = this.array[4]; } }");
+        this.testInvalidProgram("class Main { void main(){" +
+                "int[] array = new int[4];" +
+                "int thing = super.array[4]; } }");
+        this.testInvalidProgram("class Main { void main(){" +
+                "int[] array = new int[4];" +
+                "boolean thing = array[4]; } }");
     }
 
 

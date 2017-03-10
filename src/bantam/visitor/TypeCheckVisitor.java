@@ -113,7 +113,7 @@ public class TypeCheckVisitor extends Visitor {
         }
         else{ //refName != null
             if (refName.equals("this")){
-                type = this.classTreeNode.getVarSymbolTable().peek(name,this.fieldScope);
+                type = this.classTreeNode.getVarSymbolTable().lookup(name,this.fieldScope);
             }
             else if (refName.equals("super")){
                 type = this.classTreeNode.getVarSymbolTable().lookup(name,this.fieldScope-1);
