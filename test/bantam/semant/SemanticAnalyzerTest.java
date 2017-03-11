@@ -306,6 +306,10 @@ public class SemanticAnalyzerTest
                         "boolean[] b = new boolean[10]; " +
                         "x[3] = 12; str[5] = \"Hi Dale\"; b[15] = false; " +
                         "int num = x[5]; String string = str[90]; "));
+        this.testValidProgram(
+                "class Test{ int[] a = new int[10]; }" +
+                "class Main extends Test{ boolean[] b = new boolean[10]; " +
+                "void main(){ super.a[5] = 55; this.b[2] = true; }}");
         this.testInvalidProgram(this.createMethod(
                 "int[] x = new int[10]; " +
                         "String[] str = new String[10]; " +
@@ -314,6 +318,15 @@ public class SemanticAnalyzerTest
                         "arr[10] = false; " +
                         "x[true] = 3; x[\"Hi Dale\"] = 3; " +
                         "x.length = 90; x.length = true; x.length = \"Hi Dale\"; "));
+        this.testInvalidProgram(
+                "class Test{ int[] a = new int[10]; }" +
+                        "class Main extends Test{ boolean[] b = new boolean[10]; " +
+                        "void main(){ this.a[5] = 55; super.b[2] = true; }}");
+        this.testInvalidProgram(
+                "class Test{  }" +
+                        "class Main extends Test{ " +
+                        "int[] a = new int[10]; boolean[] b = new boolean[10]; " +
+                        "void main(){ super.a[5] = 55; this.b[2] = true; }}");
     }
 
     @Test
@@ -368,7 +381,6 @@ public class SemanticAnalyzerTest
         this.testValidProgram(this.createMethod("int x = 0; x=x-++x;"));
         this.testValidProgram(this.createMethod("int[] x = new int[4]; x[4]++;"));
         this.testValidProgram(this.createMethod("int[] x = new int[6]; --x[4];"));
-
     }
 
     @Test
