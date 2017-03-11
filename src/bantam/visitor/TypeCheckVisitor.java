@@ -54,6 +54,13 @@ public class TypeCheckVisitor extends Visitor {
             return true;
         }
 
+        if (type1.endsWith("[]") && type2.endsWith("[]")){
+            type1 = type1.substring(0, type1.length()-2);
+            type2 = type2.substring(0, type2.length()-2);
+            System.out.println("Type1: " + type1);
+            System.out.println("Type2: " + type2);
+        }
+
         ClassTreeNode type2Node = this.classTreeNode.getClassMap().get(type2);
         if (type2Node != null){
             if (type2Node.getParent() == null) { //object
@@ -512,24 +519,43 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(InstanceofExpr instanceofExpr){
+        String type = instanceofExpr.getType();
+        boolean typeIsArray = false;
+
+        if (type.endsWith("[]")){
+            typeIsArray = true;
+            type = type.substring(0, type.length()-2);
+            System.out.println(type);
+        }
+
         if (instanceofExpr.getType().equals("int") || instanceofExpr.getType().equals("boolean")){
             this.registerError(instanceofExpr.getLineNum(), "Cannot check if expr is primitive type.");
         }
-        else if (!this.classTreeNode.getClassMap().containsKey(instanceofExpr.getType())){
+        else if (!this.classTreeNode.getClassMap().containsKey(type)){
             this.registerError(instanceofExpr.getLineNum(), "Unknown instanceof type.");
         }
         instanceofExpr.getExpr().accept(this);
 
         String exprType = instanceofExpr.getExpr().getExprType();
-        if (exprType != null) {
+
+        if (exprType != null){
+            if (typeIsArray && exprType.endsWith("[]")){
+                exprType = exprType.substring(0, exprType.length()-2);
+            }
+            else if (typeIsArray){
+                type += "[]";
+            }
+
             if ("int".equals(exprType) || "boolean".equals(exprType)) {
                 this.registerError(instanceofExpr.getLineNum(),
                         "Cannot check instance of primitives.");
-            } else if (this.compatibleType(instanceofExpr.getType(), exprType)) {
+            } else if (this.compatibleType(type, exprType)) {
                 instanceofExpr.setUpCheck(true);
-            } else if (this.compatibleType(exprType, instanceofExpr.getType())) {
+            } else if (this.compatibleType(exprType, type)) {
                 instanceofExpr.setUpCheck(false);
             } else {
+                System.out.print("expr " + exprType);
+                System.out.print("type " + type);
                 this.registerError(instanceofExpr.getLineNum(),
                         "Incompatible types in instanceof.");
 
@@ -541,25 +567,44 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(CastExpr castExpr){
-        if (castExpr.getType().equals("int") || castExpr.getType().equals("boolean")){
-            this.registerError(castExpr.getLineNum(), "Cannot cast to primitive type.");
-        }
-        else if(!this.classTreeNode.getClassMap().containsKey(castExpr.getType())){
-            this.registerError(castExpr.getLineNum(),"Unknown cast type.");
+        String type = castExpr.getType();
+        boolean typeIsArray = false;
+
+        if (type.endsWith("[]")){
+            typeIsArray = true;
+            type = type.substring(0, type.length()-2);
         }
 
+        if (castExpr.getType().equals("int") || castExpr.getType().equals("boolean")){
+            this.registerError(castExpr.getLineNum(), "Cannot cast to a primitive type.");
+        }
+        else if (!this.classTreeNode.getClassMap().containsKey(type)){
+            this.registerError(castExpr.getLineNum(), "Unknown cast type.");
+        }
         castExpr.getExpr().accept(this);
+
         String exprType = castExpr.getExpr().getExprType();
-        if (exprType != null) {
+
+        if (exprType != null){
+            if (typeIsArray && exprType.endsWith("[]")){
+                exprType = exprType.substring(0, exprType.length()-2);
+            }
+            else if (typeIsArray){
+                type += "[]";
+            }
+
             if ("int".equals(exprType) || "boolean".equals(exprType)) {
                 this.registerError(castExpr.getLineNum(),
-                        "Cannot cast primitives.");
-            } else if (this.compatibleType(castExpr.getType(), castExpr.getExpr().getExprType())) {
+                        "Cannot cast a primitives.");
+            } else if (this.compatibleType(type, exprType)) {
                 castExpr.setUpCast(true);
-            } else if (this.compatibleType(castExpr.getExpr().getExprType(), castExpr.getType())) {
+            } else if (this.compatibleType(exprType, type)) {
                 castExpr.setUpCast(false);
             } else {
-                this.registerError(castExpr.getLineNum(), "Incompatible types for casting.");
+                System.out.print("expr " + exprType);
+                System.out.print("type " + type);
+                this.registerError(castExpr.getLineNum(),
+                        "Incompatible types in cast.");
 
             }
         }

@@ -470,25 +470,34 @@ public class SemanticAnalyzerTest
         ));
 
         this.testInvalidProgram( classes + this.createMethod(
-                "if (5 instanceof Foo ) {} "
-        ));
+                "if (5 instanceof Foo ) {} "));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "if (new Foo[5] instanceof String[] ) {} "));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "if (new Foo() instanceof Bar[] ) {} "));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "if (new Foo[8] instanceof Bar ) {} "));
+
 
         this.testValidProgram( classes + this.createMethod(
-                "if (new Foo() instanceof Foo ) {} "
-        ));
+                "if (new Foo() instanceof Foo ) {} "));
 
         this.testValidProgram( classes + this.createMethod(
-                "if (new Foo() instanceof Baz ) {} "
-        ));
+                "if (new Baz() instanceof Foo ) {} "));
 
         this.testValidProgram( classes + this.createMethod(
-                "if (new Foo() instanceof Bar ) {} "
-        ));
+                "if (new Foo() instanceof Bar ) {} "));
+
 
         this.testValidProgram( classes + this.createMethod(
-                "Foo f = new Foo(); " +
-                "if (f instanceof Foo ) {}"
-        ));
+                "if (new Foo[2] instanceof Bar[] ) {} "));
+
+        this.testValidProgram( classes + this.createMethod(
+                "if (new Bar[5] instanceof Foo[] ) {} "));
+
 
     }
 
@@ -515,6 +524,12 @@ public class SemanticAnalyzerTest
                 "Boz b = (Boz)(new Baz());"));
 
         this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = (Boz)(new Boz[6]);"));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz[] b = (Boz[])(new Boz());"));
+
+        this.testInvalidProgram( classes + this.createMethod(
                 "String b = (String)(new Foo());"));
 
 
@@ -522,6 +537,11 @@ public class SemanticAnalyzerTest
                 "Boz b = (Boz)(new Foo());"));
         this.testValidProgram( classes + this.createMethod(
                 "Foo b = (Foo)(new Bar());"));
+
+        this.testValidProgram( classes + this.createMethod(
+                "Boz[] b = (Boz[])(new Foo[5]);"));
+        this.testValidProgram( classes + this.createMethod(
+                "Foo[] b = (Foo[])(new Bar[5]);"));
         this.testValidProgram( classes + this.createMethod(
                 "Foo b = (Foo)(new Foo());"));
 
