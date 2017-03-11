@@ -331,6 +331,23 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testDispatchExpr() throws Exception{
+        this.testValidProgram(
+                "class Main { " +
+                "int x = 5; " +
+                "int testMethod(int num){}" +
+                "void main(){} } " +
+                " class Test extends Main {" +
+                "int method(){ " +
+                "super.main(); " +
+                "testMethod(x); " +
+                "return super.x; }}" +
+                " class Child extends Test{" +
+                "int a = super.x; " +
+                "int b = this.x;" +
+                "int c = x;" +
+                "int d = super.testMethod(a);" +
+                "int e = testMethod(b); " +
+                "int f = this.testMethod(c); }" );
 
     }
 
