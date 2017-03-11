@@ -50,7 +50,6 @@ public class SemanticAnalyzerTest
         } catch (RuntimeException e) {
             thrown = true;
             System.out.println(expectedMessage +"   ;  "+ e.getMessage());
-            System.out.println(e.getClass());
             for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
                 System.out.println(err);
             }
@@ -128,7 +127,7 @@ public class SemanticAnalyzerTest
         this.testValidProgram(this.createFieldsAndMethod( "int[] x = new int[6]; int y = 5;", ""));
         this.testValidProgram(this.createFieldsAndMethod( "int[] x;", ""));
         this.testValidProgram(this.createFieldsAndMethod( "int j;", ""));
-        this.testValidProgram(this.createFieldsAndMethod( "int j;", " String j;"));
+        this.testValidProgram(this.createFieldsAndMethod( "int j;", " String j=null;"));
     }
 
     @Test
@@ -352,6 +351,10 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testIncrDecrExpr() throws Exception{
+        this.testValidProgram(this.createMethod("int x = 0; x++;"));
+        System.out.println(this.createMethod("int x = 0; x=x--;"));
+        this.testValidProgram(this.createMethod("int x = 0; x=x--;"));
+        this.testValidProgram(this.createMethod("int x = 0; x=x-++x;"));
 
     }
 
@@ -364,23 +367,27 @@ public class SemanticAnalyzerTest
         this.testValidProgram(this.createMethod(
                 "boolean x = false;"));
         this.testValidProgram(this.createFieldsAndMethod("int[] x;",
-                "this.x=null"));
+                "this.x=null;"));
         this.testValidProgram("class Main { void main(){}}" +
                 "class Foo { int x; }" +
                 "class Bar extends Foo { void test(){ super.x = super.x; } } ");
         this.testValidProgram("class Main { void main(){}}" +
                 "class Foo { int x; }" +
                 "class Bar extends Foo { void test(){ super.x = x; } } ");
+        this.testValidProgram("class Main { void main(){}}" +
+                "class Foo { int y; int x; }" +
+                "class Bar extends Foo { void test(){ this.y = super.x; } } ");
+        this.testValidProgram(this.createMethod("if(true) int x =3; " +
+                "else int x = 4; " +
+                "int x = 5;"));
         this.testInvalidProgram(this.createMethod(
                 "int x = null;"));
         this.testInvalidProgram(this.createMethod(
                 "boolean null = false;"));
-        this.testValidProgram("class Main { void main(){}}" +
+        this.testInvalidProgram("class Main { void main(){}}" +
                 "class Foo { int x; }" +
-                "class Bar extends Foo { void test(){ boolean y = super.x } } ");
-        this.testValidProgram("class Main { void main(){}}" +
-                "class Foo { int x; }" +
-                "class Bar extends Foo { void test(){ this.y = super.x } } ");
+                "class Bar extends Foo { void test(){ boolean y = super.x; } } ");
+        this.testInvalidProgram(this.createMethod("int x = 4; if(1==3){{{{int x = 4;}}}}"));
     }
 
     @Test

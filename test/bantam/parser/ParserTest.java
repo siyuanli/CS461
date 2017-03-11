@@ -387,7 +387,7 @@ public class ParserTest
         NewExpr expr1 = (NewExpr) this.getExpr(stmtList, 0);
         NewArrayExpr expr2 = (NewArrayExpr) this.getExpr(stmtList, 1);
         assertEquals("a", expr1.getType());
-        assertEquals("a", expr2.getType());
+        assertEquals("a[]", expr2.getType());
         assertEquals("3", ((ConstIntExpr) expr2.getSize()).getConstant());
     }
 

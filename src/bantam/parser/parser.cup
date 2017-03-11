@@ -639,22 +639,34 @@ unary_not_expr
 
 unary_incr_expr
     ::=
-    /* prefix */
-    INCR expr:e
-        {: RESULT = new UnaryIncrExpr(e.getLineNum(), e, false); :}
-    /*postfix*/
-    | expr:e INCR
-        {: RESULT = new UnaryIncrExpr(e.getLineNum(), e, true); :}
+    /* prefix var_expr*/
+    INCR var_expr:ve
+        {: RESULT = new UnaryIncrExpr(ve.getLineNum(), ve, false); :}
+    /*postfix var_expr*/
+    | var_expr:ve INCR
+        {: RESULT = new UnaryIncrExpr(ve.getLineNum(), ve, true); :}
+    /* prefix array_expr*/
+    | INCR array_expr:ae
+        {: RESULT = new UnaryIncrExpr(ae.getLineNum(), ae, false); :}
+    /*postfix array_expr*/
+    | array_expr:ae INCR
+        {: RESULT = new UnaryIncrExpr(ae.getLineNum(), ae, true); :}
     ;
 
 unary_decr_expr
     ::=
     /* prefix */
-    DECR expr:e
-        {: RESULT = new UnaryDecrExpr(e.getLineNum(), e, false); :}
+    DECR var_expr:ve
+        {: RESULT = new UnaryDecrExpr(ve.getLineNum(), ve, false); :}
     /*postfix*/
-    | expr:e DECR
-        {: RESULT = new UnaryDecrExpr(e.getLineNum(), e, true); :}
+    | var_expr:ve DECR
+        {: RESULT = new UnaryDecrExpr(ve.getLineNum(), ve, true); :}
+    /* prefix array_expr*/
+    | DECR array_expr:ae
+        {: RESULT = new UnaryDecrExpr(ae.getLineNum(), ae, false); :}
+    /*postfix array_expr*/
+    | array_expr:ae DECR
+        {: RESULT = new UnaryDecrExpr(ae.getLineNum(), ae, true); :}
     ;
 
 var_expr
