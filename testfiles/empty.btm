@@ -1,1 +1,1 @@
-class Main { void test(){int x = 0; x=x--;} void main(){} }
+class Main { void test(){int[] x = new int[4]; x[4]++;} void main(){} }

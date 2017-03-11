@@ -177,8 +177,11 @@ public class TypeCheckVisitor extends Visitor {
         }
         else if (expr instanceof ArrayExpr){
             ArrayExpr arrayExpr = (ArrayExpr)expr;
-            type = this.findVariableType(((ArrayExpr)arrayExpr.getRef()).getName(),
-                    arrayExpr.getName(), arrayExpr.getLineNum());
+            String refName = null;
+            if(arrayExpr.getRef()!=null){
+                refName = ((VarExpr)arrayExpr.getRef()).getName();
+            }
+            type=this.findVariableType(refName, arrayExpr.getName(), arrayExpr.getLineNum());
             if(type!=null && type.endsWith("[]")){
                 type = type.substring(0,type.length()-2);
             }

@@ -352,9 +352,10 @@ public class SemanticAnalyzerTest
     @Test
     public void testIncrDecrExpr() throws Exception{
         this.testValidProgram(this.createMethod("int x = 0; x++;"));
-        System.out.println(this.createMethod("int x = 0; x=x--;"));
         this.testValidProgram(this.createMethod("int x = 0; x=x--;"));
         this.testValidProgram(this.createMethod("int x = 0; x=x-++x;"));
+        this.testValidProgram(this.createMethod("int[] x = new int[4]; x[4]++;"));
+        this.testValidProgram(this.createMethod("int[] x = new int[6]; --x[4];"));
 
     }
 
