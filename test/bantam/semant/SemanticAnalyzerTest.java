@@ -388,7 +388,16 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testUnaryNotExpr() throws Exception{
+        this.testValidProgram(this.createMethod("boolean x = !!!!!!!!!!!!true;"));
+        this.testValidProgram(this.createMethod("boolean x = true; x = !x;"));
+        this.testValidProgram(this.createClass("boolean thing(int x){return true;}" +
+                "boolean test(){boolean x = !this.thing(4); return !x;}"));
+        this.testValidProgram(this.createMethod("if(!(true==!true)){}"));
 
+        this.testInvalidProgram(this.createMethod("int x = !3;"));
+        this.testInvalidProgram(this.createMethod("boolean x = !3;"));
+        this.testInvalidProgram(this.createMethod("boolean thing = !thing;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true; int y = 4; y = !x;"));
     }
 
     @Test
@@ -398,6 +407,14 @@ public class SemanticAnalyzerTest
         this.testValidProgram(this.createMethod("int x = 0; x=x-++x;"));
         this.testValidProgram(this.createMethod("int[] x = new int[4]; x[4]++;"));
         this.testValidProgram(this.createMethod("int[] x = new int[6]; --x[4];"));
+        this.testValidProgram(this.createMethod("int x = 2514523; x = x+++ ++x;"));
+        this.testValidProgram(this.createMethod("int x = 0; x = -x++;"));
+        this.testValidProgram(this.createMethod("int[] x=new int[4]; x[4]= x[3] + --x[3];"));
+
+        this.testInvalidProgram(this.createMethod("boolean x = false; x++;"));
+        this.testInvalidProgram(this.createMethod("Object x = null; --x;"));
+        this.testInvalidProgram(this.createMethod("int x = 0; null++;"));
+
     }
 
     @Test
@@ -422,6 +439,7 @@ public class SemanticAnalyzerTest
         this.testValidProgram(this.createMethod("if(true) int x =3; " +
                 "else int x = 4; " +
                 "int x = 5;"));
+
         this.testInvalidProgram(this.createMethod(
                 "int x = null;"));
         this.testInvalidProgram(this.createMethod(
@@ -445,6 +463,7 @@ public class SemanticAnalyzerTest
         this.testValidProgram("class Main { void main(){}}" +
                 "class Foo { int[] x; }" +
                 "class Bar extends Foo { void test(){ int z = super.x[1]; } } ");
+
         this.testInvalidProgram(this.createMethod(
                 "int[] array = new int[4];" +
                 "boolean thing = array[3];"));

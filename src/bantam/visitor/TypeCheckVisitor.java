@@ -155,7 +155,7 @@ public class TypeCheckVisitor extends Visitor {
 
     private void negNotChecker(UnaryExpr unaryExpr, String desiredType, String error){
         unaryExpr.getExpr().accept(this);
-        if(!unaryExpr.getExpr().getExprType().equals(desiredType)){
+        if(!desiredType.equals(unaryExpr.getExpr().getExprType())){
             this.registerError(unaryExpr.getLineNum(), error);
         }
         unaryExpr.setExprType(desiredType);
