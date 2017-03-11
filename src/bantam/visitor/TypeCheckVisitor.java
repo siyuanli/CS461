@@ -451,7 +451,10 @@ public class TypeCheckVisitor extends Visitor {
                     this.registerError(dispatchExpr.getLineNum(),
                             "Reference does not contain given method.");
                 }
-                methodPair = ((Pair<String, List<String>>) methodTable.lookup(dispatchExpr.getMethodName()));
+                else {
+                    methodPair = ((Pair<String, List<String>>) refNode.getMethodSymbolTable()
+                            .lookup(dispatchExpr.getMethodName()));
+                }
             }
         }
         else{
@@ -465,6 +468,9 @@ public class TypeCheckVisitor extends Visitor {
             params = methodPair.getValue();
             exprType = methodPair.getKey();
         }
+        else {
+            this.registerError(dispatchExpr.getLineNum(),"Unknown method call.");
+        }
 
         List<String> actualParams = (List<String>)dispatchExpr.getActualList().accept(this);
 
@@ -475,11 +481,10 @@ public class TypeCheckVisitor extends Visitor {
             for (int i = 0; i < params.size(); i++) {
                 if (i >= actualParams.size()) {
                     break;
-                } else {
-                    if (!this.compatibleType(params.get(i), actualParams.get(i))) {
-                        this.registerError(dispatchExpr.getLineNum(),
-                                "Value passed in has incompatible type with parameter.");
-                    }
+                }
+                else if (!this.compatibleType(params.get(i), actualParams.get(i))) {
+                    this.registerError(dispatchExpr.getLineNum(),
+                            "Value passed in has incompatible type with parameter.");
                 }
             }
         }

@@ -144,6 +144,11 @@ public class SemanticAnalyzerTest
         this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = super.x;"));
         this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = super.hi();"));
         this.testInvalidProgram(this.createClass("int m1(){ return 5; } void m2(){ int j = super.m1(); } "));
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Main2 extends Main{ void main(int num){}}");
+        this.testInvalidProgram("class Main{ void main(){} void test(int num){} } " +
+                "class Main2 extends Main{ void test(boolean bool){}}");
+
 
         this.testValidProgram("class Main { " +
                                 "int x = 5; " +
@@ -179,9 +184,11 @@ public class SemanticAnalyzerTest
 
         this.testValidProgram("class Main { int x = 0; void main(){} }" +
                 "class Test extends Main{ void test(){ boolean x = true;} } " );
-
         this.testValidProgram(this.createFieldsAndMethod("int x;", "int j = this.x; int k = x;"));
         this.testValidProgram(this.createClass("int m1(){ return 5;} void m2(){ int j = this.m1(); }"));
+        this.testValidProgram("class Main{ void main(){} } " +
+                "class Main2 extends Main{ int main(){return 5;}}");
+
 
     }
 
@@ -400,19 +407,75 @@ public class SemanticAnalyzerTest
     public void testDispatchExpr() throws Exception{
         this.testValidProgram(
                 "class Hello {" +
-                        "String foo(int num1, String str){return str;} " +
-                        "void bar(); }" +
+                "String foo(int num1, String str){return str;} " +
+                "void bar(){} }" +
 
-                        "class Main { " +
-                        "int x = 456; " +
-                         "int method1(int num, boolean flag){return 10;}" +
-                         "void main(){} } " +
+                "class Main { " +
+                "int x = 456; " +
+                 "int method1(int num, boolean flag){return 10;}" +
+                 "void main(){} } " +
 
-                        "class Test extends Main {" +
-                        "method1(3333; true);" +
-                        "super.method1(52; true); " +
-                        "this.method1(68; false);  }" );
-
+                "class Test extends Main {" +
+                "void methodCall(){" +
+                "method1(3333, true);" +
+                "super.method1(52, true); " +
+                "this.method1(68, false);" +
+                "new Hello().bar();" +
+                "new Hello().foo(23445,\"Hi Dale!\");  }}" );
+        this.testValidProgram("class Main{" +
+                "int thing(Object obj, int num, boolean bool, boolean bool2){" +
+                "return 4; }" +
+                "void main(){" +
+                "int variable = this.thing(new Object(), -2340981, true, false);" +
+                "this.thing(\"Hi Dale\", variable,false,true); }" +
+                "}");
+        this.testInvalidProgram("class Main{" +
+                "int thing(Object obj, int num, boolean bool, boolean bool2){" +
+                "return 4; }" +
+                "void main(){" +
+                "thing1(new Object(), -2340981, true, false);}" +
+                "}");
+        this.testInvalidProgram("class Main extends B{" +
+                "int thing(Object obj, int num, boolean bool, boolean bool2){" +
+                "return 4; }" +
+                "void main(){}}" +
+                "class B {" +
+                "void public(){thing(\"Hi Dale\",5,true,false);}}");
+        this.testInvalidProgram("class Main{" +
+                "int thing(Object obj, int num, boolean bool, boolean bool2){" +
+                "return 4; }" +
+                "void main(){" +
+                "new HELL().thing(\"HidnDale\",5,false,true);}}");
+        this.testInvalidProgram("class Main{" +
+                "void main(){}" +
+                "} class Main2 extends Main{" +
+                "void test(){super.gazorpazorp();}}");
+        this.testInvalidProgram("class Main{" +
+                "int thing(Object obj, int num, boolean bool, boolean bool2){" +
+                "return 4; }" +
+                "void main(){" +
+                "thing(new Object(), -2340981, true);}" +
+                "}");
+        this.testInvalidProgram("class Main{" +
+                "int thing(Object obj, int num, boolean bool, boolean bool2){" +
+                "return 4; }" +
+                "void main(){" +
+                "thing(new Object(), -2340981, true);}" +
+                "}");
+        this.testInvalidProgram("class Main { void main(){}" +
+                "void test(int num, boolean bool, String str){}" +
+                "void test2(){ test(true,5,\"Hey Dale\");}}");
+        this.testInvalidProgram("class Main { void main(){}" +
+                "void test(int num, boolean bool, String str){}" +
+                "void test2(){ test(5,true);}}");
+        this.testInvalidProgram("class Main { void main(){}" +
+                "void test(int num, boolean bool, String str){}" +
+                "void test2(){ test(5,true,\"Hey Dale\",5,5,5,5,5);}}");
+        this.testInvalidProgram("class Main{" +
+                "void main(){}" +
+                "} class Main2 extends Main{" +
+                "void test(){super.test();}}");
+        this.testInvalidProgram("class Main {void main(){this.blah();} }");
     }
 
     @Test
@@ -704,12 +767,22 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testUnaryNegExpr() throws Exception{
+        this.testValidProgram(this.createMethod("int x = -0;"));
+        this.testValidProgram(this.createMethod("boolean x = -3<=-4;"));
+        this.testValidProgram(this.createMethod("int x = - - - - -3;"));
+        this.testValidProgram(this.createClass("int thing(){return 4;} " +
+                "void asdf(){int x = -(-this.thing());}"));
         this.testInvalidProgram(this.createMethod("int x = -true;"));
         this.testInvalidProgram(this.createMethod("int x = -\"hi\";"));
         this.testInvalidProgram(this.createMethod("int x = -(new String());"));
         this.testInvalidProgram(this.createMethod("int x = -null;"));
         this.testInvalidProgram(this.createMethod("boolean x = -8;"));
 
+        this.testInvalidProgram(this.createMethod("int x =-x;"));
+        this.testInvalidProgram(this.createMethod("boolean x = -true;"));
+        this.testInvalidProgram(this.createMethod("boolean null = -null;"));
+        this.testInvalidProgram(this.createClass("boolean thing(){return true;} " +
+                "void asdf(){int x = -(-this.thing());}"));
         this.testValidProgram(this.createMethod("int x = -5;"));
         this.testValidProgram(this.createMethod("int x = -102004;"));
         this.testValidProgram(this.createMethod("int x = -(-(-(-(-102004))));"));

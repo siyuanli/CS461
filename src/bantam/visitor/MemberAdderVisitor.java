@@ -75,8 +75,8 @@ public class MemberAdderVisitor extends Visitor {
         return null;
     }
     
-    @Override
-    public Object visit(Method node) {
+
+    public String visit(Method node) {
         SymbolTable methodSymbolTable = this.classTreeNode.getMethodSymbolTable();
         String name = node.getName();
         int lineNum = node.getLineNum();
@@ -86,6 +86,22 @@ public class MemberAdderVisitor extends Visitor {
         if (methodSymbolTable.peek(name) == null) {
             registerErrorIfReservedName(name,lineNum );
             List<String> paramTypes = (List) node.getFormalList().accept(this);
+            if(methodSymbolTable.lookup(name)!=null){
+                Pair<String, List<String>> parentPair = (Pair<String,List<String>>) methodSymbolTable.lookup(name);
+                List<String> parentParamList = parentPair.getValue();
+                if(parentParamList.size()!=paramTypes.size()){
+                    this.registerError(node.getLineNum(),
+                            "Overriding method must have same number of parameters as the inherited method.");
+                }
+                else{
+                    for(int i = 0;i<paramTypes.size();i++){
+                        if(!paramTypes.get(i).equals(parentParamList.get(i))){
+                            this.registerError(node.getLineNum(),
+                                    "Overriding method must have same signature as the inherited method.");
+                        }
+                    }
+                }
+            }
             Pair<String, List<String>> methodData = new Pair<>(node.getReturnType(), paramTypes);
             methodSymbolTable.add(name, methodData);
         }

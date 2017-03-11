@@ -1,1 +1,17 @@
-class Main { void test(){boolean thing = !thing;} void main(){} }
+
+                class Hello {
+                String foo(int num1, String str){return str;}
+                void bar(){} }
+
+                class Main {
+                int x = 456;
+                int method1(int num, boolean flag){return 10;}
+                void main(){} }
+
+                class Test extends Main {
+                void methodCall(){
+                method1(3333, true);
+                super.method1(52, true);
+                this.method1(68, false);
+                new Hello().bar();
+                new Hello().foo(23445,"Hi Dale!");  }}
