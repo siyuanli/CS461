@@ -512,21 +512,28 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(InstanceofExpr instanceofExpr){
-
-        if (!this.classTreeNode.getClassMap().containsKey(instanceofExpr.getType())){
+        if (instanceofExpr.getType().equals("int") || instanceofExpr.getType().equals("boolean")){
+            this.registerError(instanceofExpr.getLineNum(), "Cannot check if expr is primitive type.");
+        }
+        else if (!this.classTreeNode.getClassMap().containsKey(instanceofExpr.getType())){
             this.registerError(instanceofExpr.getLineNum(), "Unknown instanceof type.");
         }
         instanceofExpr.getExpr().accept(this);
 
-        if (this.compatibleType(instanceofExpr.getType(), instanceofExpr.getExpr().getExprType())){
-            instanceofExpr.setUpCheck(true);
-        }
-        else if (this.compatibleType(instanceofExpr.getExpr().getExprType(),instanceofExpr.getType())){
-            instanceofExpr.setUpCheck(false);
-        }
-        else{
-            this.registerError(instanceofExpr.getLineNum(),"Incompatible types in instanceof.");
+        String exprType = instanceofExpr.getExpr().getExprType();
+        if (exprType != null) {
+            if ("int".equals(exprType) || "boolean".equals(exprType)) {
+                this.registerError(instanceofExpr.getLineNum(),
+                        "Cannot check instance of primitives.");
+            } else if (this.compatibleType(instanceofExpr.getType(), exprType)) {
+                instanceofExpr.setUpCheck(true);
+            } else if (this.compatibleType(exprType, instanceofExpr.getType())) {
+                instanceofExpr.setUpCheck(false);
+            } else {
+                this.registerError(instanceofExpr.getLineNum(),
+                        "Incompatible types in instanceof.");
 
+            }
         }
         instanceofExpr.setExprType("boolean");
         return null;
@@ -534,20 +541,27 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(CastExpr castExpr){
-
-        if(!this.classTreeNode.getClassMap().containsKey(castExpr.getType())){
+        if (castExpr.getType().equals("int") || castExpr.getType().equals("boolean")){
+            this.registerError(castExpr.getLineNum(), "Cannot cast to primitive type.");
+        }
+        else if(!this.classTreeNode.getClassMap().containsKey(castExpr.getType())){
             this.registerError(castExpr.getLineNum(),"Unknown cast type.");
         }
-        castExpr.getExpr().accept(this);
-        if (this.compatibleType(castExpr.getType(), castExpr.getExpr().getExprType())){
-            castExpr.setUpCast(true);
-        }
-        else if (this.compatibleType(castExpr.getExpr().getExprType(),castExpr.getType())){
-            castExpr.setUpCast(false);
-        }
-        else{
-            this.registerError(castExpr.getLineNum(),"Incompatible types in instanceof.");
 
+        castExpr.getExpr().accept(this);
+        String exprType = castExpr.getExpr().getExprType();
+        if (exprType != null) {
+            if ("int".equals(exprType) || "boolean".equals(exprType)) {
+                this.registerError(castExpr.getLineNum(),
+                        "Cannot cast primitives.");
+            } else if (this.compatibleType(castExpr.getType(), castExpr.getExpr().getExprType())) {
+                castExpr.setUpCast(true);
+            } else if (this.compatibleType(castExpr.getExpr().getExprType(), castExpr.getType())) {
+                castExpr.setUpCast(false);
+            } else {
+                this.registerError(castExpr.getLineNum(), "Incompatible types for casting.");
+
+            }
         }
         castExpr.setExprType(castExpr.getType());
 

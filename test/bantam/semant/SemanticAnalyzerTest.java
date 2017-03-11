@@ -216,8 +216,67 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testDeclStmt() throws Exception{
-        String program = this.createMethod("int x = \"lkesfjkw\"; ");
-        this.testInvalidProgram(program);
+        this.testInvalidProgram(this.createMethod("Foo x = null; "));
+        this.testInvalidProgram(this.createMethod("void x = null; "));
+        this.testInvalidProgram(this.createMethod("int x = true; "));
+        this.testInvalidProgram(this.createMethod("int[] x = 5; "));
+        this.testInvalidProgram(this.createMethod("int int = 5; "));
+        this.testInvalidProgram(this.createMethod("int[] null = null; "));
+        this.testInvalidProgram(this.createMethod("int x = 5; String x = \"test\";"));
+        this.testInvalidProgram(this.createClass("void test(int x){ int x = 5; }"));
+
+        this.testValidProgram(this.createMethod("int x = 6;"));
+        this.testValidProgram(this.createMethod("int[] y = new int[7];"));
+        this.testValidProgram(this.createFieldsAndMethod("String x;", "int x = 0;"));
+        this.testValidProgram(this.createFieldsAndMethod("int[] x;", "int[] x = null;"));
+    }
+
+    @Test
+    public void testScopesWithinMethods() throws Exception{
+        this.testInvalidProgram(this.createMethod(
+                "int x = 6; " +
+                "while(true){ boolean x = true; } "));
+
+        this.testInvalidProgram(this.createMethod(
+                "int x = 6; " +
+                "if(true){ boolean x = true; } "));
+
+        this.testInvalidProgram(this.createMethod(
+                "int x = 6; " +
+                "for(;;){ boolean x = true; } "));
+
+        this.testInvalidProgram(this.createMethod(
+                "int x = 6; " +
+                "{ boolean x = true; } "));
+
+        this.testValidProgram(this.createMethod(
+                "int x = 6; " +
+                "while(true){ int y = x; } "));
+
+        this.testValidProgram(this.createMethod(
+                "int x = 6; " +
+                "if(true){ int y = x; } "));
+
+        this.testValidProgram(this.createMethod(
+                "int x = 6; " +
+                "for(;;){ int y = x; } "));
+
+        this.testValidProgram(this.createMethod(
+                "int x = 6; " +
+                "{ int y = x; } "));
+
+
+        this.testValidProgram(this.createFieldsAndMethod("int x = 6; ",
+                "while(true){ int y = this.x; }"));
+
+        this.testValidProgram(this.createFieldsAndMethod("int x = 9;",
+                "{{if(true){ int y = this.x; } }}"));
+
+        this.testValidProgram(this.createFieldsAndMethod("int x = 6; ",
+                "{for(;;){ int y = this.x; } }"));
+
+        this.testValidProgram(this.createFieldsAndMethod("int x = 6; ",
+                "{{ int y = this.x; }} "));
     }
 
     @Test
@@ -353,16 +412,118 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testNewExpr() throws Exception{
+        this.testInvalidProgram(this.createMethod("new Baz();"));
+        this.testInvalidProgram(this.createMethod("new int[true];"));
+        this.testInvalidProgram(this.createMethod("new Foo[7];"));
+        this.testInvalidProgram("class Main{ void main(){}}" +
+                "  class Child extends Main{}" +
+                "  class Grandchild extends Child{}" +
+                "  class Test { Grandchild down = new Main(); }");
 
+        this.testInvalidProgram("class Main{ void main(){}}" +
+                "  class Child extends Main{}" +
+                "  class GrandchildA extends Child{}" +
+                "  class GrandchildB extends Child{}" +
+                "  class Test { GrandchildA sibling = new GrandchildB(); }");
+
+        this.testValidProgram("class Main{ void main(){}} " +
+                            "  class Test{ Main x = new Main(); }");
+        this.testValidProgram("class Main{ void main(){}}" +
+                            "  class Child extends Main{}" +
+                            "  class Grandchild extends Child{}" +
+                            "  class Test { Main up = new Grandchild(); }");
+
+        this.testValidProgram(this.createMethod("new String();"));
+        this.testValidProgram(this.createMethod("new int[7];"));
     }
 
     @Test
     public void testInstanceofExpr() throws Exception{
+        String classes = "class Foo {}" +
+                        " class Bar extends Foo{} " +
+                        " class Baz extends Bar{} " +
+                        " class Boz extends Bar{} ";
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Foo f = new Foo(); "+
+                "if (f instanceof String ) {} "
+        ));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = new Boz(); "+
+                "if (b instanceof Baz ) {} "
+        ));
+
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "if (z instanceof Baz ) {} "
+        ));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = new Boz();" +
+                "if (b instanceof NotAClass ) {} "
+        ));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = new Boz(); "+
+                "if (b instanceof int ) {} "
+        ));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "if (5 instanceof Foo ) {} "
+        ));
+
+        this.testValidProgram( classes + this.createMethod(
+                "if (new Foo() instanceof Foo ) {} "
+        ));
+
+        this.testValidProgram( classes + this.createMethod(
+                "if (new Foo() instanceof Baz ) {} "
+        ));
+
+        this.testValidProgram( classes + this.createMethod(
+                "if (new Foo() instanceof Bar ) {} "
+        ));
+
+        this.testValidProgram( classes + this.createMethod(
+                "Foo f = new Foo(); " +
+                "if (f instanceof Foo ) {}"
+        ));
 
     }
 
     @Test
     public void testCastExpr() throws Exception{
+        String classes = "class Foo {}" +
+                " class Bar extends Foo{} " +
+                " class Baz extends Bar{} " +
+                " class Boz extends Bar{} ";
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Bar b = (Cheese)(new Bar());"));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "int b = (int)(new Bar());"));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = (Boz)(new Main());"));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = (Boz)(5);"));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "Boz b = (Boz)(new Baz());"));
+
+        this.testInvalidProgram( classes + this.createMethod(
+                "String b = (String)(new Foo());"));
+
+
+        this.testValidProgram( classes + this.createMethod(
+                "Boz b = (Boz)(new Foo());"));
+        this.testValidProgram( classes + this.createMethod(
+                "Foo b = (Foo)(new Bar());"));
+        this.testValidProgram( classes + this.createMethod(
+                "Foo b = (Foo)(new Foo());"));
 
     }
 
