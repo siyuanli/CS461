@@ -82,6 +82,14 @@ public class SemanticAnalyzerTest
         this.testInvalidProgram("class Main{ void main(){} } " +
                 "class Bar extends TextIO { } ");
 
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends int { } ");
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends boolean { } ");
+
+        this.testInvalidProgram("class Main{ void main(){} } " +
+                "class Bar extends null { } ");
 
         this.testInvalidProgram("class Main{ void main(){} } " +
                 "class Bar extends Foo { } " +
@@ -410,6 +418,7 @@ public class SemanticAnalyzerTest
     @Test
     public void testNewExpr() throws Exception{
         this.testInvalidProgram(this.createMethod("new Baz();"));
+        this.testInvalidProgram(this.createMethod("new null();"));
         this.testInvalidProgram(this.createMethod("new int[true];"));
         this.testInvalidProgram(this.createMethod("new Foo[7];"));
         this.testInvalidProgram("class Main{ void main(){}}" +
@@ -546,22 +555,164 @@ public class SemanticAnalyzerTest
 
     @Test
     public void testBinaryArithExpr() throws Exception{
+        this.testInvalidProgram(this.createMethod("int x = true + true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true + true;"));
+        this.testInvalidProgram(this.createMethod("String x = \" hi \" + \" hi \";"));
+        this.testInvalidProgram(this.createMethod("int x = true + 5;"));
+        this.testInvalidProgram(this.createMethod("int x = 5 + true;"));
+        this.testInvalidProgram(this.createMethod("int x = true - true;"));
+        this.testInvalidProgram(this.createMethod("int x = true - 5;"));
+        this.testInvalidProgram(this.createMethod("int x = 5 - true;"));
+        this.testInvalidProgram(this.createMethod("int x = true * true;"));
+        this.testInvalidProgram(this.createMethod("int x = true * 5;"));
+        this.testInvalidProgram(this.createMethod("int x = 5 * true;"));
+        this.testInvalidProgram(this.createMethod("int x = true / true;"));
+        this.testInvalidProgram(this.createMethod("int x = true / 5;"));
+        this.testInvalidProgram(this.createMethod("int x = 5 / true;"));
+        this.testInvalidProgram(this.createMethod("int x = true % true;"));
+        this.testInvalidProgram(this.createMethod("int x = true % 5;"));
+        this.testInvalidProgram(this.createMethod("int x = 5 % true;"));
 
+        this.testValidProgram(this.createMethod("int x = 5 + 5; "));
+        this.testValidProgram(this.createMethod("int x = 5 - 5; "));
+        this.testValidProgram(this.createMethod("int x = 57 * 25; "));
+        this.testValidProgram(this.createMethod("int x = 57 / 25; "));
+        this.testValidProgram(this.createMethod("int x = 57 % 25; "));
     }
 
     @Test
     public void testBinaryCompExpr() throws Exception{
+        String classes = "class Foo {}" +
+                " class Bar extends Foo{} " +
+                " class Baz extends Bar{} " +
+                " class Boz extends Bar{} ";
 
+        this.testInvalidProgram(this.createMethod("boolean x = true < true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = 8 < true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" < 5;"));
+
+        this.testInvalidProgram(this.createMethod("boolean x = true > true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = 5 > false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" > 5;"));
+
+
+        this.testInvalidProgram(this.createMethod("boolean x = true <= true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = 5 <= true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" <= 5;"));
+
+        this.testInvalidProgram(this.createMethod("boolean x = true >= true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = 5 >= true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" >= 5;"));
+
+        this.testInvalidProgram(this.createMethod("int x = true == true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true == 5;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" == 5;"));
+
+        this.testInvalidProgram(this.createMethod("int x = 5 == 5;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true == 5;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" == 5;"));
+
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Main() == new Foo();"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Foo() == new Main();"));
+        this.testInvalidProgram(classes + this.createMethod("Main x = new Main() == new Main();"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Foo() == 6;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = 7 == new Foo();"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Boz() == new Baz();"));
+
+        this.testInvalidProgram(classes + this.createMethod("boolean x = null == 5;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = 5 == null;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = null == true;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = false == null;"));
+
+        this.testInvalidProgram(this.createMethod("int x = true != true;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true != 5;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" != 5;"));
+
+        this.testInvalidProgram(this.createMethod("int x = 5 != 5;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true != 5;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" != 5;"));
+
+        this.testInvalidProgram(classes + this.createMethod("boolean x = null != 5;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = 5 != null;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = null != true;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = false != null;"));
+
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Main() != new Foo();"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Foo() != new Main();"));
+        this.testInvalidProgram(classes + this.createMethod("Main x = new Main() != new Main();"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Foo() != 6;"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = 7 != new Foo();"));
+        this.testInvalidProgram(classes + this.createMethod("boolean x = new Boz() != new Baz();"));
+
+        this.testValidProgram(this.createMethod("boolean x = 7 < 3;"));
+        this.testValidProgram(this.createMethod("boolean x = 7 <= 3;"));
+        this.testValidProgram(this.createMethod("boolean x = 7 > 3;"));
+        this.testValidProgram(this.createMethod("boolean x = 7 >= 3;"));
+        this.testValidProgram(this.createMethod("boolean x = true == true;"));
+        this.testValidProgram(this.createMethod("boolean x = 5 == 7;"));
+        this.testValidProgram(classes + this.createMethod(
+                "boolean x = new Bar() == new Bar();"));
+        this.testValidProgram(classes + this.createMethod(
+                "boolean x = new Bar() == new Foo();"));
+        this.testValidProgram(classes + this.createMethod(
+                "boolean x = new Foo() == new Bar();"));
+        this.testValidProgram(classes + this.createMethod(
+                "boolean x = null == new Baz();"));
+        this.testValidProgram(classes + this.createMethod(
+                "boolean x = new Bar() == null;"));
+        this.testValidProgram(classes + this.createMethod("boolean x = null == null;"));
+        this.testValidProgram(this.createMethod("boolean x = true != true;"));
+        this.testValidProgram(this.createMethod("boolean x = 5 != 7;"));
+        this.testValidProgram(this.createMethod("boolean x = 5 != 7;"));
+        this.testValidProgram(classes + this.createMethod("boolean x = null != new Baz();"));
+        this.testValidProgram(classes + this.createMethod("boolean x = new Bar() != null;"));
+        this.testValidProgram(classes + this.createMethod("boolean x = null != null;"));
     }
 
     @Test
     public void testBinaryLogicExpr() throws Exception{
+        this.testInvalidProgram(this.createMethod("boolean x = 6 || false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true || 9;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" || 9;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true || new String();"));
+        this.testInvalidProgram(this.createMethod("boolean x = new String() || false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = null || false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = null || null;"));
+        this.testInvalidProgram(this.createMethod("boolean x = new String() || null;"));
+        this.testInvalidProgram(this.createMethod("boolean x = false || null;"));
+        this.testInvalidProgram(this.createMethod("int x = false || true;"));
+        this.testInvalidProgram(this.createMethod("int x = 7 || 3;"));
 
+
+        this.testInvalidProgram(this.createMethod("boolean x = 6 && false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true && 9;"));
+        this.testInvalidProgram(this.createMethod("boolean x = \"hi\" && 9;"));
+        this.testInvalidProgram(this.createMethod("boolean x = true && new String();"));
+        this.testInvalidProgram(this.createMethod("boolean x = new String() && false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = null && false;"));
+        this.testInvalidProgram(this.createMethod("boolean x = new String() && null;"));
+        this.testInvalidProgram(this.createMethod("boolean x = null && null;"));
+        this.testInvalidProgram(this.createMethod("boolean x = false && null;"));
+        this.testInvalidProgram(this.createMethod("int x = false && true;"));
+        this.testInvalidProgram(this.createMethod("int x = 9 && 12;"));
+
+        this.testValidProgram(this.createMethod("boolean x = true || false;"));
+        this.testValidProgram(this.createMethod("boolean x = false && false;"));
+        this.testValidProgram(this.createMethod(
+                "boolean x = false && false && true || false;"));
     }
 
     @Test
     public void testUnaryNegExpr() throws Exception{
+        this.testInvalidProgram(this.createMethod("int x = -true;"));
+        this.testInvalidProgram(this.createMethod("int x = -\"hi\";"));
+        this.testInvalidProgram(this.createMethod("int x = -(new String());"));
+        this.testInvalidProgram(this.createMethod("int x = -null;"));
+        this.testInvalidProgram(this.createMethod("boolean x = -8;"));
 
+        this.testValidProgram(this.createMethod("int x = -5;"));
+        this.testValidProgram(this.createMethod("int x = -102004;"));
+        this.testValidProgram(this.createMethod("int x = -(-(-(-(-102004))));"));
     }
 
     @Test
