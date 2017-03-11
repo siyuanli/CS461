@@ -390,6 +390,14 @@ public class TypeCheckVisitor extends Visitor {
     @Override
     public Object visit(AssignExpr assignExpr){
         assignExpr.getExpr().accept(this);
+
+        String refName = assignExpr.getRefName();
+        if (assignExpr.getName().equals("length") && !refName.equals("this") &&
+                !refName.equals("super") && refName!=null){
+            this.registerError(assignExpr.getLineNum(),
+                    "Cannot assign the length field of an array. ");
+        }
+
         this.checkAssignment(assignExpr.getRefName(), assignExpr.getName(),
                 assignExpr.getExpr().getExprType(), assignExpr.getLineNum(), false);
         assignExpr.setExprType(assignExpr.getExpr().getExprType());

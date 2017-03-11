@@ -286,7 +286,8 @@ public class SemanticAnalyzerTest
                 "int a = 0; super.a = 55; this.b = 66; }}");
         this.testInvalidProgram(this.createMethod(
                 "int x = 0; String a = null; boolean z = true;" +
-                        "x = true; a = false; z = \"ahhhh\";"));
+                        "x = true; a = false; z = \"ahhhh\"; " +
+                        "x = null; z = null;"));
         this.testInvalidProgram(this.createMethod(
                 "hi = 123; bye = false; this.x = true; super.y = 0;"));
         this.testInvalidProgram("class Test{ int a = 0; }" +
@@ -295,13 +296,24 @@ public class SemanticAnalyzerTest
         this.testInvalidProgram("class Test{ }" +
                 "class Main extends Test{ int a = 0; void main(){ int b = 1; " +
                 " super.a = 55; this.b = 66; }}");
-
     }
-
 
     @Test
     public void testArrayAssignExpr() throws Exception{
-
+        this.testValidProgram(this.createMethod(
+                "int[] x = new int[10]; " +
+                        "String[] str = new String[10]; " +
+                        "boolean[] b = new boolean[10]; " +
+                        "x[3] = 12; str[5] = \"Hi Dale\"; b[15] = false; " +
+                        "int num = x[5]; String string = str[90]; "));
+        this.testInvalidProgram(this.createMethod(
+                "int[] x = new int[10]; " +
+                        "String[] str = new String[10]; " +
+                        "boolean[] b = new boolean[10]; " +
+                        "x[3] = true; str[5] = 55; b[15] = \"Hi Dale\"; " +
+                        "arr[10] = false; " +
+                        "x[true] = 3; x[\"Hi Dale\"] = 3; " +
+                        "x.length = 90; x.length = true; x.length = \"Hi Dale\"; "));
     }
 
     @Test
