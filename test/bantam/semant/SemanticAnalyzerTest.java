@@ -121,21 +121,23 @@ public class SemanticAnalyzerTest
         this.testInvalidProgram(this.createFieldsAndMethod( "void x;", ""));
         this.testInvalidProgram(this.createFieldsAndMethod( "int x; int x; ", ""));
         this.testInvalidProgram(this.createFieldsAndMethod( "int[] x; String x; ", ""));
-        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x = new int[\"hi\"]; ", ""));
-        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x = new int[true];", ""));
-        this.testInvalidProgram(this.createFieldsAndMethod( "int[] x = new String[6];", ""));
         this.testInvalidProgram(this.createFieldsAndMethod( "Foo j;", ""));
-        this.testInvalidProgram(this.createFieldsAndMethod( "Foo j = new Foo();", ""));
         this.testInvalidProgram(this.createFieldsAndMethod( "int x = y; int y = 5;", ""));
 
         this.testValidProgram(this.createFieldsAndMethod( "int x = 7; String[] y = new String[5];", ""));
         this.testValidProgram(this.createFieldsAndMethod( "int[] x = new int[6]; int y = 5;", ""));
         this.testValidProgram(this.createFieldsAndMethod( "int[] x;", ""));
         this.testValidProgram(this.createFieldsAndMethod( "int j;", ""));
+        this.testValidProgram(this.createFieldsAndMethod( "int j;", " String j;"));
     }
 
     @Test
     public void testFieldMethodInheritance() throws Exception{
+        this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = this.x; int k = this.j; "));
+        this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = super.x;"));
+        this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = super.hi();"));
+        this.testInvalidProgram(this.createClass("int m1(){ return 5; } void m2(){ int j = super.m1(); } "));
+
         this.testValidProgram("class Main { " +
                                 "int x = 5; " +
                                 "int testMethod(int num){}" +
@@ -146,13 +148,71 @@ public class SemanticAnalyzerTest
                                     "testMethod(x); " +
                                     "return super.x; }}" +
                             " class Child extends Test{" +
-                                "int y = super.x; " +
-                                "int z = x;" +
-                                "int j = super.testMethod(y);" +
-                                "int e = testMethod(y); }" );
+                                "int a = super.x; " +
+                                "int b = this.x;" +
+                                "int c = x;" +
+                                "int d = super.testMethod(a);" +
+                                "int e = testMethod(b); " +
+                                "int f = this.testMethod(c); }" );
+
+        this.testValidProgram("class Main { " +
+                                    "int[] x; " +
+                                    "String[] testMethod(int num){}" +
+                                    "void main(){} } " +
+                            " class Child extends Main{" +
+                                    "int a = super.x[1]; " +
+                                    "int[] b = super.x; " +
+                                    "int c = this.x[5];" +
+                                    "int[] d = this.x;" +
+                                    "int e = x[9];" +
+                                    "int[] f = x;" +
+                                    "String[] g = super.testMethod(a);" +
+                                    "String[] h = testMethod(a); " +
+                                    "String[] i = this.testMethod(a); }" );
+
+        this.testValidProgram("class Main { int x = 0; void main(){} }" +
+                "class Test extends Main{ void test(){ boolean x = true;} } " );
 
         this.testValidProgram(this.createFieldsAndMethod("int x;", "int j = this.x; int k = x;"));
-        //this.testInvalidProgram(this.createFieldsAndMethod("int x;", "int j = this.x; int k = x;"));
+        this.testValidProgram(this.createClass("int m1(){ return 5;} void m2(){ int j = this.m1(); }"));
+
+    }
+
+    @Test
+    public void testMethods() throws  Exception{
+        this.testInvalidProgram(this.createClass("void null(){}"));
+        this.testInvalidProgram(this.createClass("void int(){}"));
+        this.testInvalidProgram(this.createClass("Foo test(){ }"));
+        this.testInvalidProgram(this.createClass("Foo[] test(){ }"));
+        this.testInvalidProgram(this.createClass("int test(){ return true; }"));
+        this.testInvalidProgram(this.createClass("boolean test(){ " +
+                "if (true) { return true; } else {return false;} }"));
+        this.testInvalidProgram(this.createClass("void test(){ return 5; }"));
+        this.testInvalidProgram(this.createClass("void[] test(){ return; }"));
+        this.testInvalidProgram(this.createClass("int test(){ return null; }"));
+        this.testInvalidProgram(this.createClass("boolean test(){ return null; }"));
+        this.testInvalidProgram(this.createClass("void test(int x){} void test(){}"));
+        this.testInvalidProgram(this.createClass("void test(int x, String[] y){}" +
+                                                " void test(String[] y, int x){}"));
+        this.testInvalidProgram(this.createClass("void test(int[] x, String x){} "));
+        this.testInvalidProgram(this.createClass("int test(){ return 5;} void test(){}"));
+        this.testInvalidProgram(this.createClass("void test(void x){}"));
+        this.testInvalidProgram(this.createClass("void test(Foo[] x){}"));
+        this.testInvalidProgram(this.createClass("void test(int void){}"));
+        this.testInvalidProgram(this.createClass("void test(int[] null){}"));
+        this.testInvalidProgram(this.createClass("void test(){}  " +
+                " void test2(){ int n = test(); }"));
+
+        this.testValidProgram("class Main { int x = 5;  void x(int x){} void main(){} }");
+        this.testValidProgram(this.createClass("void test(int x, int c, String[] s){}"));
+        this.testValidProgram(this.createClass("String[] test(int[] c, String[] s){}"));
+        this.testValidProgram(this.createClass("void test(){} "));
+        this.testValidProgram(this.createClass("void test(){ return;} "));
+        this.testValidProgram(this.createClass("int baz(){ return 3032;} "));
+        this.testValidProgram(this.createClass("boolean test(){ " +
+                "if (true) { return true; } return true;} "));
+        this.testValidProgram("class Main{ void main(){} }" +
+                "class Test extends Main { void main(){} }");
     }
 
     @Test

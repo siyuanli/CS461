@@ -233,6 +233,13 @@ public class TypeCheckVisitor extends Visitor {
 
     @Override
     public Object visit(Formal formal) {
+        int lineNum = formal.getLineNum();
+        this.registerErrorIfReservedName(formal.getName(), lineNum);
+        this.registerErrorIfInvalidType(formal.getType(), lineNum);
+        if (this.classTreeNode.getVarSymbolTable().peek(formal.getName())!= null){
+            this.registerError(lineNum, "Parameter already exists with same name.");
+        }
+
         this.classTreeNode.getVarSymbolTable().add(formal.getName(), formal.getType());
         return null;
     }
