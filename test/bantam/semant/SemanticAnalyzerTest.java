@@ -10,7 +10,6 @@ import bantam.ast.Program;
 import bantam.lexer.Lexer;
 import org.junit.Test;
 import bantam.parser.Parser;
-import bantam.util.ErrorHandler;
 
 import java.io.StringReader;
 
@@ -1066,12 +1065,12 @@ public class SemanticAnalyzerTest {
         this.testValidProgram(this.createFieldsAndMethod("int length = 4; int thing = " +
                 "length;", ""));
 
-        this.testInvalidProgram(this.createMethod("int thing = 0; int x = thing.length;" +
-                ""));
-        this.testInvalidProgram(this.createMethod("int length = 0; int x = this.length;" +
-                ""));
-        this.testInvalidProgram(this.createMethod("int x = 5; int y = 6; int thing = x" +
-                ".y;"));
+        this.testInvalidProgram(this.createMethod(
+                "int thing = 0; int x = thing.length;"));
+        this.testInvalidProgram(this.createMethod(
+                "int length = 0; int x = this.length;"));
+        this.testInvalidProgram(this.createMethod(
+                "int x = 5; int y = 6; int thing = x.y;"));
         this.testInvalidProgram(this.createMethod(
                 "int x = null;"));
         this.testInvalidProgram(this.createMethod(

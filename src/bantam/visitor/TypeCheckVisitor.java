@@ -55,7 +55,8 @@ public class TypeCheckVisitor extends Visitor {
     private ErrorHandlerUtilities errorUtil;
 
     /**
-     * Create a type check visitor that checks types for each field, expression, and method.
+     * Create a type check visitor that checks types
+     * for each field, expression, and method.
      * @param errorHandler the error handler that performs error checking
      * @param disallowedNames the set of reserved key words that cannot be names
      */
@@ -74,8 +75,10 @@ public class TypeCheckVisitor extends Visitor {
         this.errorUtil.setFilename(this.classTreeNode.getASTNode().getFilename());
         this.errorUtil.setClassMap(this.classTreeNode.getClassMap());
         Class_ classASTNode = this.classTreeNode.getASTNode();
-        this.fieldScope = this.classTreeNode.getVarSymbolTable().getCurrScopeLevel() -1;
-        this.methodScope = this.classTreeNode.getMethodSymbolTable().getCurrScopeLevel() -1;
+        this.fieldScope = this.classTreeNode.getVarSymbolTable()
+                .getCurrScopeLevel() -1;
+        this.methodScope = this.classTreeNode.getMethodSymbolTable()
+                .getCurrScopeLevel() -1;
         classASTNode.accept(this);
     }
 
@@ -134,7 +137,8 @@ public class TypeCheckVisitor extends Visitor {
                 variableType = variableType.substring(0,variableType.length()-2);
             }
             if(!this.compatibleType(variableType, exprType)){
-                this.errorUtil.registerError(lineNum, "Incompatible variable type assignment.");
+                this.errorUtil.registerError(lineNum,
+                        "Incompatible variable type assignment.");
             }
         }
     }
@@ -153,7 +157,8 @@ public class TypeCheckVisitor extends Visitor {
             this.errorUtil.registerError(lineNum, "Undeclared variable access.");
         }
         else if (!type.endsWith("[]")){
-            this.errorUtil.registerError(lineNum, "Indexed variable must be an array type.");
+            this.errorUtil.registerError(lineNum,
+                    "Indexed variable must be an array type.");
         }
         else{
             type = type.substring(0, type.length()-2);
@@ -177,10 +182,12 @@ public class TypeCheckVisitor extends Visitor {
         }
         else{ //refName != null
             if (refName.equals("this")){
-                type = this.classTreeNode.getVarSymbolTable().lookup(name,this.fieldScope);
+                type = this.classTreeNode.getVarSymbolTable()
+                        .lookup(name,this.fieldScope);
             }
             else if (refName.equals("super")){
-                type = this.classTreeNode.getVarSymbolTable().lookup(name,this.fieldScope-1);
+                type = this.classTreeNode.getVarSymbolTable()
+                        .lookup(name,this.fieldScope-1);
             }
             else{
                 this.errorUtil.registerError(lineNum,
@@ -233,7 +240,8 @@ public class TypeCheckVisitor extends Visitor {
      * @param methodTable the symbol table to look up the method in
      * @return a pair consisting of the return type and a list of the parameter types
      */
-    private Pair<String, List<String>> getStringListPair(DispatchExpr dispatchExpr, SymbolTable methodTable) {
+    private Pair<String, List<String>> getStringListPair(DispatchExpr dispatchExpr,
+                                                         SymbolTable methodTable) {
         Pair<String, List<String>> methodPair=null;
         Expr refExpr= dispatchExpr.getRefExpr();
         if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
@@ -314,7 +322,8 @@ public class TypeCheckVisitor extends Visitor {
             }
         }
         else {
-            this.errorUtil.registerErrorIfReservedName(varExpr.getName(),varExpr.getLineNum());
+            this.errorUtil.registerErrorIfReservedName(
+                    varExpr.getName(),varExpr.getLineNum());
             type=this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
         }
         return type;
@@ -420,7 +429,8 @@ public class TypeCheckVisitor extends Visitor {
             if(varExpr.getRef()!=null){
                 refName = ((VarExpr)varExpr.getRef()).getName();
             }
-            type = this.findVariableType(refName, varExpr.getName(), varExpr.getLineNum());
+            type = this.findVariableType(refName, varExpr.getName(),
+                    varExpr.getLineNum());
         }
         else if (expr instanceof ArrayExpr){
             ArrayExpr arrayExpr = (ArrayExpr)expr;
@@ -428,7 +438,8 @@ public class TypeCheckVisitor extends Visitor {
             if(arrayExpr.getRef()!=null){
                 refName = ((VarExpr)arrayExpr.getRef()).getName();
             }
-            type=this.findVariableType(refName, arrayExpr.getName(), arrayExpr.getLineNum());
+            type=this.findVariableType(refName, arrayExpr.getName(),
+                    arrayExpr.getLineNum());
             if(type!=null && type.endsWith("[]")){
                 type = type.substring(0,type.length()-2);
             }
@@ -476,7 +487,8 @@ public class TypeCheckVisitor extends Visitor {
         if (!method.getReturnType().equals("void")) {
             if (stmtList.getSize()>0 &&
                     !(stmtList.get(stmtList.getSize() - 1) instanceof ReturnStmt)) {
-                this.errorUtil.registerError(method.getLineNum(), "Missing return Statement");
+                this.errorUtil.registerError(method.getLineNum(),
+                        "Missing return Statement");
             }
         }
         varSymbolTable.exitScope();
@@ -521,7 +533,8 @@ public class TypeCheckVisitor extends Visitor {
         }
         varSymbolTable.add(stmt.getName(), type);
         if (!compatibleType(type, stmt.getInit().getExprType())) {
-            this.errorUtil.registerError(lineNum, "Type of variable incompatible with assignment.");
+            this.errorUtil.registerError(lineNum,
+                    "Type of variable incompatible with assignment.");
         }
         return null;
     }
@@ -713,7 +726,8 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         this.checkAssignment(arrayAssignExpr.getRefName(), arrayAssignExpr.getName(),
-                arrayAssignExpr.getExpr().getExprType(), arrayAssignExpr.getLineNum(), true);
+                arrayAssignExpr.getExpr().getExprType(),
+                arrayAssignExpr.getLineNum(), true);
         arrayAssignExpr.setExprType(arrayAssignExpr.getExpr().getExprType());
         return null;
     }
@@ -754,7 +768,8 @@ public class TypeCheckVisitor extends Visitor {
             exprType = methodPair.getKey();
         }
         else {
-            this.errorUtil.registerError(dispatchExpr.getLineNum(),"Unknown method call.");
+            this.errorUtil.registerError(dispatchExpr.getLineNum(),
+                    "Unknown method call.");
         }
 
         List<String> actualParams =
@@ -813,10 +828,12 @@ public class TypeCheckVisitor extends Visitor {
      */
     @Override
     public Object visit(NewArrayExpr newArrayExpr){
-        this.errorUtil.registerErrorIfInvalidType(newArrayExpr.getType(),newArrayExpr.getLineNum());
+        this.errorUtil.registerErrorIfInvalidType(newArrayExpr.getType(),
+                newArrayExpr.getLineNum());
         newArrayExpr.getSize().accept(this);
         if (!newArrayExpr.getSize().getExprType().equals("int")){
-            this.errorUtil.registerError(newArrayExpr.getLineNum(), "Array size is not int.");
+            this.errorUtil.registerError(newArrayExpr.getLineNum(),
+                    "Array size is not int.");
         }
         newArrayExpr.setExprType(newArrayExpr.getType());
         return null;
@@ -850,7 +867,8 @@ public class TypeCheckVisitor extends Visitor {
                     "Cannot check if expr is primitive type.");
         } //makes sure that the type is valid
         else if (!this.classTreeNode.getClassMap().containsKey(type)){
-            this.errorUtil.registerError(instanceofExpr.getLineNum(), "Unknown instanceof type.");
+            this.errorUtil.registerError(instanceofExpr.getLineNum(),
+                    "Unknown instanceof type.");
         }
         instanceofExpr.getExpr().accept(this);
 
@@ -897,7 +915,8 @@ public class TypeCheckVisitor extends Visitor {
 
         //checks if casting to primitive
         if (castExpr.getType().equals("int") || castExpr.getType().equals("boolean")){
-            this.errorUtil.registerError(castExpr.getLineNum(), "Cannot cast to a primitive type.");
+            this.errorUtil.registerError(castExpr.getLineNum(),
+                    "Cannot cast to a primitive type.");
         }
         //checks if casting to a valid type
         else if (!this.classTreeNode.getClassMap().containsKey(type)){
@@ -1179,7 +1198,8 @@ public class TypeCheckVisitor extends Visitor {
         String type = getVarExprType(varExpr, refName);
 
         if(type==null){
-            this.errorUtil.registerError(varExpr.getLineNum(),"Undeclared variable access.");
+            this.errorUtil.registerError(varExpr.getLineNum(),
+                    "Undeclared variable access.");
         }
         varExpr.setExprType(type);
 
@@ -1216,7 +1236,8 @@ public class TypeCheckVisitor extends Visitor {
         if (arrayExpr.getIndex() != null) {
             arrayExpr.getIndex().accept(this);
             if (!arrayExpr.getIndex().getExprType().equals("int")) {
-                this.errorUtil.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
+                this.errorUtil.registerError(arrayExpr.getLineNum(),
+                        "Array index must be an int.");
             }
         }
 

@@ -115,7 +115,8 @@ public class MemberAdderVisitor extends Visitor {
 
         //checks if it has a valid return type
         if(!node.getReturnType().equals("void")) {
-            this.errorUtil.registerErrorIfInvalidType(node.getReturnType(), node.getLineNum());
+            this.errorUtil.registerErrorIfInvalidType(node.getReturnType(),
+                    node.getLineNum());
         }
         if (methodSymbolTable.peek(name) == null) {
             this.errorUtil.registerErrorIfReservedName(name,lineNum );
