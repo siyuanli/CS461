@@ -140,6 +140,28 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Checks to see if the given type is a valid array type and if so returns the type
+     * of the array. Registers an error if the type is null or not an array type
+     * @param lineNum the lineNum of the expression
+     * @param type the type of the variable
+     * @return the variable type with the brackets removed  if it was an array type,
+     * otherwise, return the original string.
+     */
+    private String checkValidArrayType(int lineNum, String type) {
+        //checks that type is valid and it exists
+        if (type == null){
+            this.errorUtil.registerError(lineNum, "Undeclared variable access.");
+        }
+        else if (!type.endsWith("[]")){
+            this.errorUtil.registerError(lineNum, "Indexed variable must be an array type.");
+        }
+        else{
+            type = type.substring(0, type.length()-2);
+        }
+        return type;
+    }
+
+    /**
      * Return the type of the given variable and also check the reference.
      * Register an error for illegal referencing.
      * @param refName the reference name of the variable
@@ -206,6 +228,146 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Gets the return type and paramets of a method when there is a reference.
+     * @param dispatchExpr The dispatch expression
+     * @param methodTable the symbol table to look up the method in
+     * @return a pair consisting of the return type and a list of the parameter types
+     */
+    private Pair<String, List<String>> getStringListPair(DispatchExpr dispatchExpr, SymbolTable methodTable) {
+        Pair<String, List<String>> methodPair=null;
+        Expr refExpr= dispatchExpr.getRefExpr();
+        if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
+            methodPair = ((Pair<String, List<String>>)methodTable
+                    .lookup(dispatchExpr.getMethodName(),this.methodScope));
+        }
+        else if(refExpr instanceof VarExpr
+                && ((VarExpr)refExpr).getName().equals("super")){
+            methodPair = ((Pair<String, List<String>>) this.classTreeNode
+                    .getMethodSymbolTable()
+                    .lookup(dispatchExpr.getMethodName(), this.methodScope -1));
+
+        }
+        else { //any scope
+            refExpr.accept(this);
+            String typeReference = refExpr.getExprType();
+            ClassTreeNode refNode = this.classTreeNode.getClassMap()
+                    .get(typeReference);
+
+            if (refNode == null) { //reference does not exist
+                this.errorUtil.registerError(dispatchExpr.getLineNum(),
+                        "Reference does not contain given method.");
+            }
+            else {
+                methodPair = ((Pair<String, List<String>>)
+                        refNode.getMethodSymbolTable()
+                                .lookup(dispatchExpr.getMethodName()));
+            }
+        }
+        return methodPair;
+    }
+
+    /**
+     * Check if the given actual paramaters conform to parameter types given.
+     * @param params the list of formal parameters
+     * @param actualParams the list of actual parameters
+     * @param lineNum the line number of the expression
+     */
+    private void checkMatchingParamLists(List<String> params, List<String>
+            actualParams, int lineNum) {
+        if (params != null) {
+
+            //must have correct number of params
+            if (actualParams.size() != params.size()) {
+                this.errorUtil.registerError(lineNum,
+                        "Wrong number of parameters");
+            }
+            for (int i = 0; i < params.size(); i++) {
+                if (i >= actualParams.size()) {
+                    break;
+                }
+                //must have correct types for params
+                else if (!this.compatibleType(params.get(i), actualParams.get(i))) {
+                    this.errorUtil.registerError(lineNum,
+                            "Value passed in has incompatible type with parameter.");
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the type of the VarExpr and registers an error if you try to get the length
+     * attribute of a non-array variable
+     * @param varExpr the VarExpr
+     * @param refName the Reference name
+     * @return the type of the variable
+     */
+    private String getVarExprType(VarExpr varExpr, String refName) {
+        String type;
+        if (varExpr.getName().equals("length") && !"this".equals(refName) &&
+                !"super".equals(refName) && refName!=null) {
+            type = this.findVariableType(null, refName, varExpr.getLineNum());
+            if (!type.endsWith("[]")) {
+                this.errorUtil.registerError(varExpr.getLineNum(),
+                        "Only array variables have length attribute.");
+            } else {
+                type = "int";
+            }
+        }
+        else {
+            this.errorUtil.registerErrorIfReservedName(varExpr.getName(),varExpr.getLineNum());
+            type=this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
+        }
+        return type;
+    }
+
+    /**
+     * Determines if the given castExpr is an upcast
+     * @param castExpr the CastExpr
+     * @param type the type to cast to
+     * @param exprType the type of the expression being cast
+     */
+    private void determineUpCast(CastExpr castExpr, String type, String exprType) {
+        //check if casting to primitive
+        if ("int".equals(exprType) || "boolean".equals(exprType)) {
+            this.errorUtil.registerError(castExpr.getLineNum(),
+                    "Cannot cast primitives.");
+            //sets if up cast
+        } else if (this.compatibleType(type, exprType)) {
+            castExpr.setUpCast(true);
+        } else if (this.compatibleType(exprType, type)) {
+            castExpr.setUpCast(false);
+        } else {
+            this.errorUtil.registerError(castExpr.getLineNum(),
+                    "Incompatible types in cast.");
+
+        }
+    }
+
+    /**
+     * Determines if the given InstanceofExpr is an upcast
+     * @param instanceofExpr the InstanceofExpr
+     * @param type the type to be checked
+     * @param exprType the type of the expression being checked
+     */
+    private void determineUpCheck(InstanceofExpr instanceofExpr, String type, String
+            exprType) {
+        //disallows checking if expr is a primitive
+        if ("int".equals(exprType) || "boolean".equals(exprType)) {
+            this.errorUtil.registerError(instanceofExpr.getLineNum(),
+                    "Cannot check instance of primitives.");
+
+            //checks if upcasting/downcasting
+        } else if (this.compatibleType(type, exprType)) {
+            instanceofExpr.setUpCheck(true);
+        } else if (this.compatibleType(exprType, type)) {
+            instanceofExpr.setUpCheck(false);
+        } else { // disallows anything but up/downcasting
+            this.errorUtil.registerError(instanceofExpr.getLineNum(),
+                    "Incompatible types in instanceof.");
+        }
+    }
+
+    /**
      * Check the type of negation or not unary expression and
      * register an error for incompatible types.
      * @param unaryExpr the given unary expression
@@ -229,8 +391,30 @@ public class TypeCheckVisitor extends Visitor {
     private void incrDecrChecker(UnaryExpr unaryExpr){
         Expr expr = unaryExpr.getExpr();
         expr.accept(this);
+        String type = getIncrDecrType(unaryExpr);
+
+        if (type == null){
+            this.errorUtil.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented variable not defined");
+        }
+        else if (!type.equals("int")){
+            this.errorUtil.registerError(unaryExpr.getLineNum(),
+                    "Incremented or decremented variable must be an int.");
+        }
+
+        unaryExpr.setExprType("int");
+    }
+
+    /**
+     * Gets the type of the given UnaryIncr or UnaryDecr expressions and registers an
+     * error if the expression that they are operating on is not a variable.
+     * @param unaryExpr The Incr or Decr expression
+     * @return the type of the incremented or decremented expression
+     */
+    private String getIncrDecrType(UnaryExpr unaryExpr) {
         String type = null;
-        if (expr instanceof  VarExpr){
+        Expr expr = unaryExpr.getExpr();
+        if (expr instanceof VarExpr){
             VarExpr varExpr = (VarExpr)expr;
             String refName = null;
             if(varExpr.getRef()!=null){
@@ -249,21 +433,12 @@ public class TypeCheckVisitor extends Visitor {
                 type = type.substring(0,type.length()-2);
             }
         }
+        //We modified the grammar to prohibit this from happening, but just in case...
         else{
             this.errorUtil.registerError(unaryExpr.getLineNum(),
                     "Incremented or decremented expressions must be variables.");
         }
-
-        if (type == null){
-            this.errorUtil.registerError(unaryExpr.getLineNum(),
-                    "Incremented or decremented variable not defined");
-        }
-        else if (!type.equals("int")){
-            this.errorUtil.registerError(unaryExpr.getLineNum(),
-                    "Incremented or decremented variable must be an int.");
-        }
-
-        unaryExpr.setExprType("int");
+        return type;
     }
 
     /**
@@ -564,33 +739,7 @@ public class TypeCheckVisitor extends Visitor {
         if (refExpr != null){
 
             //gets the method from the correct scope
-            if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
-                methodPair = ((Pair<String, List<String>>)methodTable
-                        .lookup(dispatchExpr.getMethodName(),this.methodScope));
-            }
-            else if(refExpr instanceof VarExpr
-                    && ((VarExpr)refExpr).getName().equals("super")){
-                methodPair = ((Pair<String, List<String>>) this.classTreeNode
-                        .getMethodSymbolTable()
-                        .lookup(dispatchExpr.getMethodName(), this.methodScope -1));
-
-            }
-            else { //any scope
-                refExpr.accept(this);
-                String typeReference = refExpr.getExprType();
-                ClassTreeNode refNode = this.classTreeNode.getClassMap()
-                                                            .get(typeReference);
-
-                if (refNode == null) { //reference does not exist
-                    this.errorUtil.registerError(dispatchExpr.getLineNum(),
-                            "Reference does not contain given method.");
-                }
-                else {
-                    methodPair = ((Pair<String, List<String>>)
-                            refNode.getMethodSymbolTable()
-                                    .lookup(dispatchExpr.getMethodName()));
-                }
-            }
+            methodPair = getStringListPair(dispatchExpr, methodTable);
         }
         else{
             methodPair = ((Pair<String, List<String>>)methodTable
@@ -612,27 +761,12 @@ public class TypeCheckVisitor extends Visitor {
                 (List<String>)dispatchExpr.getActualList().accept(this);
 
         //checks that the params are correct for method
-        if (params != null) {
-
-            //must have correct number of params
-            if (actualParams.size() != params.size()) {
-                this.errorUtil.registerError(dispatchExpr.getLineNum(),
-                        "Wrong number of parameters");
-            }
-            for (int i = 0; i < params.size(); i++) {
-                if (i >= actualParams.size()) {
-                    break;
-                }
-                //must have correct types for params
-                else if (!this.compatibleType(params.get(i), actualParams.get(i))) {
-                    this.errorUtil.registerError(dispatchExpr.getLineNum(),
-                            "Value passed in has incompatible type with parameter.");
-                }
-            }
-        }
+        checkMatchingParamLists(params, actualParams, dispatchExpr.getLineNum());
         dispatchExpr.setExprType(exprType);
         return null;
     }
+
+
 
     /**
      * Visits an exprList, getting all of the parameter types from each
@@ -730,26 +864,13 @@ public class TypeCheckVisitor extends Visitor {
             else if (typeIsArray){
                 type += "[]";
             }
-
-            //disallows checking if expr is a primitive
-            if ("int".equals(exprType) || "boolean".equals(exprType)) {
-                this.errorUtil.registerError(instanceofExpr.getLineNum(),
-                        "Cannot check instance of primitives.");
-
-            //checks if upcasting/downcasting
-            } else if (this.compatibleType(type, exprType)) {
-                instanceofExpr.setUpCheck(true);
-            } else if (this.compatibleType(exprType, type)) {
-                instanceofExpr.setUpCheck(false);
-            } else { // disallows anything but up/downcasting
-                this.errorUtil.registerError(instanceofExpr.getLineNum(),
-                        "Incompatible types in instanceof.");
-
-            }
+            determineUpCheck(instanceofExpr, type, exprType);
         }
         instanceofExpr.setExprType("boolean");
         return null;
     }
+
+
 
     /**
      * Visits castExpr
@@ -794,26 +915,14 @@ public class TypeCheckVisitor extends Visitor {
             else if (typeIsArray){
                 type += "[]";
             }
-
-            //check if casting to primitive
-            if ("int".equals(exprType) || "boolean".equals(exprType)) {
-                this.errorUtil.registerError(castExpr.getLineNum(),
-                        "Cannot cast a primitives.");
-            //sets if up cast
-            } else if (this.compatibleType(type, exprType)) {
-                castExpr.setUpCast(true);
-            } else if (this.compatibleType(exprType, type)) {
-                castExpr.setUpCast(false);
-            } else {
-                this.errorUtil.registerError(castExpr.getLineNum(),
-                        "Incompatible types in cast.");
-
-            }
+            determineUpCast(castExpr, type, exprType);
         }
         castExpr.setExprType(castExpr.getType());
 
         return null;
     }
+
+
 
     /**
      * Visits a constIntExpr
@@ -1049,8 +1158,7 @@ public class TypeCheckVisitor extends Visitor {
      */
     @Override
     public Object visit(VarExpr varExpr){
-        String type = null;
-        String refName=null;
+        String refName = null;
 
         if(varExpr.getName().equals("null")){
             if(varExpr.getRef()!=null){
@@ -1068,20 +1176,7 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         //checks array.length variables
-        if (varExpr.getName().equals("length") && !"this".equals(refName) &&
-                !"super".equals(refName) && refName!=null) {
-            type = this.findVariableType(null, refName, varExpr.getLineNum());
-            if (!type.endsWith("[]")) {
-                this.errorUtil.registerError(varExpr.getLineNum(),
-                        "Only array variables have length attribute.");
-            } else {
-                type = "int";
-            }
-        }
-        else {
-            this.errorUtil.registerErrorIfReservedName(varExpr.getName(),varExpr.getLineNum());
-            type=this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
-        }
+        String type = getVarExprType(varExpr, refName);
 
         if(type==null){
             this.errorUtil.registerError(varExpr.getLineNum(),"Undeclared variable access.");
@@ -1090,6 +1185,8 @@ public class TypeCheckVisitor extends Visitor {
 
         return null;
     }
+
+
 
     /**
      * Visits an array expr
@@ -1112,17 +1209,8 @@ public class TypeCheckVisitor extends Visitor {
         String type = this.findVariableType(ref, arrayExpr.getName(),
                 arrayExpr.getLineNum());
 
-        //checks that type is valid and it exists
-        if (type == null){
-            this.errorUtil.registerError(arrayExpr.getLineNum(), "Undeclared variable access.");
-        }
-        else if (!type.endsWith("[]")){
-            this.errorUtil.registerError(arrayExpr.getLineNum(),
-                    "Indexed variable must be an array type.");
-        }
-        else{
-            type = type.substring(0, type.length()-2);
-        }
+        type = checkValidArrayType(arrayExpr.getLineNum(), type);
+
 
         // index of an array is an integer
         if (arrayExpr.getIndex() != null) {
@@ -1136,5 +1224,7 @@ public class TypeCheckVisitor extends Visitor {
 
         return null;
     }
+
+
 
 }

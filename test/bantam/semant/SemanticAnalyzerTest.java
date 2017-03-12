@@ -101,10 +101,6 @@ public class SemanticAnalyzerTest {
             analyzer.analyze();
         } catch (RuntimeException e) {
             thrown = true;
-            System.out.println(expectedMessage + "   ;  " + e.getMessage());
-            for (ErrorHandler.Error err : analyzer.getErrorHandler().getErrorList()) {
-                System.out.println(err);
-            }
             assertEquals(expectedMessage, e.getMessage());
         }
         return thrown;
