@@ -1,8 +1,8 @@
 /*
  * File: parser.cup
- * CS461 Project 2
+ * CS461 Project 3
  * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 2/23/17
+ * Date: 3/11/17
  */
 /* Bantam Java Compiler and Language Toolset.
 
@@ -32,11 +32,6 @@
 
 /* code below is copied to the file containing the bantam.parser */
 
-//File: ParserTest.java
-//CS461 Project 2
-//Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek,
-//Date: 2/23/17
-
 package bantam.parser;
 
 /* import the AST and utility class files */
@@ -52,6 +47,14 @@ import java_cup.runtime.Symbol;
 /* the code below is copied to the class containing the context-free
    grammar productions */
 action code {:
+
+    /*
+     * File: parser.cup
+     * CS461 Project 3
+     * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
+     * Date: 3/11/17
+     */
+
     /** object for error handling */
     private ErrorHandler errorHandler = new ErrorHandler();
 

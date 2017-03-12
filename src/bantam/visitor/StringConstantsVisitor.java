@@ -1,8 +1,8 @@
 /*
  * File: StringConstantsVisitor.java
- * CS461 Project 2.5
+ * CS461 Project 3
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 2/28/17
+ * Date: 3/11/17
  */
 package bantam.visitor;
 
@@ -18,6 +18,10 @@ import java.util.Map;
 /**
  * Class which uses the visitor pattern on an abstract syntax tree in order to catalogue
  * all the string constants.
+ *
+ * @author Joseph Maionek
+ * @author Siyuan Li
+ * @author Phoebe Hughes
  */
 public class StringConstantsVisitor extends Visitor {
 

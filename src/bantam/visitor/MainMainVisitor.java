@@ -1,8 +1,8 @@
 /*
  * File: MainMainVisitor.java
- * CS461 Project 2.5
+ * CS461 Project 3
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 2/28/17
+ * Date: 3/11/17
  */
 
 package bantam.visitor;
@@ -15,6 +15,12 @@ import java.util.Hashtable;
 /**
  * Vistor class for checking a given program has a Main class
  * with a main method and a void return type
+ *
+ *
+ *
+ * @author Joseph Maionek
+ * @author Siyuan Li
+ * @author Phoebe Hughes
  */
 public class MainMainVisitor extends Visitor {
 
@@ -95,9 +101,11 @@ public class MainMainVisitor extends Visitor {
 
             if (this.classMap != null) {
                 //checks if ancestors have main method
-                ClassTreeNode currentClassTreeNode = this.classMap.get("Main").getParent();
+                ClassTreeNode currentClassTreeNode =
+                        this.classMap.get("Main").getParent();
                 while (currentClassTreeNode != null && !hasMainMethod) {
-                    hasMainMethod = (boolean) currentClassTreeNode.getASTNode().getMemberList().accept(this);
+                    hasMainMethod = (boolean) currentClassTreeNode.getASTNode()
+                            .getMemberList().accept(this);
                     currentClassTreeNode = currentClassTreeNode.getParent();
                 }
             }

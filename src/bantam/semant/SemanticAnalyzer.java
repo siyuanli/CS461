@@ -1,3 +1,10 @@
+/*
+ * File: SemanticAnalyzer.java
+ * CS461 Project 3
+ * Edited by: Phoebe Hughes, Siyuan Li, Joseph Malionek,
+ * Date: 3/11/17
+ */
+
 /* Bantam Java Compiler and Language Toolset.
 
    Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
@@ -53,6 +60,9 @@ public class SemanticAnalyzer {
 	/** Maps class names to ClassTreeNode objects describing the class */
 	private Hashtable<String,ClassTreeNode> classMap = new Hashtable<String,ClassTreeNode>();
 
+	/**
+	 * Set of classes that are not in a loop
+	 */
 	private HashSet<ClassTreeNode> nonLoopClasses = new HashSet<>();
 
 	/** Object for error handling */
@@ -61,9 +71,14 @@ public class SemanticAnalyzer {
 	/** Boolean indicating whether debugging is enabled */
 	private boolean debug = false;
 
-	/** Maximum number of inherited and non-inherited fields that can be defined for any one class */
+	/** Maximum number of inherited and non-inherited fields
+	 * that can be defined for any one class */
 	private final int MAX_NUM_FIELDS = 1500;
 
+
+	/**
+	 * A set of names that cannot be variable, field, class, ect. names
+	 */
 	private Set<String> disallowedNames;
 
 	/** SemanticAnalyzer constructor
@@ -113,6 +128,9 @@ public class SemanticAnalyzer {
 		return root;
 	}
 
+	/**
+	 * Builds the tree of class tree nodes
+	 */
 	private void buildTree() {
 		//puts each classes into hashmap
 		for (ASTNode node: this.program.getClassList()){
@@ -120,11 +138,14 @@ public class SemanticAnalyzer {
 			String className = classNode.getName();
 			ClassTreeNode classTreeNode = new ClassTreeNode(classNode,
 					false, true, this.classMap);
+
+			//registers error if invalid class name
             if (this.disallowedNames.contains(className)){
                 this.errorHandler.register(2, classNode.getFilename(),
                         classNode.getLineNum(), "Reserved word, " + className
                                 + ", cannot be used as a class name.");
             }
+            //registers error if class already defined
             else if (this.classMap.containsKey(className)){
                 this.errorHandler.register(2, classNode.getFilename(),
                         classNode.getLineNum(),
@@ -140,6 +161,8 @@ public class SemanticAnalyzer {
 				String parent = astNode.getParent();
 				if (parent != null) {
 					ClassTreeNode parentTreeNode = this.classMap.get(parent);
+
+					//registers error if trying to extend unextendable class
 					if (parentTreeNode == null || !parentTreeNode.isExtendable()){
                         this.errorHandler.register(2, astNode.getFilename(),
                                 astNode.getLineNum(), "Cannot extend " + parent);
@@ -154,6 +177,9 @@ public class SemanticAnalyzer {
 		}
 	}
 
+	/**
+	 * Check to make sure tree has a valid hiearchy
+	 */
 	private void checkHierarchy(){
 		Stack<ClassTreeNode> unchecked = new Stack<>();
 		Set<ClassTreeNode> checked = new HashSet<>();
@@ -164,6 +190,7 @@ public class SemanticAnalyzer {
 			ClassTreeNode popped = unchecked.pop();
 			Class_ astNode = popped.getASTNode();
 
+			//checks if there is a loop of classes
 			if (checked.contains(popped)){
 				this.errorHandler.register(2, astNode.getFilename(),
 						astNode.getLineNum(),
@@ -186,6 +213,9 @@ public class SemanticAnalyzer {
         }
 	}
 
+	/**
+	 * Builds the symbol table.
+	 */
 	private void buildEnvironment(){
 		MemberAdderVisitor visitor = new MemberAdderVisitor(this.errorHandler,
 				this.disallowedNames);
@@ -193,18 +223,28 @@ public class SemanticAnalyzer {
 		this.buildSymbolTables(this.root, visitor);
 	}
 
-	private void buildSymbolTables(ClassTreeNode classTreeNode, MemberAdderVisitor memberAdderVisitor) {
+	/**
+	 * Adds the methods and fields to the symbol tables of a class tree node
+	 * @param classTreeNode the class tree node
+	 * @param memberAdderVisitor the visitor that adds these
+	 */
+	private void buildSymbolTables(ClassTreeNode classTreeNode,
+								   MemberAdderVisitor memberAdderVisitor) {
 		Iterator<ClassTreeNode> iterator = classTreeNode.getChildrenList();
 		memberAdderVisitor.getSymbolTables(classTreeNode);
 		while(iterator.hasNext()) {
 			ClassTreeNode child = iterator.next();
 			child.getVarSymbolTable().setParent(child.getParent().getVarSymbolTable());
-			child.getMethodSymbolTable().setParent(child.getParent().getMethodSymbolTable());
+			child.getMethodSymbolTable().setParent(child.getParent()
+										.getMethodSymbolTable());
 			this.buildSymbolTables(child, memberAdderVisitor);
 		}
 
 	}
 
+	/**
+	 * Ensures that the program has a Main class and main method.
+	 */
 	private void checkMainMain(){
 		MainMainVisitor mainMainVisitor = new MainMainVisitor(this.classMap);
 		boolean hasMain = mainMainVisitor.hasMain(this.program);
@@ -215,6 +255,9 @@ public class SemanticAnalyzer {
 
 	}
 
+	/**
+	 * Checks to make sure that the types are compatible
+	 */
 	private void checkTypes(){
 		TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(
 				this.errorHandler, this.disallowedNames);
@@ -228,153 +271,180 @@ public class SemanticAnalyzer {
 	 */
 	public ErrorHandler getErrorHandler() { return errorHandler; }
 
-	/** Add built in classes to the class tree
-	 * */
+	/**
+	 * Add built in classes to the class tree
+	 */
 	private void updateBuiltins() {
 		// create AST node for object
 		Class_ astNode =
 				new Class_(-1, "<built-in class>", "Object", null,
-						(MemberList)(new MemberList(-1))
-								.addElement(new Method(-1, "Object", "clone",
-										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null")))))
+						(MemberList) (new MemberList(-1)).addElement(
+								new Method(-1, "Object", "clone", new FormalList(-1),
+										(StmtList) (new StmtList(-1)).addElement(
+												new ReturnStmt(-1,
+														new VarExpr(-1,
+																null, "null")))))
 								.addElement(new Method(-1, "boolean", "equals",
-										(FormalList)(new FormalList(-1))
-												.addElement(new Formal(-1, "Object", "o")),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new ConstBooleanExpr(-1, "false")))))
+								(FormalList) (new FormalList(-1))
+										.addElement(new Formal(-1, "Object", "o")),
+								(StmtList) (new StmtList(-1))
+										.addElement(new ReturnStmt(-1,
+												new ConstBooleanExpr(-1, "false")))))
 								.addElement(new Method(-1, "String", "toString",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null"))))));
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null,"null"))))));
 		// create a class tree node for object, save in variable root
-		root = new ClassTreeNode(astNode, /*built-in?*/true, /*extendable?*/true, classMap);
+		root = new ClassTreeNode(astNode, /*built-in?*/true,
+				/*extendable?*/true, classMap);
 		// add object class tree node to the mapping
 		classMap.put("Object", root);
 
 		// note: String, TextIO, and Sys all have fields that are not shown below.  Because
-		// these classes cannot be extended and fields are protected, they cannot be accessed by
+		// these classes cannot be extended and fields are protected,
+		// they cannot be accessed by
 		// other classes, so they do not have to be included in the AST.
 
 		// create AST node for String
 		astNode =
 				new Class_(-1, "<built-in class>",
 						"String", "Object",
-						(MemberList)(new MemberList(-1))
-								.addElement(new Field(-1, "int", "length", /*0 by default*/null))
-		       /* note: str is the character sequence -- no applicable type for a
+						(MemberList) (new MemberList(-1))
+								.addElement(new Field(-1, "int", "length",
+										/*0 by default*/null))
+			   /* note: str is the character sequence -- no applicable type for a
 			  character sequence so it is just made an int.  it's OK to
 			  do this since this field is only accessed (directly) within
 			  the runtime system */
 								.addElement(new Method(-1, "int", "length",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new ConstIntExpr(-1, "0")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new ConstIntExpr(-1, "0")))))
 								.addElement(new Method(-1, "boolean", "equals",
-										(FormalList)(new FormalList(-1))
-												.addElement(new Formal(-1, "Object", "str")),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new ConstBooleanExpr(-1, "false")))))
+										(FormalList) (new FormalList(-1))
+												.addElement(new Formal(-1, "Object",
+														"str")),
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new ConstBooleanExpr(-1,
+																"false")))))
 								.addElement(new Method(-1, "String", "toString",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null, "null")))))
 								.addElement(new Method(-1, "String", "substring",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "int",
 														"beginIndex"))
-												.addElement(new Formal(-1, "int", "endIndex")),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null")))))
+												.addElement(new Formal(-1, "int",
+														"endIndex")),
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null, "null")))))
 								.addElement(new Method(-1, "String", "concat",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "String",
 														"str")),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null"))))));
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null,"null"))))));
 		// create class tree node for String, add it to the mapping
-		classMap.put("String", new ClassTreeNode(astNode, /*built-in?*/true, /*extendable?*/false, classMap));
+		classMap.put("String", new ClassTreeNode(astNode, /*built-in?*/true,
+				/*extendable?*/false, classMap));
 
 		// create AST node for TextIO
 		astNode =
 				new Class_(-1, "<built-in class>",
 						"TextIO", "Object",
-						(MemberList)(new MemberList(-1))
-								.addElement(new Field(-1, "int", "readFD", /*0 by default*/null))
-								.addElement(new Field(-1, "int", "writeFD", new ConstIntExpr(-1, "1")))
+						(MemberList) (new MemberList(-1))
+								.addElement(new Field(-1, "int", "readFD",
+										/*0 by default*/null))
+								.addElement(new Field(-1, "int", "writeFD",
+										new ConstIntExpr(-1, "1")))
 								.addElement(new Method(-1, "void", "readStdin",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
+										(StmtList) (new StmtList(-1))
 												.addElement(new ReturnStmt(-1, null))))
 								.addElement(new Method(-1, "void", "readFile",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "String",
 														"readFile")),
-										(StmtList)(new StmtList(-1))
+										(StmtList) (new StmtList(-1))
 												.addElement(new ReturnStmt(-1, null))))
 								.addElement(new Method(-1, "void", "writeStdout",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
+										(StmtList) (new StmtList(-1))
 												.addElement(new ReturnStmt(-1, null))))
 								.addElement(new Method(-1, "void", "writeStderr",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
+										(StmtList) (new StmtList(-1))
 												.addElement(new ReturnStmt(-1, null))))
 								.addElement(new Method(-1, "void", "writeFile",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "String",
 														"writeFile")),
-										(StmtList)(new StmtList(-1))
+										(StmtList) (new StmtList(-1))
 												.addElement(new ReturnStmt(-1, null))))
 								.addElement(new Method(-1, "String", "getString",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null, "null")))))
 								.addElement(new Method(-1, "int", "getInt",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new ConstIntExpr(-1, "0")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new ConstIntExpr(-1, "0")))))
 								.addElement(new Method(-1, "TextIO", "putString",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "String",
 														"str")),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null, "null")))))
 								.addElement(new Method(-1, "TextIO", "putInt",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "int",
 														"n")),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new VarExpr(-1, null, "null"))))));
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new VarExpr(-1, null, "null"))))));
 		// create class tree node for TextIO, add it to the mapping
-		classMap.put("TextIO", new ClassTreeNode(astNode, /*built-in?*/true, /*extendable?*/false, classMap));
+		classMap.put("TextIO", new ClassTreeNode(astNode, /*built-in?*/true,
+				/*extendable?*/false, classMap));
 
 		// create AST node for Sys
 		astNode =
 				new Class_(-1, "<built-in class>",
 						"Sys", "Object",
-						(MemberList)(new MemberList(-1))
+						(MemberList) (new MemberList(-1))
 								.addElement(new Method(-1, "void", "exit",
-										(FormalList)(new FormalList(-1))
+										(FormalList) (new FormalList(-1))
 												.addElement(new Formal(-1, "int",
 														"status")),
-										(StmtList)(new StmtList(-1))
+										(StmtList) (new StmtList(-1))
 												.addElement(new ReturnStmt(-1, null))))
-		       /* MC: time() and random() requires modifying SPIM to add a time system call
+			   /* MC: time() and random() requires modifying SPIM to add a time system
+			   call
 			  (note: random() does not need its own system call although it uses the time
 			  system call).  We have a version of SPIM with this system call available,
 			  otherwise, just comment out. (For x86 and jvm there are no issues.) */
 								.addElement(new Method(-1, "int", "time",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new ConstIntExpr(-1, "0")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new ConstIntExpr(-1, "0")))))
 								.addElement(new Method(-1, "int", "random",
 										new FormalList(-1),
-										(StmtList)(new StmtList(-1))
-												.addElement(new ReturnStmt(-1, new ConstIntExpr(-1, "0")))))
+										(StmtList) (new StmtList(-1))
+												.addElement(new ReturnStmt(-1,
+														new ConstIntExpr(-1, "0")))))
 				);
 		// create class tree node for Sys, add it to the mapping
-		classMap.put("Sys", new ClassTreeNode(astNode, /*built-in?*/true, /*extendable?*/false, classMap));
+		classMap.put("Sys", new ClassTreeNode(astNode, /*built-in?*/true,
+				/*extendable?*/false, classMap));
 	}
 }

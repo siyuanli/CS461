@@ -977,6 +977,10 @@ public class ParserTest
         assert badTestMethod("int x = ++;");
         assert badTestMethod("++;");
         assert badTestMethod("y++++++++++++++++++++++x;");
+        assert badTestMethod("6++;");
+        assert badTestMethod("++6;");
+        assert badTestMethod("--6;");
+        assert badTestMethod("--\"hi\";");
     }
 
     /**
