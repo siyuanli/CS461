@@ -575,9 +575,15 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits dispatchExpr
      *
-     * @param dispatchExpr
-     * @return
+     * Checks that:
+     * the method exists in the correct scope, defined by the reference
+     * the parameters match the number and types of the method
+     *
+     *
+     * @param dispatchExpr the dispatchExpr node
+     * @return null
      */
     @Override
     public Object visit(DispatchExpr dispatchExpr){
@@ -587,33 +593,42 @@ public class TypeCheckVisitor extends Visitor {
 
         Pair<String, List<String>> methodPair = null;
         if (refExpr != null){
+
+            //gets the method from the correct scope
             if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
-                methodPair = ((Pair<String, List<String>>)methodTable.lookup(dispatchExpr.getMethodName(),this.methodScope));
+                methodPair = ((Pair<String, List<String>>)methodTable
+                        .lookup(dispatchExpr.getMethodName(),this.methodScope));
             }
-            else if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
+            else if(refExpr instanceof VarExpr
+                    && ((VarExpr)refExpr).getName().equals("super")){
                 methodPair = ((Pair<String, List<String>>) this.classTreeNode
-                            .getMethodSymbolTable().lookup(dispatchExpr.getMethodName(), this.methodScope -1));
+                        .getMethodSymbolTable()
+                        .lookup(dispatchExpr.getMethodName(), this.methodScope -1));
 
             }
-            else {
+            else { //any scope
                 refExpr.accept(this);
                 String typeReference = refExpr.getExprType();
-                ClassTreeNode refNode = this.classTreeNode.getClassMap().get(typeReference);
-                if (refNode == null) {
+                ClassTreeNode refNode = this.classTreeNode.getClassMap()
+                                                            .get(typeReference);
+
+                if (refNode == null) { //reference does not exist
                     this.registerError(dispatchExpr.getLineNum(),
                             "Reference does not contain given method.");
                 }
                 else {
-                    methodPair = ((Pair<String, List<String>>) refNode.getMethodSymbolTable()
-                            .lookup(dispatchExpr.getMethodName()));
+                    methodPair = ((Pair<String, List<String>>)
+                            refNode.getMethodSymbolTable()
+                                    .lookup(dispatchExpr.getMethodName()));
                 }
             }
         }
         else{
-            methodPair = ((Pair<String, List<String>>)methodTable.lookup(dispatchExpr.getMethodName()));
+            methodPair = ((Pair<String, List<String>>)methodTable
+                                    .lookup(dispatchExpr.getMethodName()));
         }
 
-
+        //checks that method exists
         List<String> params = null;
         String exprType = null;
         if (methodPair != null) {
@@ -624,16 +639,22 @@ public class TypeCheckVisitor extends Visitor {
             this.registerError(dispatchExpr.getLineNum(),"Unknown method call.");
         }
 
-        List<String> actualParams = (List<String>)dispatchExpr.getActualList().accept(this);
+        List<String> actualParams =
+                (List<String>)dispatchExpr.getActualList().accept(this);
 
+        //checks that the params are correct for method
         if (params != null) {
+
+            //must have correct number of params
             if (actualParams.size() != params.size()) {
-                this.registerError(dispatchExpr.getLineNum(), "Wrong number of parameters");
+                this.registerError(dispatchExpr.getLineNum(),
+                        "Wrong number of parameters");
             }
             for (int i = 0; i < params.size(); i++) {
                 if (i >= actualParams.size()) {
                     break;
                 }
+                //must have correct types for params
                 else if (!this.compatibleType(params.get(i), actualParams.get(i))) {
                     this.registerError(dispatchExpr.getLineNum(),
                             "Value passed in has incompatible type with parameter.");
@@ -645,9 +666,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param exprList
-     * @return
+     * Visits an exprList, getting all of the parameter types from each
+     * @param exprList the exprList node
+     * @return the params
      */
     @Override
     public Object visit(ExprList exprList){
@@ -660,9 +681,13 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits the newExpr
      *
-     * @param newExpr
-     * @return
+     * Checks to makes sure:
+     * it is a valid type
+     *
+     * @param newExpr the newExpr node
+     * @return null
      */
     @Override
     public Object visit(NewExpr newExpr){
@@ -674,9 +699,14 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits a newArrayExpr
      *
-     * @param newArrayExpr
-     * @return
+     * Checks to make sure:
+     * its index is an integer
+     * it is a valid object
+     *
+     * @param newArrayExpr the newArrayExpr node
+     * @return null
      */
     @Override
     public Object visit(NewArrayExpr newArrayExpr){
@@ -690,23 +720,32 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits a instanceofExpr
      *
-     * @param instanceofExpr
-     * @return
+     * Makes sure that:
+     * only checking to see if it is a super/subtype
+     * cannot check primatives/ if it is a primitive
+     *
+     * @param instanceofExpr the instanceofExpr
+     * @return null
      */
     @Override
     public Object visit(InstanceofExpr instanceofExpr){
         String type = instanceofExpr.getType();
         boolean typeIsArray = false;
 
+        //edits type of array so that it can be found in the class map
         if (type.endsWith("[]")){
             typeIsArray = true;
             type = type.substring(0, type.length()-2);
         }
 
-        if (instanceofExpr.getType().equals("int") || instanceofExpr.getType().equals("boolean")){
-            this.registerError(instanceofExpr.getLineNum(), "Cannot check if expr is primitive type.");
-        }
+        //disallows checking if expr is a primitive
+        if (instanceofExpr.getType().equals("int") ||
+                instanceofExpr.getType().equals("boolean")){
+            this.registerError(instanceofExpr.getLineNum(),
+                    "Cannot check if expr is primitive type.");
+        } //makes sure that the type is valid
         else if (!this.classTreeNode.getClassMap().containsKey(type)){
             this.registerError(instanceofExpr.getLineNum(), "Unknown instanceof type.");
         }
@@ -715,6 +754,7 @@ public class TypeCheckVisitor extends Visitor {
         String exprType = instanceofExpr.getExpr().getExprType();
 
         if (exprType != null){
+            //deals with checking types of arrays
             if (typeIsArray && exprType.endsWith("[]")){
                 exprType = exprType.substring(0, exprType.length()-2);
             }
@@ -722,14 +762,17 @@ public class TypeCheckVisitor extends Visitor {
                 type += "[]";
             }
 
+            //disallows checking if expr is a primitive
             if ("int".equals(exprType) || "boolean".equals(exprType)) {
                 this.registerError(instanceofExpr.getLineNum(),
                         "Cannot check instance of primitives.");
+
+            //checks if upcasting/downcasting
             } else if (this.compatibleType(type, exprType)) {
                 instanceofExpr.setUpCheck(true);
             } else if (this.compatibleType(exprType, type)) {
                 instanceofExpr.setUpCheck(false);
-            } else {
+            } else { // disallows anything but up/downcasting
                 this.registerError(instanceofExpr.getLineNum(),
                         "Incompatible types in instanceof.");
 
@@ -740,23 +783,33 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits castExpr
      *
-     * @param castExpr
-     * @return
+     * Makes sure that:
+     * Casting to a valid type
+     * Cannot cast to a primitive
+     * Cannot cast a primitive
+     * Can only up cast/downcast
+     *
+     * @param castExpr the castExpr node
+     * @return null
      */
     @Override
     public Object visit(CastExpr castExpr){
         String type = castExpr.getType();
         boolean typeIsArray = false;
 
+        //edits type if casting to array
         if (type.endsWith("[]")){
             typeIsArray = true;
             type = type.substring(0, type.length()-2);
         }
 
+        //checks if casting to primitive
         if (castExpr.getType().equals("int") || castExpr.getType().equals("boolean")){
             this.registerError(castExpr.getLineNum(), "Cannot cast to a primitive type.");
         }
+        //checks if casting to a valid type
         else if (!this.classTreeNode.getClassMap().containsKey(type)){
             this.registerError(castExpr.getLineNum(), "Unknown cast type.");
         }
@@ -765,6 +818,7 @@ public class TypeCheckVisitor extends Visitor {
         String exprType = castExpr.getExpr().getExprType();
 
         if (exprType != null){
+            //deals with casting arrays
             if (typeIsArray && exprType.endsWith("[]")){
                 exprType = exprType.substring(0, exprType.length()-2);
             }
@@ -772,9 +826,11 @@ public class TypeCheckVisitor extends Visitor {
                 type += "[]";
             }
 
+            //check if casting to primitive
             if ("int".equals(exprType) || "boolean".equals(exprType)) {
                 this.registerError(castExpr.getLineNum(),
                         "Cannot cast a primitives.");
+            //sets if up cast
             } else if (this.compatibleType(type, exprType)) {
                 castExpr.setUpCast(true);
             } else if (this.compatibleType(exprType, type)) {
@@ -791,9 +847,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param constIntExpr
-     * @return
+     * Visits a constIntExpr
+     * @param constIntExpr the constIntExpr
+     * @return null
      */
     @Override
     public Object visit(ConstIntExpr constIntExpr){
@@ -802,9 +858,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param constBooleanExpr
-     * @return
+     * Visits a constBooleanExpr
+     * @param constBooleanExpr the constBooleanExpr
+     * @return null
      */
     @Override
     public Object visit(ConstBooleanExpr constBooleanExpr){
@@ -813,9 +869,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param constStringExpr
-     * @return
+     * Visits a constStringExpr
+     * @param constStringExpr the constStringExpr
+     * @return null
      */
     @Override
     public Object visit(ConstStringExpr constStringExpr){
@@ -824,31 +880,31 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryArithPlusExprExpr
-     * @return
+     * Visits a binaryArithPlusExpr, checking if it has valid types
+     * @param binaryArithPlusExpr the binary arith expr
+     * @return null
      */
     @Override
-    public Object visit(BinaryArithPlusExpr binaryArithPlusExprExpr){
-        this.binaryExprTypeChecker(binaryArithPlusExprExpr, "int", "int");
+    public Object visit(BinaryArithPlusExpr binaryArithPlusExpr){
+        this.binaryExprTypeChecker(binaryArithPlusExpr, "int", "int");
         return null;
     }
 
     /**
-     *
-     * @param binaryArithMinusExprExpr
-     * @return
+     * Visits a binaryArithMinusExpr, checking if it has valid types
+     * @param binaryArithMinusExpr the binary arith expr
+     * @return null
      */
     @Override
-    public Object visit(BinaryArithMinusExpr binaryArithMinusExprExpr){
-        this.binaryExprTypeChecker(binaryArithMinusExprExpr, "int", "int");
+    public Object visit(BinaryArithMinusExpr binaryArithMinusExpr){
+        this.binaryExprTypeChecker(binaryArithMinusExpr, "int", "int");
         return null;
     }
 
     /**
-     *
-     * @param binaryArithTimesExpr
-     * @return
+     * Visits a binaryArithTimesExpr, checking if it has valid types
+     * @param binaryArithTimesExpr the binary arith expr
+     * @return null
      */
     @Override
     public Object visit(BinaryArithTimesExpr binaryArithTimesExpr){
@@ -857,9 +913,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryArithDivideExpr
-     * @return
+     * Visits a binaryArithDivideExpr, checking if it has valid types
+     * @param binaryArithDivideExpr the binary arith expr
+     * @return null
      */
     @Override
     public Object visit(BinaryArithDivideExpr binaryArithDivideExpr){
@@ -868,9 +924,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryArithModulusExpr
-     * @return
+     * Visits a binaryArithModulusExpr, checking if it has valid types
+     * @param binaryArithModulusExpr the binary arith expr
+     * @return null
      */
     @Override
     public Object visit(BinaryArithModulusExpr binaryArithModulusExpr){
@@ -879,9 +935,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryCompEqExpr
-     * @return
+     * Visits a binaryCompEqExpr, checking if it has valid types
+     * @param binaryCompEqExpr the binary comp expr
+     * @return null
      */
     @Override
     public Object visit(BinaryCompEqExpr binaryCompEqExpr) {
@@ -890,9 +946,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryCompNeExpr
-     * @return
+     * Visits a binaryCompNeExpr, checking if it has valid types
+     * @param binaryCompNeExpr the binary comp expr
+     * @return null
      */
     @Override
     public Object visit(BinaryCompNeExpr binaryCompNeExpr) {
@@ -901,9 +957,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryCompLtExpr
-     * @return
+     * Visits a binaryCompLtExpr, checking if it has valid types
+     * @param binaryCompLtExpr the binary comp expr
+     * @return null
      */
     @Override
     public Object visit(BinaryCompLtExpr binaryCompLtExpr) {
@@ -912,9 +968,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryCompLeqExpr
-     * @return
+     * Visits a binaryCompLeqExpr, checking if it has valid types
+     * @param binaryCompLeqExpr the binary comp expr
+     * @return null
      */
     @Override
     public Object visit(BinaryCompLeqExpr binaryCompLeqExpr) {
@@ -923,9 +979,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryCompGtExpr
-     * @return
+     * Visits a binaryCompGtExpr, checking if it has valid types
+     * @param binaryCompGtExpr the binary comp expr
+     * @return null
      */
     @Override
     public Object visit(BinaryCompGtExpr binaryCompGtExpr) {
@@ -934,9 +990,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryCompGeqExpr
-     * @return
+     * Visits a binaryCompGeqExpr, checking if it has valid types
+     * @param binaryCompGeqExpr the binary comp expr
+     * @return null
      */
     @Override
     public Object visit(BinaryCompGeqExpr binaryCompGeqExpr) {
@@ -945,9 +1001,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryLogicAndExpr
-     * @return
+     * Visits a binaryLogicAndExpr, checking if it has valid types
+     * @param binaryLogicAndExpr the binary logic expr
+     * @return null
      */
     @Override
     public Object visit(BinaryLogicAndExpr binaryLogicAndExpr) {
@@ -956,9 +1012,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryLogicOrExpr
-     * @return
+     * Visits a binaryLogicOrExpr, checking if it has valid types
+     * @param binaryLogicOrExpr the binary logic expr
+     * @return null
      */
     @Override
     public Object visit(BinaryLogicOrExpr binaryLogicOrExpr) {
@@ -967,9 +1023,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param unaryNegExpr
-     * @return
+     * Visits a unary neg expr, checking if it has valid types
+     * @param unaryNegExpr the unary expr node
+     * @return null
      */
     @Override
     public Object visit(UnaryNegExpr unaryNegExpr){
@@ -979,9 +1035,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param unaryNotExpr
-     * @return
+     * Visits a unary not expr, checking if it has valid types
+     * @param unaryNotExpr the unary expr node
+     * @return null
      */
     @Override
     public Object visit(UnaryNotExpr unaryNotExpr){
@@ -991,9 +1047,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param unaryIncrExpr
-     * @return
+     * Visits a unary incr expr, checking if it has valid types
+     * @param unaryIncrExpr the unary expr node
+     * @return null
      */
     @Override
     public Object visit(UnaryIncrExpr unaryIncrExpr){
@@ -1002,9 +1058,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param unaryDecrExpr
-     * @return
+     * Visits a unary decr expr, checking if it has valid types
+     * @param unaryDecrExpr the unary decr expr node
+     * @return null
      */
     @Override
     public Object visit(UnaryDecrExpr unaryDecrExpr){
@@ -1013,9 +1069,14 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits a var expr
      *
-     * @param varExpr
-     * @return
+     * Makes sure that:
+     * the var expr exists and has a valid type
+     *
+     *
+     * @param varExpr the var expr node
+     * @return null
      */
     @Override
     public Object visit(VarExpr varExpr){
@@ -1037,6 +1098,7 @@ public class TypeCheckVisitor extends Visitor {
             refName = ((VarExpr) varExpr.getRef()).getName();
         }
 
+        //checks array.length variables
         if (varExpr.getName().equals("length") && !"this".equals(refName) &&
                 !"super".equals(refName) && refName!=null) {
             type = this.findVariableType(null, refName, varExpr.getLineNum());
@@ -1061,9 +1123,15 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Visits an array expr
      *
-     * @param arrayExpr
-     * @return
+     * Makes sure that :
+     * has a valid name and type
+     * the index of the arrary is an integer
+     *
+     *
+     * @param arrayExpr the array expr node
+     * @return null
      */
     @Override
     public Object visit(ArrayExpr arrayExpr){
@@ -1075,6 +1143,7 @@ public class TypeCheckVisitor extends Visitor {
         String type = this.findVariableType(ref, arrayExpr.getName(),
                 arrayExpr.getLineNum());
 
+        //checks that type is valid and it exists
         if (type == null){
             this.registerError(arrayExpr.getLineNum(), "Undeclared variable access.");
         }
@@ -1086,6 +1155,7 @@ public class TypeCheckVisitor extends Visitor {
             type = type.substring(0, type.length()-2);
         }
 
+        // index of an array is an integer
         if (arrayExpr.getIndex() != null) {
             arrayExpr.getIndex().accept(this);
             if (!arrayExpr.getIndex().getExprType().equals("int")) {
