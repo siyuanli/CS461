@@ -172,7 +172,7 @@ public class TypeCheckVisitor extends Visitor {
 
     /**
      * Return the type of the given variable and also check the reference.
-     * Throw an error for illegal referencing.
+     * Register an error for illegal referencing.
      * @param refName the reference name of the variable
      * @param name the name of the variable
      * @param lineNum the line number of the error
@@ -201,7 +201,7 @@ public class TypeCheckVisitor extends Visitor {
 
     /**
      * Check the types of operands in a binary expression and
-     * throw an error for incompatible types.
+     * register an error for incompatible types.
      * @param binaryExpr the given binary expression
      * @param desiredType the desired type of the operands
      * @param exprType the actual type of the binary expression
@@ -220,7 +220,7 @@ public class TypeCheckVisitor extends Visitor {
 
     /**
      * Check the types of operands in a binary comparison expression and
-     * throw an error for incompatible types.
+     * register an error for incompatible types.
      * @param binaryCompExpr the given binary comparison expression
      */
     private void binaryCompEqualityChecker(BinaryCompExpr binaryCompExpr){
@@ -238,7 +238,7 @@ public class TypeCheckVisitor extends Visitor {
 
     /**
      * Check the type of negation or not unary expression and
-     * throw an error for incompatible types.
+     * register an error for incompatible types.
      * @param unaryExpr the given unary expression
      * @param desiredType the desired type of the unary expression
      * @param error the error message
@@ -253,7 +253,8 @@ public class TypeCheckVisitor extends Visitor {
 
     /**
      * Check the type of increment or decrement unary expression and
-     * throw an error for incompatible types.
+     * register an error if the incremented or decremented is an expression is not a
+     * variable of type int.
      * @param unaryExpr the given unary expression
      */
     private void incrDecrChecker(UnaryExpr unaryExpr){
@@ -298,7 +299,7 @@ public class TypeCheckVisitor extends Visitor {
 
     /**
      * Check the type of the field with assignment and
-     * throw an error for incompatible types.
+     * register an error for incompatible types.
      * @param field the given field
      * @return null
      */
@@ -316,7 +317,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of the method and throw an error for missing a return statement.
+     * Check the type of the method and register an error for missing a return statement.
      * @param method the given method
      * @return null
      */
@@ -339,7 +340,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a formal and throw an error for a duplicated parameter name.
+     * Check the type of a formal and register an error for a duplicated parameter name.
      * @param formal the given formal
      * @return null
      */
@@ -356,7 +357,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a declaration statement and throw an error for
+     * Check the type of a declaration statement and register an error for
      * duplicated variables or incompatible types.
      * @param stmt the given declaration statement
      * @return null
@@ -382,7 +383,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a if statement and throw an error for incompatible types.
+     * Check the type of a if statement and register an error for incompatible types.
      * @param ifStmt the given if statement
      * @return null
      */
@@ -410,7 +411,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a while statement and throw an error for incompatible types.
+     * Check the type of a while statement and register an error for incompatible types.
      * @param whileStmt the given while statement
      * @return null
      */
@@ -435,7 +436,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a for statement and throw an error for incompatible types.
+     * Check the type of a for statement and register an error for incompatible types.
      * @param forStmt the given for statement
      * @return null
      */
@@ -469,7 +470,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a break statement and throw an error when not in a loop.
+     * Check the type of a break statement and register an error when not in a loop.
      * @param breakStmt the given break statement
      * @return null
      */
@@ -483,7 +484,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the type of a return statement and throw an error for incompatible types.
+     * Check the type of a return statement and register an error for incompatible types.
      * @param returnStmt the given return statement
      * @return null
      */
