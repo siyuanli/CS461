@@ -1,3 +1,10 @@
+/*
+ * File: TypeCheckVisitor.java
+ * CS461 Project 3
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 3/11/17
+ */
+
 package bantam.visitor;
 
 import bantam.ast.*;
@@ -5,31 +12,59 @@ import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
 import bantam.util.SymbolTable;
 import javafx.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Created by Phoebe Hughes on 3/4/2017.
+ * Visitor class for type checking each field initialization expression and each method,
+ * annotating expressions as type checking.
  */
 public class TypeCheckVisitor extends Visitor {
-
-
+    /**
+     * The class tree node represents a class in the class hierarchy tree.
+     */
     private ClassTreeNode classTreeNode;
+    /**
+     * The error handler that performs error checking.
+     */
     private ErrorHandler errorHandler;
+    /**
+     * The return type of the method that is currently checked.
+     */
     private String currentMethodReturnType;
-    private boolean inLoop;
+    /**
+     * The set of the reserved key words that are not allowed to be names.
+     */
     private Set<String> disallowedNames;
+    /**
+     * The flag indicating if the current statement or expr is in a loop.
+     */
+    private boolean inLoop;
+    /**
+     * The number indicating the level of scope for a field.
+     */
     private int fieldScope;
+    /**
+     * The number indicating the level of scope for a method.
+     */
     private int methodScope;
 
-
+    /**
+     * Create a type check visitor that checks types for each field expr and method.
+     * @param errorHandler the error handler that performs error checking
+     * @param disallowedNames the set of reserved key words that cannot be names
+     */
     public TypeCheckVisitor(ErrorHandler errorHandler, Set<String> disallowedNames) {
         this.disallowedNames = disallowedNames;
         this.errorHandler = errorHandler;
     }
 
+    /**
+     * Check the types for each field expr and method are compatible in a class.
+     * Otherwise, throw a semantic error.
+     * @param classTreeNode a class in the class hierarchy tree
+     */
     public void checkTypes(ClassTreeNode classTreeNode) {
         this.classTreeNode = classTreeNode;
         Class_ classASTNode = this.classTreeNode.getASTNode();
@@ -39,9 +74,10 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * @param type1 desired type
-     * @param type2 actual type of expression
-     * @return
+     * Check if the two types are compatible and return a boolean.
+     * @param type1 desired type of the expression
+     * @param type2 actual type of the expression
+     * @return if the two types are compatible
      */
     private boolean compatibleType(String type1, String type2) {
         if (type1.equals(type2)) {
@@ -74,6 +110,11 @@ public class TypeCheckVisitor extends Visitor {
         }
     }
 
+    /**
+     * Throw an
+     * @param name
+     * @param lineNum
+     */
     private void registerErrorIfReservedName(String name, int lineNum) {
         if (disallowedNames.contains(name)) {
             this.registerError(lineNum,
@@ -81,6 +122,11 @@ public class TypeCheckVisitor extends Visitor {
         }
     }
 
+    /**
+     *
+     * @param type
+     * @param lineNum
+     */
     private void registerErrorIfInvalidType(String type, int lineNum) {
         if (type.endsWith("[]")) {
             type = type.substring(0, type.length() - 2);
@@ -91,11 +137,24 @@ public class TypeCheckVisitor extends Visitor {
         }
     }
 
+    /**
+     *
+     * @param lineNum
+     * @param error
+     */
     private void registerError(int lineNum, String error) {
         this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
                 lineNum, error);
     }
 
+    /**
+     *
+     * @param refName
+     * @param name
+     * @param exprType
+     * @param lineNum
+     * @param isArrayElementAssign
+     */
     private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
         String variableType = this.findVariableType(refName, name, lineNum);
         //checking if types are compatible
@@ -112,6 +171,13 @@ public class TypeCheckVisitor extends Visitor {
         }
     }
 
+    /**
+     *
+     * @param refName
+     * @param name
+     * @param lineNum
+     * @return
+     */
     private String findVariableType(String refName, String name, int lineNum) {
         Object type = null;
         //finding the type of the variable
@@ -133,6 +199,12 @@ public class TypeCheckVisitor extends Visitor {
         return (String)type;
     }
 
+    /**
+     *
+     * @param binaryExpr
+     * @param desiredType
+     * @param exprType
+     */
     private void binaryExprTypeChecker(BinaryExpr binaryExpr, String desiredType,
                                        String exprType){
         binaryExpr.getLeftExpr().accept(this);
@@ -146,6 +218,10 @@ public class TypeCheckVisitor extends Visitor {
 
     }
 
+    /**
+     *
+     * @param binaryCompExpr
+     */
     private void binaryCompEqualityChecker(BinaryCompExpr binaryCompExpr){
         Expr left = binaryCompExpr.getLeftExpr();
         Expr right = binaryCompExpr.getRightExpr();
@@ -160,6 +236,12 @@ public class TypeCheckVisitor extends Visitor {
         binaryCompExpr.setExprType("boolean");
     }
 
+    /**
+     *
+     * @param unaryExpr
+     * @param desiredType
+     * @param error
+     */
     private void negNotChecker(UnaryExpr unaryExpr, String desiredType, String error){
         unaryExpr.getExpr().accept(this);
         if(!desiredType.equals(unaryExpr.getExpr().getExprType())){
@@ -169,6 +251,10 @@ public class TypeCheckVisitor extends Visitor {
 
     }
 
+    /**
+     *
+     * @param unaryExpr
+     */
     private void incrDecrChecker(UnaryExpr unaryExpr){
         Expr expr = unaryExpr.getExpr();
         expr.accept(this);
@@ -210,6 +296,11 @@ public class TypeCheckVisitor extends Visitor {
         unaryExpr.setExprType("int");
     }
 
+    /**
+     *
+     * @param field
+     * @return
+     */
     @Override
     public Object visit(Field field) {
         Expr init = field.getInit();
@@ -223,6 +314,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param method
+     * @return
+     */
     @Override
     public Object visit(Method method) {
         this.currentMethodReturnType = method.getReturnType();
@@ -241,6 +337,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param formal
+     * @return
+     */
     @Override
     public Object visit(Formal formal) {
         int lineNum = formal.getLineNum();
@@ -254,6 +355,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param stmt
+     * @return
+     */
     @Override
     public Object visit(DeclStmt stmt) {
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
@@ -274,6 +380,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param ifStmt
+     * @return
+     */
     @Override
     public Object visit(IfStmt ifStmt) {
         ifStmt.getPredExpr().accept(this);
@@ -298,6 +409,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param whileStmt
+     * @return
+     */
     @Override
     public Object visit(WhileStmt whileStmt) {
         whileStmt.getPredExpr().accept(this);
@@ -319,6 +435,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param forStmt
+     * @return
+     */
     @Override
     public Object visit(ForStmt forStmt) {
         if (forStmt.getInitExpr() != null) {
@@ -349,6 +470,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param breakStmt
+     * @return
+     */
     @Override
     public Object visit(BreakStmt breakStmt){
         if (!this.inLoop){
@@ -358,7 +484,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
-
+    /**
+     *
+     * @param returnStmt
+     * @return
+     */
     @Override
     public Object visit(ReturnStmt returnStmt){
         if (returnStmt.getExpr() != null) {
@@ -385,6 +515,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param blockStmt
+     * @return
+     */
     @Override
     public Object visit(BlockStmt blockStmt){
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
@@ -394,6 +529,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param assignExpr
+     * @return
+     */
     @Override
     public Object visit(AssignExpr assignExpr){
         assignExpr.getExpr().accept(this);
@@ -411,6 +551,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param arrayAssignExpr
+     * @return
+     */
     @Override
     public Object visit(ArrayAssignExpr arrayAssignExpr){
         arrayAssignExpr.getExpr().accept(this);
@@ -427,6 +572,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param dispatchExpr
+     * @return
+     */
     @Override
     public Object visit(DispatchExpr dispatchExpr){
         Expr refExpr = dispatchExpr.getRefExpr();
@@ -492,6 +642,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param exprList
+     * @return
+     */
     @Override
     public Object visit(ExprList exprList){
         List<String> paramTypes = new ArrayList<>();
@@ -502,6 +657,11 @@ public class TypeCheckVisitor extends Visitor {
         return paramTypes;
     }
 
+    /**
+     *
+     * @param newExpr
+     * @return
+     */
     @Override
     public Object visit(NewExpr newExpr){
         if (!this.classTreeNode.getClassMap().containsKey(newExpr.getType())){
@@ -511,6 +671,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param newArrayExpr
+     * @return
+     */
     @Override
     public Object visit(NewArrayExpr newArrayExpr){
         this.registerErrorIfInvalidType(newArrayExpr.getType(),newArrayExpr.getLineNum());
@@ -522,6 +687,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param instanceofExpr
+     * @return
+     */
     @Override
     public Object visit(InstanceofExpr instanceofExpr){
         String type = instanceofExpr.getType();
@@ -570,6 +740,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param castExpr
+     * @return
+     */
     @Override
     public Object visit(CastExpr castExpr){
         String type = castExpr.getType();
@@ -618,104 +793,187 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param constIntExpr
+     * @return
+     */
     @Override
     public Object visit(ConstIntExpr constIntExpr){
         constIntExpr.setExprType("int");
         return null;
     }
 
+    /**
+     *
+     * @param constBooleanExpr
+     * @return
+     */
     @Override
     public Object visit(ConstBooleanExpr constBooleanExpr){
         constBooleanExpr.setExprType("boolean");
         return null;
     }
 
+    /**
+     *
+     * @param constStringExpr
+     * @return
+     */
     @Override
     public Object visit(ConstStringExpr constStringExpr){
         constStringExpr.setExprType("String");
         return null;
     }
 
-
+    /**
+     *
+     * @param binaryArithPlusExprExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryArithPlusExpr binaryArithPlusExprExpr){
         this.binaryExprTypeChecker(binaryArithPlusExprExpr, "int", "int");
         return null;
     }
 
+    /**
+     *
+     * @param binaryArithMinusExprExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryArithMinusExpr binaryArithMinusExprExpr){
         this.binaryExprTypeChecker(binaryArithMinusExprExpr, "int", "int");
         return null;
     }
 
+    /**
+     *
+     * @param binaryArithTimesExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryArithTimesExpr binaryArithTimesExpr){
         this.binaryExprTypeChecker(binaryArithTimesExpr, "int", "int");
         return null;
     }
 
+    /**
+     *
+     * @param binaryArithDivideExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryArithDivideExpr binaryArithDivideExpr){
         this.binaryExprTypeChecker(binaryArithDivideExpr, "int", "int");
         return null;
     }
 
+    /**
+     *
+     * @param binaryArithModulusExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryArithModulusExpr binaryArithModulusExpr){
         this.binaryExprTypeChecker(binaryArithModulusExpr, "int", "int");
         return null;
     }
 
+    /**
+     *
+     * @param binaryCompEqExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryCompEqExpr binaryCompEqExpr) {
         this.binaryCompEqualityChecker(binaryCompEqExpr);
         return null;
     }
 
+    /**
+     *
+     * @param binaryCompNeExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryCompNeExpr binaryCompNeExpr) {
         this.binaryCompEqualityChecker(binaryCompNeExpr);
         return null;
     }
 
+    /**
+     *
+     * @param binaryCompLtExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryCompLtExpr binaryCompLtExpr) {
         this.binaryExprTypeChecker(binaryCompLtExpr, "int", "boolean");
         return null;
     }
 
+    /**
+     *
+     * @param binaryCompLeqExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryCompLeqExpr binaryCompLeqExpr) {
         this.binaryExprTypeChecker(binaryCompLeqExpr, "int", "boolean");
         return null;
     }
 
+    /**
+     *
+     * @param binaryCompGtExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryCompGtExpr binaryCompGtExpr) {
         this.binaryExprTypeChecker(binaryCompGtExpr, "int", "boolean");
         return null;
     }
 
+    /**
+     *
+     * @param binaryCompGeqExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryCompGeqExpr binaryCompGeqExpr) {
         this.binaryExprTypeChecker(binaryCompGeqExpr, "int", "boolean");
         return null;
     }
 
-
+    /**
+     *
+     * @param binaryLogicAndExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryLogicAndExpr binaryLogicAndExpr) {
         this.binaryExprTypeChecker(binaryLogicAndExpr, "boolean", "boolean");
         return null;
     }
 
+    /**
+     *
+     * @param binaryLogicOrExpr
+     * @return
+     */
     @Override
     public Object visit(BinaryLogicOrExpr binaryLogicOrExpr) {
         this.binaryExprTypeChecker(binaryLogicOrExpr, "boolean", "boolean");
         return null;
     }
 
+    /**
+     *
+     * @param unaryNegExpr
+     * @return
+     */
     @Override
     public Object visit(UnaryNegExpr unaryNegExpr){
         this.negNotChecker(unaryNegExpr, "int",
@@ -723,6 +981,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param unaryNotExpr
+     * @return
+     */
     @Override
     public Object visit(UnaryNotExpr unaryNotExpr){
         this.negNotChecker(unaryNotExpr, "boolean",
@@ -730,18 +993,33 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param unaryIncrExpr
+     * @return
+     */
     @Override
     public Object visit(UnaryIncrExpr unaryIncrExpr){
         this.incrDecrChecker(unaryIncrExpr);
         return null;
     }
 
+    /**
+     *
+     * @param unaryDecrExpr
+     * @return
+     */
     @Override
     public Object visit(UnaryDecrExpr unaryDecrExpr){
         this.incrDecrChecker(unaryDecrExpr);
         return null;
     }
 
+    /**
+     *
+     * @param varExpr
+     * @return
+     */
     @Override
     public Object visit(VarExpr varExpr){
         String type = null;
@@ -785,6 +1063,11 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     *
+     * @param arrayExpr
+     * @return
+     */
     @Override
     public Object visit(ArrayExpr arrayExpr){
         String ref = null;
@@ -811,15 +1094,11 @@ public class TypeCheckVisitor extends Visitor {
             if (!arrayExpr.getIndex().getExprType().equals("int")) {
                 this.registerError(arrayExpr.getLineNum(), "Array index must be an int.");
             }
-
         }
 
         arrayExpr.setExprType(type);
 
         return null;
     }
-
-
-
 
 }
