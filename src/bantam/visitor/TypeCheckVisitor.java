@@ -20,6 +20,10 @@ import java.util.Set;
 /**
  * Visitor class for type checking each field initialization expression and each method,
  * annotating expressions as type checking.
+ *
+ * @author Joseph Maionek
+ * @author Siyuan Li
+ * @author Phoebe Hughes
  */
 public class TypeCheckVisitor extends Visitor {
     /**

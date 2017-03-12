@@ -22,8 +22,19 @@ import bantam.util.ErrorHandlerUtilities;
  */
 public class RegisterForwardReferenceVisitor extends Visitor {
 
+    /**
+     * The class tree node that the variable is in
+     */
     private ClassTreeNode classTreeNode;
+
+    /**
+     * The utilities that help register errors
+     */
     private ErrorHandlerUtilities errorUtil;
+
+    /**
+     * the name of the variable being checked
+     */
     private String varName;
 
 

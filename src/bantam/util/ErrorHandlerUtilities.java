@@ -1,31 +1,72 @@
+/*
+ * File: TypeCheckVisitor.java
+ * CS461 Project 3
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 3/11/17
+ */
+
 package bantam.util;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Set;
 
 /**
- * Created by Phoebe Hughes on 3/12/2017.
+ * A class that creates helpful methods to register semantic analyzer related errors.
+ *
+ * @author Joseph Maionek
+ * @author Siyuan Li
+ * @author Phoebe Hughes
  */
 public class ErrorHandlerUtilities {
 
+    /**
+     * the error handler it registers errors with
+     */
     private ErrorHandler errorHandler;
+
+    /**
+     * the set of names that are disallowed for types, names, ect.
+     */
     private Set<String> disallowedNames;
+
+    /**
+     * the name of the file of the error
+     */
     private String filename;
+
+    /**
+     * the class map
+     */
     private Hashtable<String, ClassTreeNode> classMap;
 
+    /**
+     * Creates an ErrorHandlerUtilities
+     * @param errorHandler the error handler it registers errors with
+     * @param disallowedNames a set of prohibited names
+     * @param filename the filename that errors are in
+     * @param classMap the class map
+     */
     public ErrorHandlerUtilities(ErrorHandler errorHandler, Set<String> disallowedNames,
-                                 String filename, Hashtable<String, ClassTreeNode> classMap){
+                                 String filename, Hashtable<String,
+                                 ClassTreeNode> classMap){
         this.errorHandler = errorHandler;
         this.disallowedNames = disallowedNames;
         this.filename = filename;
         this.classMap = classMap;
     }
 
+    /**
+     * Sets the filename to the given file name
+     * @param name the na,e
+     */
     public void setFilename(String name){
-        this.filename = filename;
+        this.filename = name;
     }
 
+    /**
+     * Sets the class map to the given class map
+     * @param classMap the class map
+     */
     public void setClassMap(Hashtable<String, ClassTreeNode> classMap){
         this.classMap = classMap;
     }
@@ -48,7 +89,7 @@ public class ErrorHandlerUtilities {
     public void registerErrorIfReservedName(String name, int lineNum) {
         if (this.disallowedNames.contains(name)) {
             this.registerError(lineNum,
-                    "Reserved word," + name + ",cannot be used as a field or method name");
+                "Reserved word,"+name+", cannot be used as a field or method " + "name");
         }
     }
 
