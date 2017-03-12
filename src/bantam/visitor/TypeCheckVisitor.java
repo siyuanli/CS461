@@ -93,8 +93,6 @@ public class TypeCheckVisitor extends Visitor {
         if (type1.endsWith("[]") && type2.endsWith("[]")){
             type1 = type1.substring(0, type1.length()-2);
             type2 = type2.substring(0, type2.length()-2);
-            System.out.println("Type1: " + type1);
-            System.out.println("Type2: " + type2);
         }
 
         ClassTreeNode type2Node = this.classTreeNode.getClassMap().get(type2);
@@ -539,8 +537,8 @@ public class TypeCheckVisitor extends Visitor {
         assignExpr.getExpr().accept(this);
 
         String refName = assignExpr.getRefName();
-        if (assignExpr.getName().equals("length") && !refName.equals("this") &&
-                !refName.equals("super") && refName!=null){
+        if (assignExpr.getName().equals("length") && refName!=null &&
+                !refName.equals("this") && !refName.equals("super")){
             this.registerError(assignExpr.getLineNum(),
                     "Cannot assign the length field of an array. ");
         }
@@ -700,7 +698,6 @@ public class TypeCheckVisitor extends Visitor {
         if (type.endsWith("[]")){
             typeIsArray = true;
             type = type.substring(0, type.length()-2);
-            System.out.println(type);
         }
 
         if (instanceofExpr.getType().equals("int") || instanceofExpr.getType().equals("boolean")){
@@ -729,8 +726,6 @@ public class TypeCheckVisitor extends Visitor {
             } else if (this.compatibleType(exprType, type)) {
                 instanceofExpr.setUpCheck(false);
             } else {
-                System.out.print("expr " + exprType);
-                System.out.print("type " + type);
                 this.registerError(instanceofExpr.getLineNum(),
                         "Incompatible types in instanceof.");
 
@@ -781,8 +776,6 @@ public class TypeCheckVisitor extends Visitor {
             } else if (this.compatibleType(exprType, type)) {
                 castExpr.setUpCast(false);
             } else {
-                System.out.print("expr " + exprType);
-                System.out.print("type " + type);
                 this.registerError(castExpr.getLineNum(),
                         "Incompatible types in cast.");
 
@@ -1047,7 +1040,7 @@ public class TypeCheckVisitor extends Visitor {
                 this.registerError(varExpr.getLineNum(),
                         "Only array variables have length attribute.");
             } else {
-                type = type.substring(0, type.length() - 2);
+                type = "int";
             }
         }
         else {

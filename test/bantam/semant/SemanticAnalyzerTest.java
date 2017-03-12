@@ -1,3 +1,9 @@
+/*
+ * File: StringConstantsVisitor.java
+ * CS461 Project 3
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 3/11/17
+ */
 package bantam.semant;
 
 import bantam.ast.Program;
@@ -13,33 +19,71 @@ import static org.junit.Assert.assertTrue;
 
 /*
  * File: SemanticAnalyzerTest.java
- * Author: djskrien
- * Date: 2/13/17
+ * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 3/11/17
  */
 public class SemanticAnalyzerTest
 {
 
+    /**
+     * Helper method which puts the given class body in a Main class with a main method
+     * @param body The body of the class
+     * @return The complete string of the class
+     */
     private String createClass(String body){
         return "class Main { " + body + " void main(){} }";
     }
 
+    /**
+     * Helper method which creates a Main class with a main method and inserts the given
+     * method body into the body of a second method.
+     * @param methodBody The body of the method which is to be inserted in the method
+     * @return the complete string of the resulting class
+     */
     private String createMethod(String methodBody){
         return this.createClass("void test(){" + methodBody + "}");
     }
 
+    /**
+     * Helper method which creates a class with the given fields and a method containing
+     * the given method body.
+     * @param fieldDecs The field declarations
+     * @param methodBody The body of the method
+     * @return The complete string of the resulting class
+     */
     private String createFieldsAndMethod(String fieldDecs, String methodBody){
         return this.createClass(fieldDecs+" void test(){\n "+methodBody+" }");
     }
 
+    /**
+     * Tests whether or not the given program is a semantically correct Bantam Java program
+     * @param programString The string containing the program
+     * @throws Exception Throws an exception if the String is not a semantically
+     * correct Bantam Java program
+     */
     private void testValidProgram(String programString) throws  Exception{
         assertFalse(testProgram(programString, "null"));
     }
 
+    /**
+     * Tests whether or not the given program is not a semantically correct Bantam Java program
+     * @param programString The string containing the program
+     * @throws Exception Throws an exception if the String is a semantically correct
+     * Bantam Java program or if the string is not a Bantam Java program
+     */
     private void testInvalidProgram(String programString) throws Exception{
         assertTrue(testProgram(programString,
                 "Bantam semantic analyzer found errors."));
     }
 
+    /**
+     * Compiles the program and checks to see if the given program throws an exception
+     * with the given message.
+     * @param programString The program to be compiled
+     * @param expectedMessage The expected error message
+     * @return Whether or not an ex
+     * @throws Exception
+     */
     private boolean testProgram(String programString, String expectedMessage) throws Exception{
         boolean thrown = false;
         Parser parser = new Parser(new Lexer(new StringReader(programString)));
@@ -841,6 +885,10 @@ public class SemanticAnalyzerTest
         this.testValidProgram(this.createMethod("if(true) int x =3; " +
                 "else int x = 4; " +
                 "int x = 5;"));
+        this.testValidProgram(this.createMethod("int[] x = new int[4]; int thing= x.length;"));
+        this.testValidProgram(this.createMethod("Object[] x = new Object[4]; int thing= x.length;"));
+        this.testValidProgram(this.createFieldsAndMethod("int length = 4; int thing = this.length;",""));
+        this.testValidProgram(this.createFieldsAndMethod("int length = 4; int thing = length;",""));
 
         this.testInvalidProgram(this.createMethod(
                 "int x = null;"));
