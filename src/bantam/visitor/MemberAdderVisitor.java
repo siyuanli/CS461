@@ -10,6 +10,7 @@ package bantam.visitor;
 import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
+import bantam.util.ErrorHandlerUtilities;
 import bantam.util.SymbolTable;
 import javafx.util.Pair;
 
@@ -33,14 +34,10 @@ public class MemberAdderVisitor extends Visitor {
     private ClassTreeNode classTreeNode;
 
     /**
-     * The error handler to register errors with
+     * The utilities that help register errors
      */
-    private ErrorHandler errorHandler;
+    private ErrorHandlerUtilities errorUtil;
 
-    /**
-     * Strings of words that cannot be names of variables, methods, ect.
-     */
-    private Set<String> disallowedNames;
 
     /**
      * Creates a new member adder visitor
@@ -48,8 +45,8 @@ public class MemberAdderVisitor extends Visitor {
      * @param disallowedNames a set of prohibited names for variables, ect.
      */
     public MemberAdderVisitor(ErrorHandler errorHandler, Set<String> disallowedNames){
-        this.errorHandler = errorHandler;
-        this.disallowedNames = disallowedNames;
+        this.errorUtil = new ErrorHandlerUtilities(errorHandler, disallowedNames,
+                null, null);
     }
 
     /**
@@ -58,48 +55,11 @@ public class MemberAdderVisitor extends Visitor {
      */
     public void getSymbolTables(ClassTreeNode classTreeNode){
         this.classTreeNode = classTreeNode;
+        this.errorUtil.setFilename(this.classTreeNode.getASTNode().getFilename());
+        this.errorUtil.setClassMap(this.classTreeNode.getClassMap());
         this.classTreeNode.getVarSymbolTable().enterScope();
         this.classTreeNode.getMethodSymbolTable().enterScope();
         this.classTreeNode.getASTNode().accept(this);
-    }
-
-    /**
-     * Registers an error if the given names is not allowed
-     * @param name the name of a variable, method ect.
-     * @param lineNum the line number this name occurs on
-     */
-    private void registerErrorIfReservedName(String name, int lineNum) {
-        if (disallowedNames.contains(name)) {
-            this.registerError(lineNum,
-                    "Reserved word," + name + ",cannot be used as a field or method name");
-        }
-    }
-
-    /**
-     * Registers error if the given type is not allowed
-     * @param type the type of a variable, method, ect.
-     * @param lineNum the line number this type occurs on
-     */
-    private void registerErrorIfInvalidType(String type, int lineNum) {
-        if (type.endsWith("[]")) { //if array, remove []
-            type = type.substring(0, type.length() - 2);
-        }
-
-        //if type is not primitive and does not exist
-        if (!this.classTreeNode.getClassMap().containsKey(type)
-                && !type.equals("int") && !type.equals("boolean")) {
-            this.registerError(lineNum, "Invalid Type");
-        }
-    }
-
-    /**
-     * Registers error with a given string
-     * @param lineNum the line the error occurs on
-     * @param error the string of the error
-     */
-    private void registerError(int lineNum, String error) {
-        this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
-                lineNum, error);
     }
 
     /**
@@ -118,19 +78,19 @@ public class MemberAdderVisitor extends Visitor {
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         String name = node.getName();
         int lineNum = node.getLineNum();
-        this.registerErrorIfInvalidType(node.getType(),node.getLineNum());
+        this.errorUtil.registerErrorIfInvalidType(node.getType(),node.getLineNum());
         if (varSymbolTable.peek(name) == null) {
-            this.registerErrorIfReservedName(name,lineNum);
+            this.errorUtil.registerErrorIfReservedName(name,lineNum);
             varSymbolTable.add(name, node.getType());
         }
         else{
-            this.registerError(lineNum,"Field already declared." );
+            this.errorUtil.registerError(lineNum,"Field already declared." );
         }
 
         //prevents forward referencing
         if (node.getInit() != null) {
             node.getInit().accept(new RegisterForwardReferenceVisitor(this.classTreeNode,
-                    this.errorHandler, node.getName()));
+                    this.errorUtil, node.getName()));
         }
 
         return null;
@@ -155,10 +115,10 @@ public class MemberAdderVisitor extends Visitor {
 
         //checks if it has a valid return type
         if(!node.getReturnType().equals("void")) {
-            this.registerErrorIfInvalidType(node.getReturnType(), node.getLineNum());
+            this.errorUtil.registerErrorIfInvalidType(node.getReturnType(), node.getLineNum());
         }
         if (methodSymbolTable.peek(name) == null) {
-            this.registerErrorIfReservedName(name,lineNum );
+            this.errorUtil.registerErrorIfReservedName(name,lineNum );
             List<String> paramTypes = (List) node.getFormalList().accept(this);
 
             //check if it is a valid over ride
@@ -169,7 +129,7 @@ public class MemberAdderVisitor extends Visitor {
 
                 //must have the same number of parameters
                 if(parentParamList.size()!=paramTypes.size()){
-                    this.registerError(node.getLineNum(),
+                    this.errorUtil.registerError(node.getLineNum(),
                             "Overriding method must have same number" +
                                     " of parameters as the inherited method.");
                 }
@@ -177,7 +137,7 @@ public class MemberAdderVisitor extends Visitor {
                     //checks for the same order/type of parameters
                     for(int i = 0;i<paramTypes.size();i++){
                         if(!paramTypes.get(i).equals(parentParamList.get(i))){
-                            this.registerError(node.getLineNum(),
+                            this.errorUtil.registerError(node.getLineNum(),
                                     "Overriding method must have same " +
                                             "signature as the inherited method.");
                         }
@@ -189,7 +149,7 @@ public class MemberAdderVisitor extends Visitor {
             methodSymbolTable.add(name, methodData);
         }
         else{
-            this.registerError(lineNum,"Method already declared." );
+            this.errorUtil.registerError(lineNum,"Method already declared." );
         }
        return null;
     }
@@ -220,7 +180,7 @@ public class MemberAdderVisitor extends Visitor {
      */
     @Override
     public Object visit(Formal node){
-        this.registerErrorIfInvalidType(node.getType(),node.getLineNum());
+        this.errorUtil.registerErrorIfInvalidType(node.getType(),node.getLineNum());
         return node.getType();
     }
 }

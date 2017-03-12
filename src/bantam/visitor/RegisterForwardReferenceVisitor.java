@@ -11,8 +11,7 @@ import bantam.ast.ArrayExpr;
 import bantam.ast.VarExpr;
 import bantam.util.ClassTreeNode;
 import bantam.util.ErrorHandler;
-
-import java.util.Set;
+import bantam.util.ErrorHandlerUtilities;
 
 /**
  * Registers an error if there is a forward references in the expr of a variable
@@ -24,7 +23,7 @@ import java.util.Set;
 public class RegisterForwardReferenceVisitor extends Visitor {
 
     private ClassTreeNode classTreeNode;
-    private ErrorHandler errorHandler;
+    private ErrorHandlerUtilities errorUtil;
     private String varName;
 
 
@@ -37,18 +36,25 @@ public class RegisterForwardReferenceVisitor extends Visitor {
     public RegisterForwardReferenceVisitor(ClassTreeNode classTreeNode,
                                            ErrorHandler errorHandler, String varName){
         this.classTreeNode = classTreeNode;
-        this.errorHandler = errorHandler;
+        this.errorUtil = new ErrorHandlerUtilities(errorHandler, null,
+                this.classTreeNode.getASTNode().getFilename(),
+                this.classTreeNode.getClassMap());
         this.varName = varName;
     }
 
+
     /**
-     * Registers an error with a given message with the error handler
-     * @param lineNum the line number the error occurs on
-     * @param error the error message
+     * Creates a register forward reference visitor that visits the expr of a variable
+     * @param classTreeNode the class tree nodes from with the nodes are come from
+     * @param errorUtil the utilities the help handle errors
+     * @param varName the name of the variable it visits
      */
-    private void registerError(int lineNum, String error) {
-        this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
-                lineNum, error);
+    public RegisterForwardReferenceVisitor(ClassTreeNode classTreeNode,
+                                           ErrorHandlerUtilities errorUtil,
+                                           String varName){
+        this.classTreeNode = classTreeNode;
+        this.errorUtil = errorUtil;
+        this.varName = varName;
     }
 
     /**
@@ -58,18 +64,18 @@ public class RegisterForwardReferenceVisitor extends Visitor {
      */
     private void checkForwardReference(String exprName, int lineNum) {
         if (exprName == null){
-            this.registerError(lineNum, "Illegal forward reference.");
+            this.errorUtil.registerError(lineNum, "Illegal forward reference.");
         }
         else if(exprName.equals(this.varName) &&
                 this.classTreeNode.getVarSymbolTable().peek(exprName) != null){
-            this.registerError(lineNum, "Cannot reference itself.");
+            this.errorUtil.registerError(lineNum, "Cannot reference itself.");
         }
     }
 
     /**
      * Visits a var exp, checking if it is a forward reference
-     * @param varExpr
-     * @return
+     * @param varExpr the varExpr node
+     * @return null
      */
     @Override
     public Object visit(VarExpr varExpr){
