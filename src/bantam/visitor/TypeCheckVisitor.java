@@ -1196,7 +1196,6 @@ public class TypeCheckVisitor extends Visitor {
 
         //checks array.length variables
         String type = getVarExprType(varExpr, refName);
-
         if(type==null){
             this.errorUtil.registerError(varExpr.getLineNum(),
                     "Undeclared variable access.");
@@ -1228,9 +1227,7 @@ public class TypeCheckVisitor extends Visitor {
 
         String type = this.findVariableType(ref, arrayExpr.getName(),
                 arrayExpr.getLineNum());
-
         type = checkValidArrayType(arrayExpr.getLineNum(), type);
-
 
         // index of an array is an integer
         if (arrayExpr.getIndex() != null) {
@@ -1245,7 +1242,6 @@ public class TypeCheckVisitor extends Visitor {
 
         return null;
     }
-
 
 
 }

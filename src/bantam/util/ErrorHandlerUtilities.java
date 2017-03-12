@@ -57,7 +57,7 @@ public class ErrorHandlerUtilities {
 
     /**
      * Sets the filename to the given file name
-     * @param name the na,e
+     * @param name the given name
      */
     public void setFilename(String name){
         this.filename = name;
@@ -70,7 +70,6 @@ public class ErrorHandlerUtilities {
     public void setClassMap(Hashtable<String, ClassTreeNode> classMap){
         this.classMap = classMap;
     }
-
 
     /**
      * Register a semantic error with given line number and error message.
