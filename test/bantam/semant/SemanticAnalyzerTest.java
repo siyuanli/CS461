@@ -87,8 +87,9 @@ public class SemanticAnalyzerTest {
      *
      * @param programString   The program to be compiled
      * @param expectedMessage The expected error message
-     * @return Whether or not an ex
-     * @throws Exception
+     * @return Whether or not an exception was thrown
+     * @throws Exception An exception if an exception was thrown which was not a semantic
+     *                   analysis exception
      */
     private boolean testProgram(String programString, String expectedMessage) throws
             Exception {
