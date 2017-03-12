@@ -42,16 +42,16 @@ public class TypeCheckVisitor extends Visitor {
      */
     private boolean inLoop;
     /**
-     * The number indicating the level of scope for a field.
+     * The number indicating the scope containing all of the fields.
      */
     private int fieldScope;
     /**
-     * The number indicating the level of scope for a method.
+     * The number indicating the scope level containing the methods.
      */
     private int methodScope;
 
     /**
-     * Create a type check visitor that checks types for each field expr and method.
+     * Create a type check visitor that checks types for each field, expression, and method.
      * @param errorHandler the error handler that performs error checking
      * @param disallowedNames the set of reserved key words that cannot be names
      */
@@ -61,8 +61,8 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check the types for each field expr and method are compatible in a class.
-     * Otherwise, throw a semantic error.
+     * Check the types for each field, expr, and method are compatible in a class.
+     * Otherwise, register a semantic error.
      * @param classTreeNode a class in the class hierarchy tree
      */
     public void checkTypes(ClassTreeNode classTreeNode) {
@@ -74,10 +74,10 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Check if the two types are compatible and return a boolean.
-     * @param type1 desired type of the expression
-     * @param type2 actual type of the expression
-     * @return if the two types are compatible
+     * Check if type2 conforms to type1.
+     * @param type1 the proposed subtype
+     * @param type2 the proposed supertype
+     * @return if type2 conforms to type1
      */
     private boolean compatibleType(String type1, String type2) {
         if (type1.equals(type2)) {
@@ -109,8 +109,8 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Throw an error if the reserved key word is used as a field or method name.
-     * @param name the reserved key word used
+     * Register an error if the given string is a reserved word.
+     * @param name the string
      * @param lineNum the line number of the error
      */
     private void registerErrorIfReservedName(String name, int lineNum) {
@@ -121,7 +121,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Throw an error if there is an invalid type.
+     * Register an error if the given type invalid.
      * @param type the type that is currently checked
      * @param lineNum the line number of the error
      */
@@ -136,7 +136,7 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Throw a semantic error with given line number and error message.
+     * Register a semantic error with given line number and error message.
      * @param lineNum the line number of the error
      * @param error the error message
      */
@@ -514,9 +514,10 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param blockStmt
-     * @return
+     * Checks the types of all the statements in the given block statement and makes the
+     * statements be in their own scope
+     * @param blockStmt The block statement to be checked
+     * @return null
      */
     @Override
     public Object visit(BlockStmt blockStmt){
@@ -528,9 +529,10 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param assignExpr
-     * @return
+     * Checks to see that the variable assignment occurs on a valid variable and that the
+     * types of the assignment is valid.
+     * @param assignExpr The assignment expression
+     * @return null
      */
     @Override
     public Object visit(AssignExpr assignExpr){
@@ -550,7 +552,8 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
+     * Checks to see if the given ArrayAssignExpr is indexed by an integer, and that the
+     * types of the assignment are compatible
      * @param arrayAssignExpr
      * @return
      */
