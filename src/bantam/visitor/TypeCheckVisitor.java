@@ -34,7 +34,7 @@ public class TypeCheckVisitor extends Visitor {
      */
     private String currentMethodReturnType;
     /**
-     * The set of the reserved key words that are not allowed to be names.
+     * The set of the reserved key words that cannot be a field name or a method name.
      */
     private Set<String> disallowedNames;
     /**
@@ -109,9 +109,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     * Throw an
-     * @param name
-     * @param lineNum
+     * Throw an error if the reserved key word is used as a field or method name.
+     * @param name the reserved key word used
+     * @param lineNum the line number of the error
      */
     private void registerErrorIfReservedName(String name, int lineNum) {
         if (disallowedNames.contains(name)) {
@@ -121,9 +121,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param type
-     * @param lineNum
+     * Throw an error if there is an invalid type.
+     * @param type the type that is currently checked
+     * @param lineNum the line number of the error
      */
     private void registerErrorIfInvalidType(String type, int lineNum) {
         if (type.endsWith("[]")) {
@@ -136,9 +136,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param lineNum
-     * @param error
+     * Throw a semantic error with given line number and error message.
+     * @param lineNum the line number of the error
+     * @param error the error message
      */
     private void registerError(int lineNum, String error) {
         this.errorHandler.register(2, this.classTreeNode.getASTNode().getFilename(),
@@ -146,14 +146,15 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param refName
-     * @param name
-     * @param exprType
-     * @param lineNum
-     * @param isArrayElementAssign
+     * Check for compatible types in an assignment.
+     * @param refName the reference name of the variable
+     * @param name the name of the variable
+     * @param exprType the type of the value
+     * @param lineNum the line number of the assignment
+     * @param isArrayElementAssign if assigning to an array element
      */
-    private void checkAssignment(String refName, String name, String exprType, int lineNum, boolean isArrayElementAssign) {
+    private void checkAssignment(String refName, String name, String exprType,
+                                 int lineNum, boolean isArrayElementAssign) {
         String variableType = this.findVariableType(refName, name, lineNum);
         //checking if types are compatible
         if (variableType == null){
@@ -170,11 +171,12 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param refName
-     * @param name
-     * @param lineNum
-     * @return
+     * Return the type of the given variable and also check the reference.
+     * Throw an error for illegal referencing.
+     * @param refName the reference name of the variable
+     * @param name the name of the variable
+     * @param lineNum the line number of the error
+     * @return the type of the variable
      */
     private String findVariableType(String refName, String name, int lineNum) {
         Object type = null;
@@ -198,10 +200,11 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param binaryExpr
-     * @param desiredType
-     * @param exprType
+     * Check the types of operands in a binary expression and
+     * throw an error for incompatible types.
+     * @param binaryExpr the given binary expression
+     * @param desiredType the desired type of the operands
+     * @param exprType the actual type of the binary expression
      */
     private void binaryExprTypeChecker(BinaryExpr binaryExpr, String desiredType,
                                        String exprType){
@@ -213,19 +216,18 @@ public class TypeCheckVisitor extends Visitor {
                     "Both operands must be " + desiredType);
         }
         binaryExpr.setExprType(exprType);
-
     }
 
     /**
-     *
-     * @param binaryCompExpr
+     * Check the types of operands in a binary comparison expression and
+     * throw an error for incompatible types.
+     * @param binaryCompExpr the given binary comparison expression
      */
     private void binaryCompEqualityChecker(BinaryCompExpr binaryCompExpr){
         Expr left = binaryCompExpr.getLeftExpr();
         Expr right = binaryCompExpr.getRightExpr();
         left.accept(this);
         right.accept(this);
-
         if (!this.compatibleType(left.getExprType(), right.getExprType()) &&
                 !this.compatibleType(right.getExprType(), left.getExprType())){
             this.registerError(binaryCompExpr.getLineNum(),
@@ -235,10 +237,11 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param unaryExpr
-     * @param desiredType
-     * @param error
+     * Check the type of negation or not unary expression and
+     * throw an error for incompatible types.
+     * @param unaryExpr the given unary expression
+     * @param desiredType the desired type of the unary expression
+     * @param error the error message
      */
     private void negNotChecker(UnaryExpr unaryExpr, String desiredType, String error){
         unaryExpr.getExpr().accept(this);
@@ -246,12 +249,12 @@ public class TypeCheckVisitor extends Visitor {
             this.registerError(unaryExpr.getLineNum(), error);
         }
         unaryExpr.setExprType(desiredType);
-
     }
 
     /**
-     *
-     * @param unaryExpr
+     * Check the type of increment or decrement unary expression and
+     * throw an error for incompatible types.
+     * @param unaryExpr the given unary expression
      */
     private void incrDecrChecker(UnaryExpr unaryExpr){
         Expr expr = unaryExpr.getExpr();
@@ -264,7 +267,6 @@ public class TypeCheckVisitor extends Visitor {
                 refName = ((VarExpr)varExpr.getRef()).getName();
             }
             type = this.findVariableType(refName, varExpr.getName(), varExpr.getLineNum());
-
         }
         else if (expr instanceof ArrayExpr){
             ArrayExpr arrayExpr = (ArrayExpr)expr;
@@ -295,9 +297,10 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param field
-     * @return
+     * Check the type of the field with assignment and
+     * throw an error for incompatible types.
+     * @param field the given field
+     * @return null
      */
     @Override
     public Object visit(Field field) {
@@ -313,9 +316,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param method
-     * @return
+     * Check the type of the method and throw an error for missing a return statement.
+     * @param method the given method
+     * @return null
      */
     @Override
     public Object visit(Method method) {
@@ -336,9 +339,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param formal
-     * @return
+     * Check the type of a formal and throw an error for a duplicated parameter name.
+     * @param formal the given formal
+     * @return null
      */
     @Override
     public Object visit(Formal formal) {
@@ -348,15 +351,15 @@ public class TypeCheckVisitor extends Visitor {
         if (this.classTreeNode.getVarSymbolTable().peek(formal.getName())!= null){
             this.registerError(lineNum, "Parameter already exists with same name.");
         }
-
         this.classTreeNode.getVarSymbolTable().add(formal.getName(), formal.getType());
         return null;
     }
 
     /**
-     *
-     * @param stmt
-     * @return
+     * Check the type of a declaration statement and throw an error for
+     * duplicated variables or incompatible types.
+     * @param stmt the given declaration statement
+     * @return null
      */
     @Override
     public Object visit(DeclStmt stmt) {
@@ -379,9 +382,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param ifStmt
-     * @return
+     * Check the type of a if statement and throw an error for incompatible types.
+     * @param ifStmt the given if statement
+     * @return null
      */
     @Override
     public Object visit(IfStmt ifStmt) {
@@ -393,7 +396,6 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
-
         varSymbolTable.enterScope();
         ifStmt.getThenStmt().accept(this);
         varSymbolTable.exitScope();
@@ -408,9 +410,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param whileStmt
-     * @return
+     * Check the type of a while statement and throw an error for incompatible types.
+     * @param whileStmt the given while statement
+     * @return null
      */
     @Override
     public Object visit(WhileStmt whileStmt) {
@@ -422,7 +424,6 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
-
         varSymbolTable.enterScope();
         boolean priorInLoop = this.inLoop;
         this.inLoop = true;
@@ -434,9 +435,9 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param forStmt
-     * @return
+     * Check the type of a for statement and throw an error for incompatible types.
+     * @param forStmt the given for statement
+     * @return null
      */
     @Override
     public Object visit(ForStmt forStmt) {
@@ -457,7 +458,6 @@ public class TypeCheckVisitor extends Visitor {
         }
 
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
-
         varSymbolTable.enterScope();
         boolean priorInLoop = this.inLoop;
         this.inLoop = true;
@@ -469,23 +469,23 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
-     *
-     * @param breakStmt
-     * @return
+     * Check the type of a break statement and throw an error when not in a loop.
+     * @param breakStmt the given break statement
+     * @return null
      */
     @Override
     public Object visit(BreakStmt breakStmt){
         if (!this.inLoop){
             this.registerError(breakStmt.getLineNum(),
-                    "Break statements must be in loops.");
+                    "Break statements must be in a loop.");
         }
         return null;
     }
 
     /**
-     *
-     * @param returnStmt
-     * @return
+     * Check the type of a return statement and throw an error for incompatible types.
+     * @param returnStmt the given return statement
+     * @return null
      */
     @Override
     public Object visit(ReturnStmt returnStmt){
