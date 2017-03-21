@@ -27,10 +27,12 @@
 package bantam.codegenmips;
 
 import bantam.util.ClassTreeNode;
+import bantam.visitor.DispatchTableAdderVisitor;
+import bantam.visitor.StringConstantsVisitor;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * The <tt>MipsCodeGenerator</tt> class generates mips assembly code
@@ -87,9 +89,12 @@ public class MipsCodeGenerator {
         this.debug = debug;
 
         try {
-            out = new PrintStream(new FileOutputStream(outFile));
+            //out = new PrintStream(new FileOutputStream(outFile));
+            out = System.out;
+
             assemblySupport = new MipsSupport(out);
-        } catch (IOException e) {
+       // } catch (IOException e) { //TODO: Undo this
+        } catch (Exception e) {
             // if don't have permission to write to file then report an error and exit
             System.err.println("Error: don't have permission to write to file '" + outFile + "'");
             System.exit(1);
@@ -112,9 +117,129 @@ public class MipsCodeGenerator {
      * See the lab manual for the details of each of these steps.
      */
     public void generate() {
-        // comment out
-        throw new RuntimeException("MIPS code generator unimplemented");
+        System.out.println("Generating");
+        List<String> classNames = new ArrayList<>();
+        classNames.addAll(this.root.getClassMap().keySet());
 
-        // add code below...
+        // 1 - start the data section
+        this.startData();
+
+        // 2 - generate data for the garbage collector
+        this.genGarbageCollector();
+
+        // 3 - generate string constants
+        this.genStringConsts(classNames);
+
+        // 4 - generate class name table
+        this.genClassNameTable(classNames);
+
+        // 5 - generate object templates
+        this.genObjectTemplates(classNames);
+
+        // 6 - generate dispatch tables
+        this.genDispatchTables();
     }
+
+    public Set<String> getFilenames(boolean getBuiltIns){
+        Set<String> filenames = new HashSet<>();
+        for(ClassTreeNode classNode : this.root.getClassMap().values()){
+            String name = classNode.getASTNode().getFilename();
+            if ((!getBuiltIns && !name.equals("<built-in class>")) || getBuiltIns){
+                filenames.add(name);
+            }
+        }
+        return filenames;
+    }
+
+
+    private void startData(){
+        //Create comments
+        assemblySupport.genComment("Authors: Phoebe Hughes, Siyuan Li, Joseph Malionek");
+        assemblySupport.genComment("Date: " + LocalDateTime.now());
+        assemblySupport.genComment("Compiled from: " + this.getFilenames(false));
+        //TODO: what if there are multiple files
+
+        assemblySupport.genDataStart();
+    }
+
+
+    private void genGarbageCollector(){
+        assemblySupport.genLabel("gc_flag");
+        assemblySupport.genWord("0");
+    }
+
+
+    private void genStringConsts(List<String> classNames){
+        StringConstantsVisitor stringConstantsVisitor = new StringConstantsVisitor();
+        for (ClassTreeNode classNode : this.root.getClassMap().values()){
+            classNode.getASTNode().accept(stringConstantsVisitor);
+        }
+
+
+        Map<String, String> classNamesMap = new HashMap<>();
+        for (int i = 0; i < classNames.size(); i++){
+            classNamesMap.put(classNames.get(i), "class_name_" + i);
+        }
+
+        Map<String, String> filenames = new HashMap<>();
+        for (String filename : this.getFilenames(true)){
+            filenames.put(filename, "filename_" + filenames.size());
+        }
+
+        int stringIndex = classNames.indexOf("String");
+
+        this.genStringConstants(stringConstantsVisitor.getStringConstants(), stringIndex);
+        this.genStringConstants(classNamesMap, stringIndex);
+        this.genStringConstants(filenames, stringIndex);
+    }
+
+    private void genStringConstants(Map<String, String> stringConsts, int stringIndex) {
+        for (Map.Entry<String, String> entry : stringConsts.entrySet()) {
+            int length = entry.getKey().length();
+            int totalSize = (4 - (length + 17)%4)  + length + 17;
+
+            assemblySupport.genLabel(entry.getValue());
+            assemblySupport.genWord(Integer.toString(stringIndex));
+            assemblySupport.genWord(Integer.toString(totalSize));
+            assemblySupport.genWord("String_dispatch_table");
+            assemblySupport.genWord(Integer.toString(length)); //size
+            assemblySupport.genAscii(entry.getKey());
+        }
+    }
+
+    private void genClassNameTable(List<String> classNames){
+        assemblySupport.genLabel("class_name_table");
+        for (int i = 0; i< classNames.size(); i++){
+            assemblySupport.genWord("class_name_" + i);
+        }
+
+        for(String name: classNames){
+            assemblySupport.genGlobal(name + "_template");
+        }
+    }
+
+    private void genObjectTemplates(List<String> classNames){
+        for (ClassTreeNode classTreeNode : this.root.getClassMap().values()){
+            String name = classTreeNode.getName();
+            assemblySupport.genLabel(name + "_template");
+            assemblySupport.genWord(Integer.toString(classNames.indexOf(name)));
+            int numFields = classTreeNode.getVarSymbolTable().getSize();
+            assemblySupport.genWord(Integer.toString(numFields*4 + 12));
+            assemblySupport.genWord(name + "_dispatch_table");
+            for (int i = 0; i<numFields; i++){
+                assemblySupport.genWord("0");
+            }
+        }
+    }
+
+    private void genDispatchTables(){
+        DispatchTableAdderVisitor dispatchTableAdderVisitor =
+                new DispatchTableAdderVisitor(assemblySupport, this.root.getClassMap());
+        for(ClassTreeNode classTreeNode: this.root.getClassMap().values()){
+            assemblySupport.genLabel(classTreeNode.getName() + "_dispatch_table");
+            classTreeNode.getASTNode().accept(dispatchTableAdderVisitor);
+        }
+    }
+
+
 }

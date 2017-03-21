@@ -6,10 +6,7 @@
  */
 package bantam.visitor;
 
-import bantam.ast.ConstStringExpr;
-import bantam.ast.Method;
-import bantam.ast.Program;
-import bantam.ast.VarExpr;
+import bantam.ast.*;
 
 
 import java.util.HashMap;
@@ -30,16 +27,18 @@ public class StringConstantsVisitor extends Visitor {
      */
     Map<String, String> stringConstants;
 
+    public StringConstantsVisitor(){
+        this.stringConstants= new HashMap();
+    }
+
+
     /**
      * Gets all of the String constants from a specific abstract syntax tree and then
      * returns a Hashmap with each key a "StringConst_"+i where i is which number
      * String constant and the value it's mapped to is the actual String constant
-     * @param ast the root of the abstract syntax tree
      * @return the Hashmap
      */
-    public Map<String, String> getStringConstants(Program ast){
-        this.stringConstants = new HashMap<>();
-        ast.accept(this);
+    public Map<String, String> getStringConstants(){
         return stringConstants;
     }
 

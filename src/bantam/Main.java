@@ -388,7 +388,8 @@ public class Main {
             }
             if(stringConstVisitor){
                 StringConstantsVisitor visitor = new StringConstantsVisitor();
-                Map<String,String> map = visitor.getStringConstants((Program) result.value);
+                ((Program) result.value).accept(visitor);
+                Map<String,String> map = visitor.getStringConstants();
                 System.out.println("The string constants in the program are:");
                 for(Map.Entry<String,String> entry: map.entrySet()){
                     System.out.println(entry.getKey()+" : "+entry.getValue());

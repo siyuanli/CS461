@@ -1,16 +1,3 @@
-class Empty3{
-    String const = "StringThing";
-    void siyuan(){
-        int x = "hey dale";
-        "abc"+"def";
-    }
-
-    void joseph(void l, int w, String int){
-        if ( x == 10){
-            int[] y = 6;
-        }
-
-        {{int x = 3%"modulus";}}
-
-    }
+class test{
+    String hellloooo = "HIHIHIH JOseph";
 }
