@@ -100,6 +100,7 @@ public class SemanticAnalyzerTest {
             analyzer.analyze();
         } catch (RuntimeException e) {
             thrown = true;
+            analyzer.getErrorHandler().printErrors();
             assertEquals(expectedMessage, e.getMessage());
         }
         return thrown;
@@ -236,7 +237,7 @@ public class SemanticAnalyzerTest {
 
         this.testValidProgram("class Main { " +
                 "int x = 5; " +
-                "int testMethod(int num){}" +
+                "int testMethod(int num){return num;}" +
                 "void main(){} } " +
                 " class Test extends Main {" +
                 "int method(){ " +
@@ -253,7 +254,7 @@ public class SemanticAnalyzerTest {
 
         this.testValidProgram("class Main { " +
                 "int[] x; " +
-                "String[] testMethod(int num){}" +
+                "String[] testMethod(int num){return new String[234];}" +
                 "void main(){} } " +
                 " class Child extends Main{" +
                 "int a = super.x[1]; " +
@@ -288,7 +289,9 @@ public class SemanticAnalyzerTest {
         this.testInvalidProgram(this.createClass("void null(){}"));
         this.testInvalidProgram(this.createClass("void int(){}"));
         this.testInvalidProgram(this.createClass("Foo test(){ }"));
+        this.testInvalidProgram(this.createClass("boolean test(){ }"));
         this.testInvalidProgram(this.createClass("Foo[] test(){ }"));
+        this.testInvalidProgram(this.createClass("boolean[] test(){ }"));
         this.testInvalidProgram(this.createClass("int test(){ return true; }"));
         this.testInvalidProgram(this.createClass("boolean test(){ " +
                 "if (true) { return true; } else {return false;} }"));
@@ -310,7 +313,8 @@ public class SemanticAnalyzerTest {
 
         this.testValidProgram("class Main { int x = 5;  void x(int x){} void main(){} }");
         this.testValidProgram(this.createClass("void test(int x, int c, String[] s){}"));
-        this.testValidProgram(this.createClass("String[] test(int[] c, String[] s){}"));
+        this.testValidProgram(this.createClass(
+                "String[] test(int[] c, String[] s){return s;}"));
         this.testValidProgram(this.createClass("void test(){} "));
         this.testValidProgram(this.createClass("void test(){ return;} "));
         this.testValidProgram(this.createClass("int baz(){ return 3032;} "));
@@ -1116,5 +1120,22 @@ public class SemanticAnalyzerTest {
         this.testInvalidProgram("class Main { void main(){" +
                 "int[] array = new int[4];" +
                 "boolean thing = array[4]; } }");
+    }
+
+    @Test
+    public void previouslyFailedTests() throws Exception{
+        this.testValidProgram(
+        "class Main {void main() {} Main foo() { return this; }}");
+        this.testValidProgram("class Main {void main() { boolean b = this instanceof Main;}}");
+        this.testValidProgram("class Main {void main() { Object x= new String[5];}}");
+        this.testValidProgram("class Main {void main() {Object[] s = new Object[1];"
+            +"Object o = (String[])(s); }}");
+        this.testValidProgram(this.createClass("void foo(int x){x = 6;}"));
+        this.testValidProgram(this.createMethod("TextIO io = new TextIO();"));
+        this.testValidProgram(this.createClass("Main foo(){return foo().foo().foo();}"));
+        this.testValidProgram("class Main {void main() {} void foo(int n) {TextIO io = new TextIO();"
+            +"n = io.putString(\"E\").getInt(); }}");
+        this.testInvalidProgram(this.createMethod("int[] x = (new int[x.length]);"));//TODO: FIX THIS
+        this.testInvalidProgram(this.createClass("boolean foo(int n){} "));
     }
 }

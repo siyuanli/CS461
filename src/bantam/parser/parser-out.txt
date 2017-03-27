@@ -116,13 +116,6 @@ Building parse tables...
   under symbol STRING_CONST
   Resolved in favor of shifting.
 
-*** Shift/Reduce conflict found in state #138
-  between var_expr ::= ID (*) 
-  and     var_expr ::= ID (*) DOT ID 
-  and     array_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE 
-  under symbol DOT
-  Resolved in favor of shifting.
-
 *** Shift/Reduce conflict found in state #158
   between stmt_list ::= (*) 
   and     if_stmt ::= (*) IF LPAREN expr RPAREN stmt 
@@ -345,36 +338,6 @@ Building parse tables...
   between var_expr ::= ID (*) 
   and     cast_expr ::= LPAREN ID (*) RPAREN LPAREN expr RPAREN 
   under symbol RPAREN
-  Resolved in favor of shifting.
-
-*** Shift/Reduce conflict found in state #126
-  between var_expr ::= ID (*) 
-  and     assign_expr ::= ID (*) DOT ID ASSIGN expr 
-  and     var_expr ::= ID (*) DOT ID 
-  and     dispatch_expr ::= ID (*) DOT ID LPAREN expr_list RPAREN 
-  and     array_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE 
-  and     array_assign_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE ASSIGN expr 
-  under symbol DOT
-  Resolved in favor of shifting.
-
-*** Shift/Reduce conflict found in state #169
-  between var_expr ::= ID (*) 
-  and     var_expr ::= ID (*) DOT ID 
-  and     assign_expr ::= ID (*) DOT ID ASSIGN expr 
-  and     dispatch_expr ::= ID (*) DOT ID LPAREN expr_list RPAREN 
-  and     array_assign_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE ASSIGN expr 
-  and     array_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE 
-  under symbol DOT
-  Resolved in favor of shifting.
-
-*** Shift/Reduce conflict found in state #38
-  between var_expr ::= ID (*) 
-  and     assign_expr ::= ID (*) DOT ID ASSIGN expr 
-  and     var_expr ::= ID (*) DOT ID 
-  and     dispatch_expr ::= ID (*) DOT ID LPAREN expr_list RPAREN 
-  and     array_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE 
-  and     array_assign_expr ::= ID (*) DOT ID LSQBRACE expr RSQBRACE ASSIGN expr 
-  under symbol DOT
   Resolved in favor of shifting.
 
 *** Shift/Reduce conflict found in state #9
@@ -10896,7 +10859,7 @@ From state #77
  [term 25:REDUCE(with prod 104)] [term 26:REDUCE(with prod 104)]
  [term 31:REDUCE(with prod 104)] [term 35:REDUCE(with prod 104)]
  [term 36:REDUCE(with prod 104)] [term 37:REDUCE(with prod 104)]
- [term 38:REDUCE(with prod 104)]
+ [term 38:SHIFT(to state 68)]
 From state #78
  [term 12:SHIFT(to state 67)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -10907,7 +10870,7 @@ From state #78
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 108)] [term 35:REDUCE(with prod 108)]
  [term 36:REDUCE(with prod 108)] [term 37:REDUCE(with prod 108)]
- [term 38:REDUCE(with prod 108)]
+ [term 38:SHIFT(to state 68)]
 From state #79
  [term 12:REDUCE(with prod 103)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -10918,7 +10881,7 @@ From state #79
  [term 25:REDUCE(with prod 103)] [term 26:REDUCE(with prod 103)]
  [term 31:REDUCE(with prod 103)] [term 35:REDUCE(with prod 103)]
  [term 36:REDUCE(with prod 103)] [term 37:REDUCE(with prod 103)]
- [term 38:REDUCE(with prod 103)]
+ [term 38:SHIFT(to state 68)]
 From state #80
  [term 12:REDUCE(with prod 106)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -10929,7 +10892,7 @@ From state #80
  [term 25:REDUCE(with prod 106)] [term 26:REDUCE(with prod 106)]
  [term 31:REDUCE(with prod 106)] [term 35:REDUCE(with prod 106)]
  [term 36:REDUCE(with prod 106)] [term 37:REDUCE(with prod 106)]
- [term 38:REDUCE(with prod 106)]
+ [term 38:SHIFT(to state 68)]
 From state #81
  [term 12:SHIFT(to state 67)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -10940,7 +10903,7 @@ From state #81
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 102)] [term 35:REDUCE(with prod 102)]
  [term 36:REDUCE(with prod 102)] [term 37:REDUCE(with prod 102)]
- [term 38:REDUCE(with prod 102)]
+ [term 38:SHIFT(to state 68)]
 From state #82
  [term 12:REDUCE(with prod 98)] [term 13:REDUCE(with prod 98)]
  [term 14:REDUCE(with prod 98)] [term 15:REDUCE(with prod 98)]
@@ -10951,7 +10914,7 @@ From state #82
  [term 25:REDUCE(with prod 98)] [term 26:REDUCE(with prod 98)]
  [term 31:REDUCE(with prod 98)] [term 35:REDUCE(with prod 98)]
  [term 36:REDUCE(with prod 98)] [term 37:REDUCE(with prod 98)]
- [term 38:REDUCE(with prod 98)]
+ [term 38:SHIFT(to state 68)]
 From state #83
  [term 12:REDUCE(with prod 105)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -10962,7 +10925,7 @@ From state #83
  [term 25:REDUCE(with prod 105)] [term 26:REDUCE(with prod 105)]
  [term 31:REDUCE(with prod 105)] [term 35:REDUCE(with prod 105)]
  [term 36:REDUCE(with prod 105)] [term 37:REDUCE(with prod 105)]
- [term 38:REDUCE(with prod 105)]
+ [term 38:SHIFT(to state 68)]
 From state #84
  [term 30:SHIFT(to state 85)]
 From state #85
@@ -11045,7 +11008,7 @@ From state #94
  [term 25:REDUCE(with prod 96)] [term 26:REDUCE(with prod 96)]
  [term 31:REDUCE(with prod 96)] [term 35:REDUCE(with prod 96)]
  [term 36:REDUCE(with prod 96)] [term 37:REDUCE(with prod 96)]
- [term 38:REDUCE(with prod 96)]
+ [term 38:SHIFT(to state 68)]
 From state #95
  [term 12:SHIFT(to state 67)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -11056,7 +11019,7 @@ From state #95
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 101)] [term 35:REDUCE(with prod 101)]
  [term 36:REDUCE(with prod 101)] [term 37:REDUCE(with prod 101)]
- [term 38:REDUCE(with prod 101)]
+ [term 38:SHIFT(to state 68)]
 From state #96
  [term 12:REDUCE(with prod 100)] [term 13:REDUCE(with prod 100)]
  [term 14:REDUCE(with prod 100)] [term 15:REDUCE(with prod 100)]
@@ -11067,7 +11030,7 @@ From state #96
  [term 25:REDUCE(with prod 100)] [term 26:REDUCE(with prod 100)]
  [term 31:REDUCE(with prod 100)] [term 35:REDUCE(with prod 100)]
  [term 36:REDUCE(with prod 100)] [term 37:REDUCE(with prod 100)]
- [term 38:REDUCE(with prod 100)]
+ [term 38:SHIFT(to state 68)]
 From state #97
  [term 12:REDUCE(with prod 99)] [term 13:REDUCE(with prod 99)]
  [term 14:REDUCE(with prod 99)] [term 15:REDUCE(with prod 99)]
@@ -11078,7 +11041,7 @@ From state #97
  [term 25:REDUCE(with prod 99)] [term 26:REDUCE(with prod 99)]
  [term 31:REDUCE(with prod 99)] [term 35:REDUCE(with prod 99)]
  [term 36:REDUCE(with prod 99)] [term 37:REDUCE(with prod 99)]
- [term 38:REDUCE(with prod 99)]
+ [term 38:SHIFT(to state 68)]
 From state #98
  [term 12:REDUCE(with prod 97)] [term 13:REDUCE(with prod 97)]
  [term 14:REDUCE(with prod 97)] [term 15:SHIFT(to state 71)]
@@ -11089,7 +11052,7 @@ From state #98
  [term 25:REDUCE(with prod 97)] [term 26:REDUCE(with prod 97)]
  [term 31:REDUCE(with prod 97)] [term 35:REDUCE(with prod 97)]
  [term 36:REDUCE(with prod 97)] [term 37:REDUCE(with prod 97)]
- [term 38:REDUCE(with prod 97)]
+ [term 38:SHIFT(to state 68)]
 From state #99
  [term 12:SHIFT(to state 67)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -11100,7 +11063,7 @@ From state #99
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 107)] [term 35:REDUCE(with prod 107)]
  [term 36:REDUCE(with prod 107)] [term 37:REDUCE(with prod 107)]
- [term 38:REDUCE(with prod 107)]
+ [term 38:SHIFT(to state 68)]
 From state #100
  [term 12:REDUCE(with prod 109)] [term 13:REDUCE(with prod 109)]
  [term 14:REDUCE(with prod 109)] [term 15:SHIFT(to state 71)]
@@ -11111,7 +11074,7 @@ From state #100
  [term 25:REDUCE(with prod 109)] [term 26:REDUCE(with prod 109)]
  [term 31:REDUCE(with prod 109)] [term 35:REDUCE(with prod 109)]
  [term 36:REDUCE(with prod 109)] [term 37:REDUCE(with prod 109)]
- [term 38:REDUCE(with prod 109)]
+ [term 38:SHIFT(to state 68)]
 From state #101
  [term 10:SHIFT(to state 48)] [term 14:SHIFT(to state 44)]
  [term 18:SHIFT(to state 31)] [term 28:SHIFT(to state 25)]
@@ -11175,7 +11138,7 @@ From state #109
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 74)] [term 35:REDUCE(with prod 74)]
  [term 36:REDUCE(with prod 74)] [term 37:REDUCE(with prod 74)]
- [term 38:REDUCE(with prod 74)]
+ [term 38:SHIFT(to state 68)]
 From state #110
  [term 31:SHIFT(to state 111)] [term 37:SHIFT(to state 88)]
 From state #111
@@ -11226,7 +11189,7 @@ From state #115
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 76)] [term 35:REDUCE(with prod 76)]
  [term 36:REDUCE(with prod 76)] [term 37:REDUCE(with prod 76)]
- [term 38:REDUCE(with prod 76)]
+ [term 38:SHIFT(to state 68)]
 From state #116
  [term 12:SHIFT(to state 67)] [term 13:SHIFT(to state 66)]
  [term 14:SHIFT(to state 62)] [term 15:SHIFT(to state 71)]
@@ -11237,7 +11200,7 @@ From state #116
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 73)] [term 35:REDUCE(with prod 73)]
  [term 36:REDUCE(with prod 73)] [term 37:REDUCE(with prod 73)]
- [term 38:REDUCE(with prod 73)]
+ [term 38:SHIFT(to state 68)]
 From state #117
  [term 31:SHIFT(to state 118)] [term 37:SHIFT(to state 88)]
 From state #118
@@ -11288,7 +11251,7 @@ From state #122
  [term 25:SHIFT(to state 69)] [term 26:SHIFT(to state 73)]
  [term 31:REDUCE(with prod 75)] [term 35:REDUCE(with prod 75)]
  [term 36:REDUCE(with prod 75)] [term 37:REDUCE(with prod 75)]
- [term 38:REDUCE(with prod 75)]
+ [term 38:SHIFT(to state 68)]
 From state #123
  [term 12:REDUCE(with prod 116)] [term 13:REDUCE(with prod 116)]
  [term 14:REDUCE(with prod 116)] [term 15:REDUCE(with prod 116)]
@@ -11516,7 +11479,7 @@ From state #149
  [term 25:REDUCE(with prod 110)] [term 26:REDUCE(with prod 110)]
  [term 31:REDUCE(with prod 110)] [term 35:REDUCE(with prod 110)]
  [term 36:REDUCE(with prod 110)] [term 37:REDUCE(with prod 110)]
- [term 38:REDUCE(with prod 110)]
+ [term 38:SHIFT(to state 68)]
 From state #150
  [term 33:REDUCE(with prod 16)] [term 39:REDUCE(with prod 16)]
 From state #151
@@ -13176,12 +13139,12 @@ From state #267
 -----------------------------
 Closing files...
 ------- CUP v0.10k Parser Generation Summary -------
-  0 errors and 51 warnings
+  0 errors and 47 warnings
   43 terminals, 41 non-terminals, and 123 productions declared, 
   producing 268 unique parse states.
   1 terminal declared but not used.
   0 non-terminal declared but not used.
   0 productions never reduced.
-  50 conflicts detected (100 expected).
+  46 conflicts detected (100 expected).
   Code written to "Parser.java", and "TokenIds.java".
 ---------------------------------------------------- (v0.10k)

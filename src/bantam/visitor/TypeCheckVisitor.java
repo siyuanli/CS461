@@ -99,13 +99,27 @@ public class TypeCheckVisitor extends Visitor {
             return true;
         }
 
-        if (type1.endsWith("[]") && type2.endsWith("[]")){
-            type1 = type1.substring(0, type1.length()-2);
-            type2 = type2.substring(0, type2.length()-2);
+
+        if(type2.endsWith("[]")) {
+            if (type1.endsWith("[]")) {
+                type1 = type1.substring(0, type1.length() - 2);
+                type2 = type2.substring(0, type2.length() - 2);
+            } else if (type1.equals("Object")) {
+                type2 = type2.substring(0, type2.length() - 2);
+                if(type2.equals("int")||type2.equals("boolean")){
+                    return true;
+                }
+            } else {
+                return false;
+            }
         }
 
         ClassTreeNode type2Node = this.classTreeNode.getClassMap().get(type2);
         if (type2Node != null){
+            //At this point, we know type2 is a class and so if type1 is Object, it's valid
+            if(type1.equals("Object")){
+                return true;
+            }
             if (type2Node.getParent() == null) { //object
                 return false;
             } else {
@@ -138,7 +152,9 @@ public class TypeCheckVisitor extends Visitor {
             }
             if(!this.compatibleType(variableType, exprType)){
                 this.errorUtil.registerError(lineNum,
-                        "Incompatible variable type assignment.");
+                        "Incompatible variable type assignment. Cannot assign expression"+
+                                " of type "+exprType+" to variable " + name + " of type "
+                                + variableType);
             }
         }
     }
@@ -310,23 +326,31 @@ public class TypeCheckVisitor extends Visitor {
      * @return the type of the variable
      */
     private String getVarExprType(VarExpr varExpr, String refName) {
-        String type;
+
         if (varExpr.getName().equals("length") && !"this".equals(refName) &&
                 !"super".equals(refName) && refName!=null) {
-            type = this.findVariableType(null, refName, varExpr.getLineNum());
-            if (!type.endsWith("[]")) {
+            String type = this.findVariableType(null, refName, varExpr.getLineNum());
+            if (type == null){
+                this.errorUtil.registerError(varExpr.getLineNum(),"Length attribute accessed on unknown variable "+refName);
+            }
+            else if (!type.endsWith("[]")) {
                 this.errorUtil.registerError(varExpr.getLineNum(),
                         "Only array variables have length attribute.");
-            } else {
+            }
+            else {
                 type = "int";
             }
+            return type;
+        }
+        else if(varExpr.getName().equals("this")){
+            return this.classTreeNode.getName();
         }
         else {
             this.errorUtil.registerErrorIfReservedName(
                     varExpr.getName(),varExpr.getLineNum());
-            type=this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
+            return this.findVariableType(refName,varExpr.getName(),varExpr.getLineNum());
         }
-        return type;
+
     }
 
     /**
@@ -485,7 +509,7 @@ public class TypeCheckVisitor extends Visitor {
         StmtList stmtList = method.getStmtList();
         stmtList.accept(this);
         if (!method.getReturnType().equals("void")) {
-            if (stmtList.getSize()>0 &&
+            if (stmtList.getSize()==0 ||
                     !(stmtList.get(stmtList.getSize() - 1) instanceof ReturnStmt)) {
                 this.errorUtil.registerError(method.getLineNum(),
                         "Missing return Statement");
