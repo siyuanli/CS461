@@ -854,10 +854,14 @@ public class TypeCheckVisitor extends Visitor {
     public Object visit(NewArrayExpr newArrayExpr){
         this.errorUtil.registerErrorIfInvalidType(newArrayExpr.getType(),
                 newArrayExpr.getLineNum());
-        newArrayExpr.getSize().accept(this);
-        if (!newArrayExpr.getSize().getExprType().equals("int")){
-            this.errorUtil.registerError(newArrayExpr.getLineNum(),
-                    "Array size is not int.");
+
+        Expr size = newArrayExpr.getSize();
+        size.accept(this);
+        if(size.getExprType() != null) {
+            if (!size.getExprType().equals("int")) {
+                this.errorUtil.registerError(newArrayExpr.getLineNum(),
+                        "Array size is not int.");
+            }
         }
         newArrayExpr.setExprType(newArrayExpr.getType());
         return null;
@@ -1218,7 +1222,6 @@ public class TypeCheckVisitor extends Visitor {
             refName = ((VarExpr) varExpr.getRef()).getName();
         }
 
-        //checks array.length variables
         String type = getVarExprType(varExpr, refName);
         if(type==null){
             this.errorUtil.registerError(varExpr.getLineNum(),
