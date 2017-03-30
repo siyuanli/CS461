@@ -143,7 +143,7 @@ public class MipsCodeGenerator {
     public Set<String> getFilenames(boolean getBuiltIns){
         Set<String> filenames = new HashSet<>();
         for(ClassTreeNode classNode : this.root.getClassMap().values()){
-            String name = classNode.getASTNode().getFilename();
+            String name = classNode.getASTNode().getFilename().replace("\\", "/");
             if ((!getBuiltIns && !name.equals("<built-in class>")) || getBuiltIns){
                 filenames.add(name);
             }

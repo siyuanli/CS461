@@ -1,8 +1,8 @@
 /*
  * File: parser.cup
- * CS461 Project 3
+ * CS461 Project 4A
  * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 3/11/17
+ * Date: 3/29/17
  */
 /* Bantam Java Compiler and Language Toolset.
 
@@ -50,9 +50,9 @@ action code {:
 
     /*
      * File: parser.cup
-     * CS461 Project 3
+     * CS461 Project 4A
      * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
-     * Date: 3/11/17
+     * Date: 3/29/17
      */
 
     /** object for error handling */
@@ -585,7 +585,8 @@ const_expr
     | BOOLEAN_CONST:bool
         {: RESULT = new ConstBooleanExpr(bool.getLineNum(), bool.getAttribute()); :}
     | STRING_CONST:str
-        {: RESULT = new ConstStringExpr(str.getLineNum(), str.getAttribute()); :}
+        {: String string = str.getAttribute().substring(1, str.getAttribute().length()-1);
+           RESULT = new ConstStringExpr(str.getLineNum(), string); :}
     ;
 
 binary_arith_expr
