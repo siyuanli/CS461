@@ -32,6 +32,8 @@ import bantam.visitor.MemberAdderVisitor;
 import bantam.visitor.StringConstantsVisitor;
 import javafx.util.Pair;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -91,12 +93,9 @@ public class MipsCodeGenerator {
         this.debug = debug;
 
         try {
-            //out = new PrintStream(new FileOutputStream(outFile));
-            out = System.out;
-
+            out = new PrintStream(new FileOutputStream(outFile));
             assemblySupport = new MipsSupport(out);
-       // } catch (IOException e) { //TODO: Undo this
-        } catch (Exception e) {
+        } catch (IOException e) {
             // if don't have permission to write to file then report an error and exit
             System.err.println("Error: don't have permission to write to file '" + outFile + "'");
             System.exit(1);
@@ -159,8 +158,6 @@ public class MipsCodeGenerator {
         assemblySupport.genComment("Authors: Phoebe Hughes, Siyuan Li, Joseph Malionek");
         assemblySupport.genComment("Date: " + LocalDateTime.now());
         assemblySupport.genComment("Compiled from: " + this.getFilenames(false));
-        //TODO: what if there are multiple files
-
         assemblySupport.genDataStart();
     }
 
@@ -176,7 +173,6 @@ public class MipsCodeGenerator {
         for (ClassTreeNode classNode : this.root.getClassMap().values()){
             classNode.getASTNode().accept(stringConstantsVisitor);
         }
-
 
         Map<String, String> classNamesMap = new HashMap<>();
         for (int i = 0; i < classNames.size(); i++){
@@ -201,9 +197,12 @@ public class MipsCodeGenerator {
             int totalSize = (4 - (length + 17)%4)  + length + 17;
 
             assemblySupport.genLabel(entry.getValue());
+            assemblySupport.genComment("String object");
             assemblySupport.genWord(Integer.toString(stringIndex));
+            assemblySupport.genComment("Size of object");
             assemblySupport.genWord(Integer.toString(totalSize));
             assemblySupport.genWord("String_dispatch_table");
+            assemblySupport.genComment("Length of string");
             assemblySupport.genWord(Integer.toString(length)); //size
             assemblySupport.genAscii(entry.getKey());
         }

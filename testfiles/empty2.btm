@@ -1,3 +1,4 @@
 class test{
     String hellloooo = "HIHIHIH JOseph";
+    String str = "test";
 }
