@@ -5,7 +5,10 @@ import bantam.ast.Field;
 import bantam.ast.Method;
 import bantam.codegenmips.MipsSupport;
 import bantam.util.ClassTreeNode;
+import javafx.util.Pair;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,27 +16,18 @@ import java.util.Map;
  */
 public class DispatchTableAdderVisitor extends Visitor {
 
-    private MipsSupport assemblySupport;
-    private Map<String, ClassTreeNode> classMap;
+
     private String className;
+    private List<Pair<String, String>> methodList;
 
-
-    public DispatchTableAdderVisitor(MipsSupport assemblySupport,
-                                     Map<String, ClassTreeNode> classTreeNodeMap){
-        this.assemblySupport = assemblySupport;
-        this.classMap = classTreeNodeMap;
-    }
-
-
-    public Object visit(Class_ node) {
-        if (node.getParent() != null){
-            ClassTreeNode parent = this.classMap.get(node.getParent());
-            parent.getASTNode().accept(this);
+    public List<Pair<String,String>> getMethodList(List<Pair<String,String>> parentList, Class_ classNode){
+        this.className = classNode.getName();
+        this.methodList = new ArrayList<>();
+        for(Pair<String,String> pair : parentList){
+            methodList.add(new Pair<>(pair.getKey(), pair.getValue()));
         }
-
-        className = node.getName();
-        node.getMemberList().accept(this);
-        return null;
+        classNode.accept(this);
+        return this.methodList;
     }
 
     public Object visit(Field node) {
@@ -41,7 +35,14 @@ public class DispatchTableAdderVisitor extends Visitor {
     }
 
     public Object visit(Method node) {
-        this.assemblySupport.genWord(className + "." + node.getName());
+        Pair<String, String> newPair =new Pair<>(node.getName(),this.className);
+        for(int i = 0;i<methodList.size();i++){
+            if(methodList.get(i).getKey().equals(node.getName())){
+                methodList.set(i,newPair);
+                return null;
+            }
+        }
+        methodList.add(newPair);
         return null;
     }
 

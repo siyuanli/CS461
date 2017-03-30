@@ -1,2 +1,6 @@
 class Main {void main() {} void foo(int n) {TextIO io = new TextIO();
-            n = io.putString("E").getInt(); }}
+            n = io.putString("E").getInt(); }
+            void bar(){}}
+class Child extends Main{
+void foo(int n){}
+}

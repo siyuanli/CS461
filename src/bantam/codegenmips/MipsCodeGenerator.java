@@ -28,7 +28,9 @@ package bantam.codegenmips;
 
 import bantam.util.ClassTreeNode;
 import bantam.visitor.DispatchTableAdderVisitor;
+import bantam.visitor.MemberAdderVisitor;
 import bantam.visitor.StringConstantsVisitor;
+import javafx.util.Pair;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
@@ -137,7 +139,7 @@ public class MipsCodeGenerator {
         this.genObjectTemplates(classNames);
 
         // 6 - generate dispatch tables
-        this.genDispatchTables();
+        this.genDispatchTables(this.root,new ArrayList<>());
     }
 
     public Set<String> getFilenames(boolean getBuiltIns){
@@ -232,12 +234,18 @@ public class MipsCodeGenerator {
         }
     }
 
-    private void genDispatchTables(){
-        DispatchTableAdderVisitor dispatchTableAdderVisitor =
-                new DispatchTableAdderVisitor(assemblySupport, this.root.getClassMap());
-        for(ClassTreeNode classTreeNode: this.root.getClassMap().values()){
-            assemblySupport.genLabel(classTreeNode.getName() + "_dispatch_table");
-            classTreeNode.getASTNode().accept(dispatchTableAdderVisitor);
+    private void genDispatchTables(ClassTreeNode treeNode,
+                                  List<Pair<String,String>> parentList){
+        DispatchTableAdderVisitor visitor = new DispatchTableAdderVisitor();
+        List<Pair<String,String>> methodList = visitor.getMethodList(parentList,treeNode.getASTNode());
+        assemblySupport.genLabel(treeNode.getName() + "_dispatch_table");
+        for(Pair<String,String> pair : methodList){
+            this.assemblySupport.genWord(pair.getValue()+"."+pair.getKey());
+        }
+        Iterator<ClassTreeNode> childrenIterator = treeNode.getChildrenList();
+        while(childrenIterator.hasNext()){
+            ClassTreeNode childNode = childrenIterator.next();
+            this.genDispatchTables(childNode,methodList);
         }
     }
 
