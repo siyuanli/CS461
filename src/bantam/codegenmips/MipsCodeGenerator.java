@@ -147,6 +147,9 @@ public class MipsCodeGenerator {
         this.genObjectTemplates(classNames);
 
         // 6 - generate dispatch tables
+        for(String name : classNames){
+            this.assemblySupport.genGlobal(name+"_dispatch_table");
+        }
         this.genDispatchTables(this.root,new ArrayList<>());
 
         this.out.println("\n");
