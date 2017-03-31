@@ -149,6 +149,7 @@ public class MipsCodeGenerator {
         // 6 - generate dispatch tables
         this.genDispatchTables(this.root,new ArrayList<>());
 
+        this.out.println("\n");
         //7 - start the text section
         this.assemblySupport.genTextStart();
 
@@ -262,10 +263,13 @@ public class MipsCodeGenerator {
         DispatchTableAdderVisitor visitor = new DispatchTableAdderVisitor();
         List<Pair<String,String>> methodList = visitor.getMethodList(parentList,treeNode.getASTNode());
         assemblySupport.genLabel(treeNode.getName() + "_dispatch_table");
+        List<String> builtins = Arrays.asList("Object","String","TextIO","Sys");
         for(Pair<String,String> pair : methodList){
             String methodName = pair.getValue() + "." + pair.getKey();
             this.assemblySupport.genWord(methodName);
-            this.methodSet.add(methodName);
+            if(!builtins.contains(pair.getValue())) {
+                this.methodSet.add(methodName);
+            }
         }
         Iterator<ClassTreeNode> childrenIterator = treeNode.getChildrenList();
         while(childrenIterator.hasNext()){
