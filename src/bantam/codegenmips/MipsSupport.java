@@ -310,7 +310,7 @@ public class MipsSupport {
         out.println("\t.text");
         genGlobal("main");
         genGlobal("Main_init");
-        genGlobal("bantam.Main.main");
+        genGlobal("Main.main");
         // main (below) defined only because SPIM requires it -- not used
         genLabel("main");
         // if this gets called for some reason then just call __start

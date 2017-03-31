@@ -76,6 +76,8 @@ public class MipsCodeGenerator {
      */
     private boolean debug = false;
 
+    private HashSet<String> methodSet;
+
     /**
      * MipsCodeGenerator constructor
      *
@@ -91,6 +93,7 @@ public class MipsCodeGenerator {
         this.gc = gc;
         this.opt = opt;
         this.debug = debug;
+        this.methodSet = new HashSet<>();
 
         try {
             out = new PrintStream(new FileOutputStream(outFile));
@@ -120,7 +123,13 @@ public class MipsCodeGenerator {
     public void generate() {
         System.out.println("Generating");
         List<String> classNames = new ArrayList<>();
-        classNames.addAll(this.root.getClassMap().keySet());
+        classNames.add("Object");
+        classNames.add("String");
+        for(String className : this.root.getClassMap().keySet()){
+            if(!className.equals("Object") && !className.equals("String")){
+                classNames.add(className);
+            }
+        }
 
         // 1 - start the data section
         this.startData();
@@ -139,6 +148,20 @@ public class MipsCodeGenerator {
 
         // 6 - generate dispatch tables
         this.genDispatchTables(this.root,new ArrayList<>());
+
+        //7 - start the text section
+        this.assemblySupport.genTextStart();
+
+        // 8 - generate initialization subroutines
+        this.genInitMethods(classNames);
+
+        // 9 - generate user-defined methods
+        this.genMethods();
+
+
+
+
+
     }
 
     public Set<String> getFilenames(boolean getBuiltIns){
@@ -184,21 +207,19 @@ public class MipsCodeGenerator {
             filenames.put(filename, "filename_" + filenames.size());
         }
 
-        int stringIndex = classNames.indexOf("String");
-
-        this.genStringConstants(stringConstantsVisitor.getStringConstants(), stringIndex);
-        this.genStringConstants(classNamesMap, stringIndex);
-        this.genStringConstants(filenames, stringIndex);
+        this.genStringConstants(stringConstantsVisitor.getStringConstants());
+        this.genStringConstants(classNamesMap);
+        this.genStringConstants(filenames);
     }
 
-    private void genStringConstants(Map<String, String> stringConsts, int stringIndex) {
+    private void genStringConstants(Map<String, String> stringConsts) {
         for (Map.Entry<String, String> entry : stringConsts.entrySet()) {
             int length = entry.getKey().length();
             int totalSize = (4 - (length + 17)%4)  + length + 17;
 
             assemblySupport.genLabel(entry.getValue());
             assemblySupport.genComment("String object");
-            assemblySupport.genWord(Integer.toString(stringIndex));
+            assemblySupport.genWord("1");
             assemblySupport.genComment("Size of object");
             assemblySupport.genWord(Integer.toString(totalSize));
             assemblySupport.genWord("String_dispatch_table");
@@ -222,13 +243,16 @@ public class MipsCodeGenerator {
     private void genObjectTemplates(List<String> classNames){
         for (ClassTreeNode classTreeNode : this.root.getClassMap().values()){
             String name = classTreeNode.getName();
-            assemblySupport.genLabel(name + "_template");
-            assemblySupport.genWord(Integer.toString(classNames.indexOf(name)));
+            this.assemblySupport.genLabel(name + "_template");
+            this.assemblySupport.genComment("The integer ID of the class");
+            this.assemblySupport.genWord(Integer.toString(classNames.indexOf(name)));
             int numFields = classTreeNode.getVarSymbolTable().getSize();
-            assemblySupport.genWord(Integer.toString(numFields*4 + 12));
-            assemblySupport.genWord(name + "_dispatch_table");
+            this.assemblySupport.genComment("The size of the object");
+            this.assemblySupport.genWord(Integer.toString(numFields*4 + 12));
+            this.assemblySupport.genWord(name + "_dispatch_table");
+            this.assemblySupport.genComment("The remainder of this object is fields.");
             for (int i = 0; i<numFields; i++){
-                assemblySupport.genWord("0");
+                this.assemblySupport.genWord("0");
             }
         }
     }
@@ -239,7 +263,9 @@ public class MipsCodeGenerator {
         List<Pair<String,String>> methodList = visitor.getMethodList(parentList,treeNode.getASTNode());
         assemblySupport.genLabel(treeNode.getName() + "_dispatch_table");
         for(Pair<String,String> pair : methodList){
-            this.assemblySupport.genWord(pair.getValue()+"."+pair.getKey());
+            String methodName = pair.getValue() + "." + pair.getKey();
+            this.assemblySupport.genWord(methodName);
+            this.methodSet.add(methodName);
         }
         Iterator<ClassTreeNode> childrenIterator = treeNode.getChildrenList();
         while(childrenIterator.hasNext()){
@@ -248,5 +274,20 @@ public class MipsCodeGenerator {
         }
     }
 
+    private void genInitMethods(List<String> classNames){
+        for(String name : classNames){
+            this.assemblySupport.genLabel(name+"_init");
+            this.assemblySupport.genComment("This is empty for testing purposes.");
+            this.assemblySupport.genRetn();
+        }
+    }
+
+    private void genMethods(){
+        for(String method: methodSet){
+            this.assemblySupport.genLabel(method);
+            this.assemblySupport.genComment("This is empty for testing purposes.");
+            this.assemblySupport.genRetn();
+        }
+    }
 
 }
