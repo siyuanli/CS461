@@ -1,8 +1,8 @@
 /*
  * File: SemanticAnalyzer.java
- * CS461 Project 3
+ * CS461 Project 4A
  * Edited by: Phoebe Hughes, Siyuan Li, Joseph Malionek,
- * Date: 3/11/17
+ * Date: 4/2/17
  */
 
 /* Bantam Java Compiler and Language Toolset.
