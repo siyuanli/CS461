@@ -82,7 +82,7 @@ public class MipsCodeGenerator {
     private boolean debug = false;
 
     /**
-     *
+     * The set of methods of the program
      */
     private HashSet<String> methodSet;
 
@@ -172,9 +172,9 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
-     * @param getBuiltIns
-     * @return
+     * Gets the filenames of all of the classes
+     * @param getBuiltIns the built-in classes
+     * @return the set of filenames
      */
     public Set<String> getFilenames(boolean getBuiltIns){
         Set<String> filenames = new HashSet<>();
@@ -188,7 +188,7 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
+     * The file-header for the generated file
      */
     private void startData(){
         //Create comments
@@ -199,7 +199,7 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
+     * Sets the garbage collect flag
      */
     private void genGarbageCollector(){
         assemblySupport.genLabel("gc_flag");
@@ -207,8 +207,8 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
-     * @param classNames
+     * Generates string objects in the .data section for all of the built-in strings.
+     * @param classNames The class names
      */
     private void genStringConsts(List<String> classNames){
         StringConstantsVisitor stringConstantsVisitor = new StringConstantsVisitor();
@@ -226,16 +226,17 @@ public class MipsCodeGenerator {
             filenames.put(filename, "filename_" + filenames.size());
         }
 
-        this.genStringConstants(stringConstantsVisitor.getStringConstants());
-        this.genStringConstants(classNamesMap);
-        this.genStringConstants(filenames);
+        this.genStringConstsFromMap(stringConstantsVisitor.getStringConstants());
+        this.genStringConstsFromMap(classNamesMap);
+        this.genStringConstsFromMap(filenames);
     }
 
     /**
-     *
-     * @param stringConsts
+     * Given a map between string constants and their labels, generates a String object
+     * for each entry in the map.
+     * @param stringConsts the map
      */
-    private void genStringConstants(Map<String, String> stringConsts) {
+    private void genStringConstsFromMap(Map<String, String> stringConsts) {
         for (Map.Entry<String, String> entry : stringConsts.entrySet()) {
             int length = entry.getKey().length();
             int totalSize = (4 - (length + 17)%4)  + length + 17;
@@ -253,8 +254,8 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
-     * @param classNames
+     * Generates the class name table
+     * @param classNames The names of all the classes
      */
     private void genClassNameTable(List<String> classNames){
         assemblySupport.genLabel("class_name_table");
@@ -268,8 +269,8 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
-     * @param classNames
+     * Generates a template object for each of the classes in the given list.
+     * @param classNames the names of all the classes
      */
     private void genObjectTemplates(List<String> classNames){
         for (ClassTreeNode classTreeNode : this.root.getClassMap().values()){
@@ -289,9 +290,10 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
-     * @param treeNode
-     * @param parentList
+     * Generates the dispatch table for the given object with the given parents method and
+     * then does the same for its children.
+     * @param treeNode the given object
+     * @param parentList the list of methods from the parent
      */
     private void genDispatchTables(ClassTreeNode treeNode,
                                   List<Pair<String,String>> parentList){
@@ -314,8 +316,8 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
-     * @param classNames
+     * Generates init methods for each of the given classes
+     * @param classNames the list of classes
      */
     private void genInitMethods(List<String> classNames){
         for(String name : classNames){
@@ -326,7 +328,7 @@ public class MipsCodeGenerator {
     }
 
     /**
-     *
+     * Generates user-defined methods
      */
     private void genMethods(){
         for(String method: methodSet){
