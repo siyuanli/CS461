@@ -214,12 +214,12 @@ class
     ::=
     /* class with no specified parent - uses Object class */
     CLASS:t ID:name LBRACE member_list:ml RBRACE
-        {: RESULT = new Class_(t.getLineNum(), getCurrFilename(),
+        {: RESULT = new Class_(t.getLineNum(), t.getFilename(),
                name.getAttribute(), "Object", ml); :}
 
     /* class with a specified parent */
     | CLASS:t ID:name EXTENDS ID:parent LBRACE member_list:ml RBRACE
-        {: RESULT = new Class_(t.getLineNum(), getCurrFilename(),
+        {: RESULT = new Class_(t.getLineNum(), t.getFilename(),
                name.getAttribute(),
                parent.getAttribute(), ml); :}
     ;

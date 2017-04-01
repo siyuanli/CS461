@@ -213,7 +213,7 @@ import java_cup.runtime.Symbol;
 //.*                    {/*Regex for inline comments*/}
 
 <YYINITIAL>class        { return new Symbol(TokenIds.CLASS,
-						    new Token("CLASS", yyline)); }
+						    new Token("CLASS",null, yyline, getCurrFilename())); }
 
 <YYINITIAL>extends      { return new Symbol(TokenIds.EXTENDS,
 						    new Token("EXTENDS", yyline)); }

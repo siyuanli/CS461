@@ -810,7 +810,7 @@ public class Lexer implements java_cup.runtime.Scanner {
 						break;
 					case 45:
 						{ return new Symbol(TokenIds.CLASS,
-						    new Token("CLASS", yyline)); }
+						    new Token("CLASS",null, yyline, getCurrFilename())); }
 					case -46:
 						break;
 					case 46:

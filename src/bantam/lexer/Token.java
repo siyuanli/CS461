@@ -26,91 +26,145 @@
 
 package bantam.lexer;
 
-/** A class for representing tokens in the bantam compiler, passed
-  * from the bantam.lexer to the bantam.parser (as the value within a java_cup
-  * Symbol). 
-  * */
-public class Token {
-    /** name of the token */
+/**
+ * A class for representing tokens in the bantam compiler, passed
+ * from the lexer to the parser (as the value within a java_cup
+ * Symbol).
+ */
+public class Token
+{
+    /**
+     * name of the token
+     */
     protected String name;
-    /** attribute of the token (represented as a string -- null 
-	for no attribute) */
+    /**
+     * attribute of the token (represented as a string -- null
+     * for no attribute)
+     */
     protected String attribute;
-    /** starting line number of token */
+    /**
+     * starting line number of token
+     */
     protected int lineNum;
+    /**
+     * the file in which the token appeared
+     */
+    protected String filename = null; //    /* added by DJS */
 
-    /** Token constructor
-      * @param name name of the token
-      * @param attribute attribute of the token (might be null)
-      * @param lineNum starting line number of the token
-      * */
+
+    /* added by DJS, to allow tokens to remember their file names */
+    /**
+     * Token constructor
+     *
+     * @param name      name of the token
+     * @param attribute attribute of the token (might be null)
+     * @param lineNum   starting line number of the token
+     * @param filename  name of the file in which the token appears
+     */
+    public Token(String name, String attribute, int lineNum, String filename) {
+        this.name = name;
+        this.attribute = attribute;
+        this.lineNum = lineNum;
+        this.filename = filename;
+    }
+
+    /**
+     * Token constructor
+     *
+     * @param name      name of the token
+     * @param attribute attribute of the token (might be null)
+     * @param lineNum   starting line number of the token
+     */
     public Token(String name, String attribute, int lineNum) {
-	this.name = name;
-	this.attribute = attribute;
-	this.lineNum = lineNum;
+        this(name, attribute, lineNum, null);
     }
 
-    /** Token constructor
-      * @param name name of the token
-      * @param lineNum starting line number of the token
-      * */
+    /**
+     * Token constructor
+     *
+     * @param name    name of the token
+     * @param lineNum starting line number of the token
+     */
     public Token(String name, int lineNum) {
-	this.name = name;
-	this.lineNum = lineNum;
+        this(name, null, lineNum);
     }
 
-    /** Get token name
-      * @return token name
-      * */
+    /**
+     * Get token name
+     *
+     * @return token name
+     */
     public String getName() {
-	return name;
+        return name;
     }
 
-    /** Get token attribute
-      * @return token attribute
-      * */
+    /**
+     * Get token attribute
+     *
+     * @return token attribute
+     */
     public String getAttribute() {
-	return attribute;
+        return attribute;
     }
 
-    /** Get line number of token 
-      * @return line number of token
-      * */
+    /**
+     * Get line number of token
+     *
+     * @return line number of token
+     */
     public int getLineNum() {
-	return lineNum;
+        return lineNum;
     }
 
-    /** Returns the token's lexeme (as a string)
-      * Returns the name if no attribute, otherwise,
-      * it returns the attribute
-      * @return token lexeme (as a string)
-      * */
+    /**
+     * Returns the token's lexeme (as a string)
+     * Returns the name if no attribute, otherwise,
+     * it returns the attribute
+     *
+     * @return token lexeme (as a string)
+     */
     public String getLexeme() {
-	if (attribute == null)
-	    return name;
-	return attribute;
+        if (attribute == null) {
+            return name;
+        }
+        return attribute;
     }
 
-    /** Return a pretty-print string representation of the token
-      * format: <name, value>
-      * @return string representation of token
-      * */
-    public String toString() { 
-	String str = "# line " + lineNum + "\n";
-	String newName = name;
+    /**
+     * Return a pretty-print string representation of the token
+     * format: <name, value>
+     *
+     * @return string representation of token
+     */
+    public String toString() {
+        String filename = (this.filename != null ? this.filename : "") + ": ";
+        String str = filename + "# line " + lineNum + "\n";
+        String newName = name;
 
-	if (name.charAt(0) < 'A' || name.charAt(0) > 'Z')
-	    newName = "'" + name + "'";
+        if (name.charAt(0) < 'A' || name.charAt(0) > 'Z') {
+            newName = "'" + name + "'";
+        }
 
-	if (attribute != null) {
-	    if (name.equals("STRING_CONST") || name.equals("LEX_ERROR"))
-		str += "<" + newName + ", \"" + attribute + "\">";
-	    else
-		str += "<" + newName + ", " + attribute + ">";
-	}
-	else
-	    str += "<" + newName + ", >";
+        if (attribute != null) {
+            if (name.equals("STRING_CONST") || name.equals("LEX_ERROR")) {
+                str += "<" + newName + ", \"" + attribute + "\">";
+            }
+            else {
+                str += "<" + newName + ", " + attribute + ">";
+            }
+        }
+        else {
+            str += "<" + newName + ", >";
+        }
 
-	return str;
+        return str;
+    }
+
+    /* added by DJS, to allow tokens to remember their file names */
+    /**
+     * @return the name of the file in which the token appeared
+     */
+    public String getFilename() {
+        return filename;
     }
 }
