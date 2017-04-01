@@ -1,3 +1,10 @@
+/*
+ * File: MipsCodeGenerator.java
+ * CS461 Project 4A
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/2/17
+ */
+
 /* Bantam Java Compiler and Language Toolset.
 
    Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
@@ -28,10 +35,8 @@ package bantam.codegenmips;
 
 import bantam.util.ClassTreeNode;
 import bantam.visitor.DispatchTableAdderVisitor;
-import bantam.visitor.MemberAdderVisitor;
 import bantam.visitor.StringConstantsVisitor;
 import javafx.util.Pair;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -76,6 +81,9 @@ public class MipsCodeGenerator {
      */
     private boolean debug = false;
 
+    /**
+     *
+     */
     private HashSet<String> methodSet;
 
     /**
@@ -161,13 +169,13 @@ public class MipsCodeGenerator {
 
         // 9 - generate user-defined methods
         this.genMethods();
-
-
-
-
-
     }
 
+    /**
+     *
+     * @param getBuiltIns
+     * @return
+     */
     public Set<String> getFilenames(boolean getBuiltIns){
         Set<String> filenames = new HashSet<>();
         for(ClassTreeNode classNode : this.root.getClassMap().values()){
@@ -179,7 +187,9 @@ public class MipsCodeGenerator {
         return filenames;
     }
 
-
+    /**
+     *
+     */
     private void startData(){
         //Create comments
         assemblySupport.genComment("Authors: Phoebe Hughes, Siyuan Li, Joseph Malionek");
@@ -188,13 +198,18 @@ public class MipsCodeGenerator {
         assemblySupport.genDataStart();
     }
 
-
+    /**
+     *
+     */
     private void genGarbageCollector(){
         assemblySupport.genLabel("gc_flag");
         assemblySupport.genWord("0");
     }
 
-
+    /**
+     *
+     * @param classNames
+     */
     private void genStringConsts(List<String> classNames){
         StringConstantsVisitor stringConstantsVisitor = new StringConstantsVisitor();
         for (ClassTreeNode classNode : this.root.getClassMap().values()){
@@ -216,6 +231,10 @@ public class MipsCodeGenerator {
         this.genStringConstants(filenames);
     }
 
+    /**
+     *
+     * @param stringConsts
+     */
     private void genStringConstants(Map<String, String> stringConsts) {
         for (Map.Entry<String, String> entry : stringConsts.entrySet()) {
             int length = entry.getKey().length();
@@ -233,6 +252,10 @@ public class MipsCodeGenerator {
         }
     }
 
+    /**
+     *
+     * @param classNames
+     */
     private void genClassNameTable(List<String> classNames){
         assemblySupport.genLabel("class_name_table");
         for (int i = 0; i< classNames.size(); i++){
@@ -244,6 +267,10 @@ public class MipsCodeGenerator {
         }
     }
 
+    /**
+     *
+     * @param classNames
+     */
     private void genObjectTemplates(List<String> classNames){
         for (ClassTreeNode classTreeNode : this.root.getClassMap().values()){
             String name = classTreeNode.getName();
@@ -261,6 +288,11 @@ public class MipsCodeGenerator {
         }
     }
 
+    /**
+     *
+     * @param treeNode
+     * @param parentList
+     */
     private void genDispatchTables(ClassTreeNode treeNode,
                                   List<Pair<String,String>> parentList){
         DispatchTableAdderVisitor visitor = new DispatchTableAdderVisitor();
@@ -281,6 +313,10 @@ public class MipsCodeGenerator {
         }
     }
 
+    /**
+     *
+     * @param classNames
+     */
     private void genInitMethods(List<String> classNames){
         for(String name : classNames){
             this.assemblySupport.genLabel(name+"_init");
@@ -289,6 +325,9 @@ public class MipsCodeGenerator {
         }
     }
 
+    /**
+     *
+     */
     private void genMethods(){
         for(String method: methodSet){
             this.assemblySupport.genLabel(method);
