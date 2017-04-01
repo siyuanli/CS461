@@ -1,8 +1,8 @@
 /*
- * Project 1: Build Lexer
- * Date: Feb 14, 2017
- * Authors: Phoebe Hughes, Joseph Malionek, Siyuan Li
- * File name: Lexer.java; lexer.jlex
+ * File: lexer.java, lexer.jlex
+ * CS461 Project 4A
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/2/17
  */
 
 /* Bantam Java Compiler and Language Toolset.

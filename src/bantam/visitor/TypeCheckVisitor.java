@@ -1,8 +1,8 @@
 /*
  * File: TypeCheckVisitor.java
- * CS461 Project 3
+ * CS461 Project 4A
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 3/11/17
+ * Date: 4/2/17
  */
 
 package bantam.visitor;

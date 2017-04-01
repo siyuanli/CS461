@@ -15,25 +15,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Creates a list of methods that are in a class.
  *
  */
 public class DispatchTableAdderVisitor extends Visitor {
 
     /**
-     *
+     * The name of the class being visited.
      */
     private String className;
 
     /**
-     *
+     * The list of methods in the set,
+     * where each method has a reference(value) and a name(key).
      */
     private List<Pair<String, String>> methodList;
 
     /**
-     *
-     * @param parentList
-     * @param classNode
-     * @return
+     * Creates a list of methods given a class and the methods of the parent.
+     * @param parentList the methods of the parent class
+     * @param classNode the class_ AST node
+     * @return a list of pairs that is the names of the methods in the class,
+     *         pair contains the name of the method and the class in which it is defined
      */
     public List<Pair<String,String>> getMethodList(List<Pair<String,String>> parentList, Class_ classNode){
         this.className = classNode.getName();
@@ -46,18 +49,19 @@ public class DispatchTableAdderVisitor extends Visitor {
     }
 
     /**
-     *
+     * Returns null
      * @param node the field node
-     * @return
+     * @return null
      */
     public Object visit(Field node) {
         return null;
     }
 
     /**
-     *
+     * Visits a method node,
+     * adding the name, key, and name of the class each method is in, value
      * @param node the method node
-     * @return
+     * @return null
      */
     public Object visit(Method node) {
         Pair<String, String> newPair =new Pair<>(node.getName(),this.className);

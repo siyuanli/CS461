@@ -1,3 +1,9 @@
+/**
+ * File: Token.java
+ * CS461 Project 4A
+ * Users: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/2/17
+ */
 /* Bantam Java Compiler and Language Toolset.
 
    Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
