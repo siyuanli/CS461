@@ -82,11 +82,6 @@ public class MipsCodeGenerator {
     private boolean debug = false;
 
     /**
-     * The set of methods of the program
-     */
-    private HashSet<String> methodSet;
-
-    /**
      * MipsCodeGenerator constructor
      *
      * @param root    root of the class hierarchy tree
@@ -101,7 +96,6 @@ public class MipsCodeGenerator {
         this.gc = gc;
         this.opt = opt;
         this.debug = debug;
-        this.methodSet = new HashSet<>();
 
         try {
             out = new PrintStream(new FileOutputStream(outFile));
@@ -133,11 +127,7 @@ public class MipsCodeGenerator {
         List<String> classNames = new ArrayList<>();
         classNames.add("Object");
         classNames.add("String");
-        for(String className : this.root.getClassMap().keySet()){
-            if(!className.equals("Object") && !className.equals("String")){
-                classNames.add(className);
-            }
-        }
+        this.genClassNamesList(classNames, this.root);
 
         // 1 - start the data section
         this.startData();
@@ -169,6 +159,18 @@ public class MipsCodeGenerator {
 
         // 9 - generate user-defined methods
         this.genMethods();
+    }
+
+    private void genClassNamesList(List<String> classNames, ClassTreeNode treeNode) {
+        String className = treeNode.getName();
+        if(!className.equals("Object") && !className.equals("String")){
+            classNames.add(className);
+        }
+        Iterator<ClassTreeNode> childrenIterator = treeNode.getChildrenList();
+        while(childrenIterator.hasNext()){
+            ClassTreeNode child = childrenIterator.next();
+            this.genClassNamesList(classNames, child);
+        }
     }
 
     /**
@@ -317,9 +319,6 @@ public class MipsCodeGenerator {
         for(Pair<String,String> pair : methodList){
             String methodName = pair.getValue() + "." + pair.getKey();
             this.assemblySupport.genWord(methodName);
-            if(!builtins.contains(pair.getValue())) {
-                this.methodSet.add(methodName);
-            }
         }
         Iterator<ClassTreeNode> childrenIterator = treeNode.getChildrenList();
         while(childrenIterator.hasNext()){
@@ -333,6 +332,7 @@ public class MipsCodeGenerator {
      * @param classNames the list of classes
      */
     private void genInitMethods(List<String> classNames){
+        FieldAdderVisitor fieldAdderVisitor = new FieldAdderVisitor(this.assemblySupport);
         for(String name : classNames){
             this.assemblySupport.genLabel(name+"_init");
             ClassTreeNode treeNode = this.root.getClassMap().get(name);
@@ -343,7 +343,7 @@ public class MipsCodeGenerator {
             else{
                 this.assemblySupport.genMove("$v0","$a0");
             }
-
+            fieldAdderVisitor.initField(treeNode);
             this.assemblySupport.genRetn();
         }
     }
@@ -352,10 +352,11 @@ public class MipsCodeGenerator {
      * Generates user-defined methods
      */
     private void genMethods(){
-        for(String method: methodSet){
-            this.assemblySupport.genLabel(method);
-            this.assemblySupport.genComment("This is empty for testing purposes.");
-            this.assemblySupport.genRetn();
+        ASTNodeCodeGenVisitor codeGenVisitor = new ASTNodeCodeGenVisitor(this.assemblySupport, null);
+        for(ClassTreeNode treeNode: this.root.getClassMap().values()) {
+            if (!treeNode.isBuiltIn()) {
+                codeGenVisitor.genMips(treeNode);
+            }
         }
     }
 

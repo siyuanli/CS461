@@ -398,7 +398,7 @@ public class Main {
             }
             if(varVisitor){
                 NumLocalVarsVisitor visitor = new NumLocalVarsVisitor();
-                Map<String,Integer> map = visitor.getNumLocalVars((Program) result.value);
+                Map<String,Integer> map = visitor.getNumsAllLocalVars((Program) result.value);
                 System.out.println("The local variables in the program are:");
                 for(Map.Entry<String,Integer> entry: map.entrySet()){
                     System.out.println(entry.getKey()+" : "+entry.getValue());

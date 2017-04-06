@@ -31,14 +31,14 @@ public class NumLocalVarsVisitor extends Visitor {
     private Map<String, Integer> localVars;
 
     /**
-     * Gets the number of local variables in a program
+     * Gets the number of local variables in an ast node
      * @param ast the program
      * @return a map that is className.methodName and the number of variables
      */
-    public Map<String, Integer> getNumLocalVars(Program ast){
+    public Map<String, Integer> getNumsAllLocalVars(ASTNode ast){
         this.localVars = new HashMap<>();
         ast.accept(this);
-        return localVars;
+        return this.localVars;
     }
 
     /**
@@ -84,13 +84,12 @@ public class NumLocalVarsVisitor extends Visitor {
     }
 
     /**
-     * Vists a method note, getting the name and number of variables in the given method
+     * Visits a method note, getting the name and number of variables in the given method
      * @param node the method node
      * @return the name of the method and number of variables in it
      */
     public Object visit(Method node){
-        int numVars = node.getFormalList().getSize();
-        numVars += (int)node.getStmtList().accept(this);
+        int numVars = (int)node.getStmtList().accept(this);
         return new Pair<>(node.getName(), numVars);
     }
 
