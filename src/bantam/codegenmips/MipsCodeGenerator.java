@@ -238,7 +238,7 @@ public class MipsCodeGenerator {
      */
     private void genStringConstsFromMap(Map<String, String> stringConsts) {
         for (Map.Entry<String, String> entry : stringConsts.entrySet()) {
-            int length = entry.getKey().length();
+            int length = stringSize(entry.getKey());
             int totalSize = (4 - (length + 17)%4)  + length + 17;
 
             assemblySupport.genLabel(entry.getValue());
@@ -252,6 +252,19 @@ public class MipsCodeGenerator {
             assemblySupport.genAscii(entry.getKey());
         }
     }
+
+    private int stringSize(String str) {
+        int count = 0;
+        for (int i = 0; i < str.length(); i++) {
+            //If we have a \ then we know it must be followed by a char in rtfn\
+            if (str.charAt(i) == '\\') {
+                i++;
+            }
+            count++;
+        }
+        return count;
+    }
+
 
     /**
      * Generates the class name table
@@ -322,7 +335,15 @@ public class MipsCodeGenerator {
     private void genInitMethods(List<String> classNames){
         for(String name : classNames){
             this.assemblySupport.genLabel(name+"_init");
-            this.assemblySupport.genComment("This is empty for testing purposes.");
+            ClassTreeNode treeNode = this.root.getClassMap().get(name);
+            ClassTreeNode parent = treeNode.getParent();
+            if(parent!=null) {
+                this.assemblySupport.genDirCall(parent.getName() + "_init");
+            }
+            else{
+                this.assemblySupport.genMove("$v0","$a0");
+            }
+
             this.assemblySupport.genRetn();
         }
     }

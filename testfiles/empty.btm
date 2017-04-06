@@ -1,5 +1,5 @@
 class Main {void main() {} void foo(int n) {TextIO io = new TextIO();
-            n = io.putString("E").getInt(); }
+            n = io.putString("\n\t\r\\12345\t\\\\").getInt(); }
             void bar(){}}
 class Child extends Main{
 void foo(int n){}
