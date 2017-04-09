@@ -35,7 +35,6 @@ package bantam.codegenmips;
 
 import bantam.util.ClassTreeNode;
 import bantam.visitor.DispatchTableAdderVisitor;
-import bantam.visitor.StringConstantsVisitor;
 import javafx.util.Pair;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,6 +80,10 @@ public class MipsCodeGenerator {
      */
     private boolean debug = false;
 
+    /**
+     * A map which maps string constants to their IDs
+     */
+    private Map<String, String> stringConstantsMap;
     /**
      * MipsCodeGenerator constructor
      *
@@ -227,8 +230,8 @@ public class MipsCodeGenerator {
         for (String filename : this.getFilenames(true)){
             filenames.put(filename, "filename_" + filenames.size());
         }
-
-        this.genStringConstsFromMap(stringConstantsVisitor.getStringConstants());
+        this.stringConstantsMap = stringConstantsVisitor.getStringConstants();
+        this.genStringConstsFromMap(this.stringConstantsMap);
         this.genStringConstsFromMap(classNamesMap);
         this.genStringConstsFromMap(filenames);
     }
@@ -315,7 +318,6 @@ public class MipsCodeGenerator {
         DispatchTableAdderVisitor visitor = new DispatchTableAdderVisitor();
         List<Pair<String,String>> methodList = visitor.getMethodList(parentList,treeNode.getASTNode());
         assemblySupport.genLabel(treeNode.getName() + "_dispatch_table");
-        List<String> builtins = Arrays.asList("Object","String","TextIO","Sys");
         for(Pair<String,String> pair : methodList){
             String methodName = pair.getValue() + "." + pair.getKey();
             this.assemblySupport.genWord(methodName);
@@ -332,7 +334,8 @@ public class MipsCodeGenerator {
      * @param classNames the list of classes
      */
     private void genInitMethods(List<String> classNames){
-        FieldAdderVisitor fieldAdderVisitor = new FieldAdderVisitor(this.assemblySupport);
+        FieldAdderVisitor fieldAdderVisitor =
+                new FieldAdderVisitor(this.assemblySupport,this.stringConstantsMap);
         for(String name : classNames){
             this.assemblySupport.genLabel(name+"_init");
             ClassTreeNode treeNode = this.root.getClassMap().get(name);
@@ -352,7 +355,7 @@ public class MipsCodeGenerator {
      * Generates user-defined methods
      */
     private void genMethods(){
-        ASTNodeCodeGenVisitor codeGenVisitor = new ASTNodeCodeGenVisitor(this.assemblySupport, null);
+        ASTNodeCodeGenVisitor codeGenVisitor = new ASTNodeCodeGenVisitor(this.assemblySupport, null,this.stringConstantsMap);
         for(ClassTreeNode treeNode: this.root.getClassMap().values()) {
             if (!treeNode.isBuiltIn()) {
                 codeGenVisitor.genMips(treeNode);

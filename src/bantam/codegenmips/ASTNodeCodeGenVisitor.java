@@ -2,9 +2,12 @@ package bantam.codegenmips;
 
 import bantam.ast.*;
 import bantam.util.ClassTreeNode;
+import bantam.util.Location;
+import bantam.util.SymbolTable;
 import bantam.visitor.NumLocalVarsVisitor;
 import bantam.visitor.Visitor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,8 +18,17 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     private MipsSupport assemblySupport;
     private ClassTreeNode treeNode;
     private Map<String, Integer> numLocalVars;
+    private int currentLocalVars;
+    private String breakToLabel;
+    private String returnLabel;
+    private Map<String, String> stringConstantsMap;
 
-    public ASTNodeCodeGenVisitor(MipsSupport assemblySupport, ClassTreeNode treeNode){
+    public ASTNodeCodeGenVisitor(MipsSupport assemblySupport, ClassTreeNode treeNode,
+                                 Map<String, String> stringConstantsMap){
+        this.stringConstantsMap = new HashMap<>();
+        for(Map.Entry<String,String> entry : stringConstantsMap.entrySet()){
+            stringConstantsMap.put(entry.getValue(),entry.getKey());
+        }
         this.assemblySupport = assemblySupport;
         this.treeNode = treeNode;
     }
@@ -42,6 +54,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
 
     private void epilogue(int numVariables, int numParams){
         this.assemblySupport.genComment("Epilogue:");
+        this.assemblySupport.genLabel(this.returnLabel);
         this.assemblySupport.genComment("Popping off local vars");
         this.assemblySupport.genAdd("$sp", "$fp", 4*numVariables);
         this.assemblySupport.genComment("Pop saved $ra and $fp");
@@ -60,17 +73,17 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     }
 
     public Object visit(Method method){
+        this.returnLabel = this.assemblySupport.getLabel();
         String name = this.treeNode.getName() + "." + method.getName();
         this.assemblySupport.genLabel(name);
         int numVariables = this.numLocalVars.get(name);
         this.prolog(numVariables);
+        this.currentLocalVars = 0;
         this.assemblySupport.genComment("Body: ");
         method.getStmtList().accept(this);
         this.epilogue(numVariables, method.getFormalList().getSize());
         return null;
     }
-
-    //TODO: Implement methods from here on
 
     /**
      * Visit a declaration statement node
@@ -79,7 +92,12 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(DeclStmt node) {
+        this.treeNode.getVarSymbolTable().add(node.getName(), new Location("$fp",this.currentLocalVars*4 ));
+        this.assemblySupport.genComment("Init of DeclStatement: ");
         node.getInit().accept(this);
+        this.assemblySupport.genComment("Assigning value to: " + node.getName());
+        this.assemblySupport.genStoreWord("$v0", this.currentLocalVars*4, "$fp");
+        this.currentLocalVars++;
         return null;
     }
 
@@ -91,11 +109,19 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(IfStmt node) {
+        this.assemblySupport.genComment("If statement: ");
+        this.assemblySupport.genComment("Evaluating condition: ");
         node.getPredExpr().accept(this);
+        String elseLabel = this.assemblySupport.getLabel();
+        this.assemblySupport.genCondBeq("$v0", "$zero", elseLabel);
+        this.assemblySupport.genComment("Then statement: ");
         node.getThenStmt().accept(this);
-        if (node.getElseStmt() != null) {
-            node.getElseStmt().accept(this);
-        }
+        String endLabel = this.assemblySupport.getLabel();
+        this.assemblySupport.genUncondBr(endLabel);
+        this.assemblySupport.genLabel(elseLabel);
+        this.assemblySupport.genComment("Else statement: ");
+        node.getElseStmt().accept(this);
+        this.assemblySupport.genLabel(endLabel);
         return null;
     }
 
@@ -106,8 +132,19 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(WhileStmt node) {
+        this.assemblySupport.genComment("While statement: ");
+        String oldBreakToLabel = this.breakToLabel;
+        this.breakToLabel = this.assemblySupport.getLabel();
+        this.assemblySupport.genComment("Evaluating condition: ");
+        String condition = this.assemblySupport.getLabel();
+        this.assemblySupport.genLabel(condition);
         node.getPredExpr().accept(this);
+        this.assemblySupport.genCondBeq("$v0", "$zero", this.breakToLabel);
+        this.assemblySupport.genComment("Body of while: ");
         node.getBodyStmt().accept(this);
+        this.assemblySupport.genUncondBr(condition);
+        this.assemblySupport.genLabel(this.breakToLabel);
+        this.breakToLabel = oldBreakToLabel;
         return null;
     }
 
@@ -118,16 +155,29 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(ForStmt node) {
+        this.assemblySupport.genComment("For loop: ");
+        String oldBreakToLabel = this.breakToLabel;
+        this.breakToLabel = this.assemblySupport.getLabel();
         if (node.getInitExpr() != null) {
+            this.assemblySupport.genComment("Init Expr: ");
             node.getInitExpr().accept(this);
         }
+        String conditionLabel = this.assemblySupport.getLabel();
+        this.assemblySupport.genLabel(conditionLabel);
         if (node.getPredExpr() != null) {
+            this.assemblySupport.genComment("Predicate: ");
             node.getPredExpr().accept(this);
+            this.assemblySupport.genCondBeq("$v0", "$zero", this.breakToLabel);
         }
+        this.assemblySupport.genComment("Body of for loop: ");
+        node.getBodyStmt().accept(this);
         if (node.getUpdateExpr() != null) {
+            this.assemblySupport.genComment("UpdateExpr: ");
             node.getUpdateExpr().accept(this);
         }
-        node.getBodyStmt().accept(this);
+        this.assemblySupport.genUncondBr(conditionLabel);
+        this.assemblySupport.genLabel(breakToLabel);
+        this.breakToLabel = oldBreakToLabel;
         return null;
     }
 
@@ -138,6 +188,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BreakStmt node) {
+        this.assemblySupport.genUncondBr(this.breakToLabel);
         return null;
     }
 
@@ -152,6 +203,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         if (node.getExpr() != null) {
             node.getExpr().accept(this);
         }
+        else{
+            this.assemblySupport.genLoadImm("$v0",0);
+        }
+        this.assemblySupport.genUncondBr(this.returnLabel);
         return null;
     }
 
@@ -162,9 +217,22 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @param node the dispatch expression node
      * @return result of the visit
      */
+    //TODO: HOW DOES SUPER WORK?!?!?!
+    //TODO: THE REST OF DISPATCH EXPR
     public Object visit(DispatchExpr node) {
-        if(node.getRefExpr() != null)
+        this.assemblySupport.genComment("Dispatch expression: ");
+        if(node.getRefExpr()!=null) {
+            Expr refExpr = node.getRefExpr();
+            if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("super")){
+                SymbolTable methodSymbolTable = this.treeNode.getMethodSymbolTable();
+                methodSymbolTable.lookup(node.getMethodName(),methodSymbolTable.getCurrScopeLevel()-1);
+            }
             node.getRefExpr().accept(this);
+            this.assemblySupport.genCondBeq("v0", "$zero", "");
+        }
+        else{
+            this.assemblySupport.genMove("$v0","$a0");
+        }
         node.getActualList().accept(this);
         return null;
     }
@@ -175,7 +243,15 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @param node the new expression node
      * @return result of the visit
      */
+    //TODO: DOES THIS WORK? (Probs not) $t0 might be $a0
     public Object visit(NewExpr node) {
+        this.assemblySupport.genLoadAddr("$t0",node.getType()+"_template");
+        this.assemblySupport.genAdd("$sp","$sp",-4);
+        this.assemblySupport.genStoreWord("$a0",0,"$sp");
+        this.assemblySupport.genDirCall("Object.clone");
+        this.assemblySupport.genDirCall(node.getType()+"_init");
+        this.assemblySupport.genLoadWord("$a0",0,"$sp");
+        this.assemblySupport.genAdd("$sp","$sp",4);
         return null;
     }
 
@@ -409,6 +485,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(UnaryNotExpr node) {
+
         node.getExpr().accept(this);
         return null;
     }
@@ -420,7 +497,8 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(UnaryIncrExpr node) {
-        node.getExpr().accept(this);
+        this.assemblySupport.genComment("Increment Expr: ");
+        this.genIncrDecr(node, 1);
         return null;
     }
 
@@ -431,8 +509,17 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(UnaryDecrExpr node) {
-        node.getExpr().accept(this);
+        this.assemblySupport.genComment("Decrement Expr: ");
+        this.genIncrDecr(node, -1);
         return null;
+    }
+
+    private void genIncrDecr(UnaryExpr node, int num){
+        node.getExpr().accept(this);
+        this.assemblySupport.genLoadWord("$t0",0,"$v0");
+        this.assemblySupport.genAdd("$t0","$t0",num);
+        this.assemblySupport.genStoreWord("$t0",0,"$v0");
+        this.assemblySupport.genMove("$v0","$t0");
     }
 
     /**
@@ -441,6 +528,8 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @param node the variable expression node
      * @return result of the visit
      */
+    //TODO: THIS ONE
+    //TODO: Check with Dale about whether or not we store the address or the value in v0
     public Object visit(VarExpr node) {
         if (node.getRef() != null) {
             node.getRef().accept(this);
@@ -466,6 +555,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(ConstIntExpr node) {
+        this.assemblySupport.genLoadImm("$v0",Integer.parseInt(node.getConstant()));
         return null;
     }
 
@@ -476,6 +566,12 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(ConstBooleanExpr node) {
+        if(node.getConstant().equals("true")){
+            this.assemblySupport.genLoadImm("$v0",1);
+        }
+        else{
+            this.assemblySupport.genLoadImm("$v0",0);
+        }
         return null;
     }
 
@@ -486,6 +582,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(ConstStringExpr node) {
+        this.assemblySupport.genLoadAddr("$v0",this.stringConstantsMap.get(node.getConstant()));
         return null;
     }
 }

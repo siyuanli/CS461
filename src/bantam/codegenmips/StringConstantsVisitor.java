@@ -4,9 +4,10 @@
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
  * Date: 4/2/17
  */
-package bantam.visitor;
+package bantam.codegenmips;
 
 import bantam.ast.*;
+import bantam.visitor.Visitor;
 
 
 import java.util.HashMap;
