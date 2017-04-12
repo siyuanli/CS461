@@ -84,6 +84,11 @@ public class MipsCodeGenerator {
      * A map which maps string constants to their IDs
      */
     private Map<String, String> stringConstantsMap;
+
+    /**
+     *
+     */
+    private List<String> classNamesList;
     /**
      * MipsCodeGenerator constructor
      *
@@ -127,10 +132,10 @@ public class MipsCodeGenerator {
      */
     public void generate() {
         System.out.println("Generating");
-        List<String> classNames = new ArrayList<>();
-        classNames.add("Object");
-        classNames.add("String");
-        this.genClassNamesList(classNames, this.root);
+        this.classNamesList = new ArrayList<>();
+        this.classNamesList.add("Object");
+        this.classNamesList.add("String");
+        this.genClassNamesList(this.root);
 
         // 1 - start the data section
         this.startData();
@@ -139,16 +144,16 @@ public class MipsCodeGenerator {
         this.genGarbageCollector();
 
         // 3 - generate string constants
-        this.genStringConsts(classNames);
+        this.genStringConsts();
 
         // 4 - generate class name table
-        this.genClassNameTable(classNames);
+        this.genClassNameTable();
 
         // 5 - generate object templates
-        this.genObjectTemplates(classNames);
+        this.genObjectTemplates();
 
         // 6 - generate dispatch tables
-        for(String name : classNames){
+        for(String name : this.classNamesList){
             this.assemblySupport.genGlobal(name+"_dispatch_table");
         }
         this.genDispatchTables(this.root,new ArrayList<>());
@@ -158,21 +163,21 @@ public class MipsCodeGenerator {
         this.assemblySupport.genTextStart();
 
         // 8 - generate initialization subroutines
-        this.genInitMethods(classNames);
+        this.genInitMethods();
 
         // 9 - generate user-defined methods
         this.genMethods();
     }
 
-    private void genClassNamesList(List<String> classNames, ClassTreeNode treeNode) {
+    private void genClassNamesList(ClassTreeNode treeNode) {
         String className = treeNode.getName();
         if(!className.equals("Object") && !className.equals("String")){
-            classNames.add(className);
+            this.classNamesList.add(className);
         }
         Iterator<ClassTreeNode> childrenIterator = treeNode.getChildrenList();
         while(childrenIterator.hasNext()){
             ClassTreeNode child = childrenIterator.next();
-            this.genClassNamesList(classNames, child);
+            this.genClassNamesList(child);
         }
     }
 
@@ -213,17 +218,16 @@ public class MipsCodeGenerator {
 
     /**
      * Generates string objects in the .data section for all of the built-in strings.
-     * @param classNames The class names
      */
-    private void genStringConsts(List<String> classNames){
+    private void genStringConsts(){
         StringConstantsVisitor stringConstantsVisitor = new StringConstantsVisitor();
         for (ClassTreeNode classNode : this.root.getClassMap().values()){
             classNode.getASTNode().accept(stringConstantsVisitor);
         }
 
         Map<String, String> classNamesMap = new HashMap<>();
-        for (int i = 0; i < classNames.size(); i++){
-            classNamesMap.put(classNames.get(i), "class_name_" + i);
+        for (int i = 0; i < this.classNamesList.size(); i++){
+            classNamesMap.put(this.classNamesList.get(i), "class_name_" + i);
         }
 
         Map<String, String> filenames = new HashMap<>();
@@ -273,29 +277,27 @@ public class MipsCodeGenerator {
 
     /**
      * Generates the class name table
-     * @param classNames The names of all the classes
      */
-    private void genClassNameTable(List<String> classNames){
+    private void genClassNameTable(){
         assemblySupport.genLabel("class_name_table");
-        for (int i = 0; i< classNames.size(); i++){
+        for (int i = 0; i< this.classNamesList.size(); i++){
             assemblySupport.genWord("class_name_" + i);
         }
 
-        for(String name: classNames){
+        for(String name: this.classNamesList){
             assemblySupport.genGlobal(name + "_template");
         }
     }
 
     /**
      * Generates a template object for each of the classes in the given list.
-     * @param classNames the names of all the classes
      */
-    private void genObjectTemplates(List<String> classNames){
+    private void genObjectTemplates(){
         for (ClassTreeNode classTreeNode : this.root.getClassMap().values()){
             String name = classTreeNode.getName();
             this.assemblySupport.genLabel(name + "_template");
             this.assemblySupport.genComment("The integer ID of the class");
-            this.assemblySupport.genWord(Integer.toString(classNames.indexOf(name)));
+            this.assemblySupport.genWord(Integer.toString(this.classNamesList.indexOf(name)));
             int numFields = classTreeNode.getVarSymbolTable().getSize();
             this.assemblySupport.genComment("The size of the object");
             this.assemblySupport.genWord(Integer.toString(numFields*4 + 12));
@@ -331,12 +333,12 @@ public class MipsCodeGenerator {
 
     /**
      * Generates init methods for each of the given classes
-     * @param classNames the list of classes
      */
-    private void genInitMethods(List<String> classNames){
+    private void genInitMethods(){
         FieldAdderVisitor fieldAdderVisitor =
-                new FieldAdderVisitor(this.assemblySupport,this.stringConstantsMap);
-        for(String name : classNames){
+                new FieldAdderVisitor(this.assemblySupport, new ASTNodeCodeGenVisitor(
+                        this.assemblySupport,this.stringConstantsMap,this.classNamesList));
+        for(String name : this.classNamesList){
             this.assemblySupport.genLabel(name+"_init");
             ClassTreeNode treeNode = this.root.getClassMap().get(name);
             ClassTreeNode parent = treeNode.getParent();
@@ -355,7 +357,8 @@ public class MipsCodeGenerator {
      * Generates user-defined methods
      */
     private void genMethods(){
-        ASTNodeCodeGenVisitor codeGenVisitor = new ASTNodeCodeGenVisitor(this.assemblySupport, null,this.stringConstantsMap);
+        ASTNodeCodeGenVisitor codeGenVisitor = new ASTNodeCodeGenVisitor(
+                this.assemblySupport,this.stringConstantsMap,this.classNamesList);
         for(ClassTreeNode treeNode: this.root.getClassMap().values()) {
             if (!treeNode.isBuiltIn()) {
                 codeGenVisitor.genMips(treeNode);

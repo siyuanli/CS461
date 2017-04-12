@@ -8,6 +8,7 @@ import bantam.visitor.NumLocalVarsVisitor;
 import bantam.visitor.Visitor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,31 +23,34 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     private String breakToLabel;
     private String returnLabel;
     private Map<String, String> stringConstantsMap;
+    private List<String> classNamesList;
 
-    public ASTNodeCodeGenVisitor(MipsSupport assemblySupport, ClassTreeNode treeNode,
-                                 Map<String, String> stringConstantsMap){
+    public ASTNodeCodeGenVisitor(MipsSupport assemblySupport,
+                                 Map<String, String> stringConstantsMap, List<String> classNamesList){
         this.stringConstantsMap = new HashMap<>();
         for(Map.Entry<String,String> entry : stringConstantsMap.entrySet()){
             stringConstantsMap.put(entry.getValue(),entry.getKey());
         }
+        this.classNamesList = classNamesList;
         this.assemblySupport = assemblySupport;
-        this.treeNode = treeNode;
     }
 
     public void genMips(ClassTreeNode treeNode){
+        this.setTreeNode(treeNode);
+        this.treeNode.getASTNode().accept(this);
+    }
+
+    public void setTreeNode(ClassTreeNode treeNode){
         this.treeNode = treeNode;
         NumLocalVarsVisitor numLocalVarsVisitor = new NumLocalVarsVisitor();
         this.numLocalVars = numLocalVarsVisitor.getNumsAllLocalVars(this.treeNode.getASTNode());
-        this.treeNode.getASTNode().accept(this);
     }
 
     private void prolog(int numVariables){
         this.assemblySupport.genComment("Prolog:");
         this.assemblySupport.genComment("Pushing on $ra and $fp");
-        this.assemblySupport.genAdd("$sp", "$sp", -4);
-        this.assemblySupport.genStoreWord("$ra", 0, "$sp");
-        this.assemblySupport.genAdd("$sp", "$sp", -4);
-        this.assemblySupport.genStoreWord("$fp", 0, "$sp");
+        this.push("$ra");
+        this.push("$fp");
         this.assemblySupport.genComment("Making space for " + numVariables + " local vars");
         this.assemblySupport.genAdd("$fp", "$sp", -4*numVariables);
         this.assemblySupport.genMove("$sp", "$fp");
@@ -58,14 +62,28 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         this.assemblySupport.genComment("Popping off local vars");
         this.assemblySupport.genAdd("$sp", "$fp", 4*numVariables);
         this.assemblySupport.genComment("Pop saved $ra and $fp");
-        //TODO: figure out how to do $s registers
-        this.assemblySupport.genLoadWord("$fp", 0, "$sp");
-        this.assemblySupport.genAdd("$sp", "$sp", 4);
-        this.assemblySupport.genLoadWord("$ra", 0, "$sp");
-        this.assemblySupport.genAdd("$sp", "$sp", 4);
+        this.pop("$fp");
+        this.pop("$ra");
         this.assemblySupport.genComment("Pop parameters");
         this.assemblySupport.genAdd("$sp", "$sp", 4*numParams);
         this.assemblySupport.genRetn();
+    }
+
+    private void push(String register){
+        this.assemblySupport.genAdd("$sp","$sp",-4);
+        this.assemblySupport.genStoreWord(register,0,"$sp");
+    }
+
+    private void pop(String register){
+        this.assemblySupport.genLoadWord(register,0,"$sp");
+        this.assemblySupport.genAdd("$sp","$sp",4);
+    }
+
+    private void binaryProlog(BinaryExpr node){
+        node.getLeftExpr().accept(this);
+        this.push("$v0");
+        node.getRightExpr().accept(this);
+        this.pop("$v1");
     }
 
     public Object visit(Field field){
@@ -243,15 +261,12 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @param node the new expression node
      * @return result of the visit
      */
-    //TODO: DOES THIS WORK? (Probs not) $t0 might be $a0
     public Object visit(NewExpr node) {
-        this.assemblySupport.genLoadAddr("$t0",node.getType()+"_template");
-        this.assemblySupport.genAdd("$sp","$sp",-4);
-        this.assemblySupport.genStoreWord("$a0",0,"$sp");
+        this.push("$a0");
+        this.assemblySupport.genLoadAddr("$a0",node.getType()+"_template");
         this.assemblySupport.genDirCall("Object.clone");
         this.assemblySupport.genDirCall(node.getType()+"_init");
-        this.assemblySupport.genLoadWord("$a0",0,"$sp");
-        this.assemblySupport.genAdd("$sp","$sp",4);
+        this.pop("$a0");
         return null;
     }
 
@@ -274,6 +289,21 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      */
     public Object visit(InstanceofExpr node) {
         node.getExpr().accept(this);
+        if(node.getUpCheck()){
+            this.assemblySupport.genComment("Upcheck instanceof:");
+            this.assemblySupport.genLoadImm("$v0",1);
+        }
+        else{
+            this.assemblySupport.genComment("Downcheck instanceof:");
+            this.assemblySupport.genLoadWord("$t0",0,"$v0");
+            int type = this.classNamesList.indexOf(node.getType());
+            int numDescendants = this.treeNode.getClassMap().get(node.getType()).getNumDescendants();
+            this.assemblySupport.genLoadImm("$t1",type);
+            this.assemblySupport.genBinaryOp("sge","$v0","$t0","$t1");
+            this.assemblySupport.genLoadImm("$t1",type+numDescendants);
+            this.assemblySupport.genBinaryOp("sle","$v1","$t0","$t1");
+            this.assemblySupport.genAnd("$v0","$v0","$v1");
+        }
         return null;
     }
 
@@ -285,6 +315,16 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      */
     public Object visit(CastExpr node) {
         node.getExpr().accept(this);
+        if(!node.getUpCast()){
+            this.assemblySupport.genComment("Downcast Expr:");
+            this.assemblySupport.genLoadWord("$t0",0,"$v0");
+            int type = this.classNamesList.indexOf(node.getType());
+            int numDescendants = this.treeNode.getClassMap().get(node.getType()).getNumDescendants();
+            this.assemblySupport.genLoadImm("$t1",type);
+            this.assemblySupport.genCondBlt("$t0","$t1","_class_cast_error");
+            this.assemblySupport.genLoadImm("$t1",type+numDescendants);
+            this.assemblySupport.genCondBgt("$t0","$t1","_class_cast_error");
+        }
         return null;
     }
 
@@ -295,7 +335,17 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(AssignExpr node) {
+        Location loc;
+        if(!"super".equals(node.getRefName())){//refname is absent or "this"
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName());
+        }
+        else{//refname is super
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
+                    this.treeNode.getVarSymbolTable().getCurrScopeLevel()-1);
+        }
+        this.assemblySupport.genComment("Assign Expr:");
         node.getExpr().accept(this);
+        this.assemblySupport.genLoadWord("$v0",loc.getOffset(),loc.getBaseReg());
         return null;
     }
 
@@ -317,8 +367,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryCompEqExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Equals Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genBinaryOp("seq","$v0","$v1","$v0");
         return null;
     }
 
@@ -329,8 +380,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryCompNeExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Not Equal Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genBinaryOp("sne","$v0","$v1","$v0");
         return null;
     }
 
@@ -341,8 +393,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryCompLtExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Less Than Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genBinaryOp("slt","$v0","$v1","$v0");
         return null;
     }
 
@@ -353,8 +406,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryCompLeqExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Less Than or Equal To Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genBinaryOp("sle","$v0","$v1","$v0");
         return null;
     }
 
@@ -365,8 +419,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryCompGtExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Greater Than Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genBinaryOp("sgt","$v0","$v1","$v0");
         return null;
     }
 
@@ -377,8 +432,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryCompGeqExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Greater Than or Equal To Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genBinaryOp("sge","$v0","$v1","$v0");
         return null;
     }
 
@@ -389,8 +445,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryArithPlusExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Plus Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genAdd("$v0","$v1","$v0");
         return null;
     }
 
@@ -401,8 +458,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryArithMinusExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Minus Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genSub("$v0","$v1","$v0");
         return null;
     }
 
@@ -413,8 +471,9 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryArithTimesExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Times Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genMul("$v0","$v1","$v0");
         return null;
     }
 
@@ -425,8 +484,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryArithDivideExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Divide Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genCondBeq("$v1","$zero","_divide_zero_error");
+        this.assemblySupport.genDiv("$v0","$v1","$v0");
         return null;
     }
 
@@ -437,8 +498,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryArithModulusExpr node) {
-        node.getLeftExpr().accept(this);
-        node.getRightExpr().accept(this);
+        this.assemblySupport.genComment("Binary Modulus Expr:");
+        this.binaryProlog(node);
+        this.assemblySupport.genCondBeq("$v1","$zero","_divide_zero_error");
+        this.assemblySupport.genMod("$v0","$v1","$v0");
         return null;
     }
 
@@ -449,8 +512,12 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryLogicAndExpr node) {
+        this.assemblySupport.genComment("Logical And:");
         node.getLeftExpr().accept(this);
+        String label = this.assemblySupport.getLabel();
+        this.assemblySupport.genCondBeq("$v0","$zero",label);
         node.getRightExpr().accept(this);
+        this.assemblySupport.genLabel(label);
         return null;
     }
 
@@ -461,8 +528,12 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(BinaryLogicOrExpr node) {
+        this.assemblySupport.genComment("Logical Or:");
         node.getLeftExpr().accept(this);
+        String label = this.assemblySupport.getLabel();
+        this.assemblySupport.genCondBne("$v0","$zero",label);
         node.getRightExpr().accept(this);
+        this.assemblySupport.genLabel(label);
         return null;
     }
 
@@ -475,6 +546,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      */
     public Object visit(UnaryNegExpr node) {
         node.getExpr().accept(this);
+        this.assemblySupport.genNeg("$v0","$v0");
         return null;
     }
 
@@ -485,8 +557,8 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(UnaryNotExpr node) {
-
         node.getExpr().accept(this);
+        this.assemblySupport.genNot("$v0","$v0");
         return null;
     }
 
@@ -518,7 +590,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         node.getExpr().accept(this);
         this.assemblySupport.genLoadWord("$t0",0,"$v0");
         this.assemblySupport.genAdd("$t0","$t0",num);
-        this.assemblySupport.genStoreWord("$t0",0,"$v0");
+        this.assemblySupport.genStoreWord("$t0",0,"$v1");
         this.assemblySupport.genMove("$v0","$t0");
     }
 
@@ -528,12 +600,25 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @param node the variable expression node
      * @return result of the visit
      */
-    //TODO: THIS ONE
-    //TODO: Check with Dale about whether or not we store the address or the value in v0
     public Object visit(VarExpr node) {
-        if (node.getRef() != null) {
-            node.getRef().accept(this);
+
+        String refname = null;
+        if(node.getRef()!=null){
+            refname = ((VarExpr) node.getRef()).getName();
         }
+        Location loc;
+        if(!"super".equals(refname)){//refname is absent or "this"
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName());
+        }
+        else{//refname is super
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
+                    this.treeNode.getVarSymbolTable().getCurrScopeLevel()-1);
+        }
+        this.assemblySupport.genComment("Moves the address of the variable into $v1");
+        this.assemblySupport.genMove("$v1", loc.getBaseReg());
+        this.assemblySupport.genAdd("$v1","$v1",loc.getOffset());
+        this.assemblySupport.genComment("Loads the value of the variable into $v0");
+        this.assemblySupport.genLoadWord("$v0",loc.getOffset(),"$v1");
         return null;
     }
 

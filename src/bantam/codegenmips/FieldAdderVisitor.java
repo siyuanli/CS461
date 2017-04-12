@@ -16,17 +16,17 @@ public class FieldAdderVisitor extends Visitor {
     private MipsSupport assemblySupport;
     private ClassTreeNode treeNode;
     private int numField;
-    private Map<String, String> stringConstantsMap;
+    private ASTNodeCodeGenVisitor codeGenVisitor;
 
-    public FieldAdderVisitor(MipsSupport assemblySupport,
-                             Map<String, String> stringConstantsMap){
+    public FieldAdderVisitor(MipsSupport assemblySupport, ASTNodeCodeGenVisitor codeGenVisitor){
         this.assemblySupport = assemblySupport;
-        this.stringConstantsMap = stringConstantsMap;
+        this.codeGenVisitor = codeGenVisitor;
     }
 
     public void initField(ClassTreeNode treeNode){
         this.numField = 0;
         this.treeNode = treeNode;
+        this.codeGenVisitor.setTreeNode(treeNode);
         this.treeNode.getASTNode().accept(this);
     }
 
@@ -41,7 +41,7 @@ public class FieldAdderVisitor extends Visitor {
                 new Location("$a0", offset), treeNode.getVarSymbolTable().getSize()-1);
         if(field.getInit()!=null){
             this.assemblySupport.genComment("Initializing Field: " + field.getName());
-            field.getInit().accept(new ASTNodeCodeGenVisitor(this.assemblySupport, this.treeNode,this.stringConstantsMap));
+            field.getInit().accept(codeGenVisitor);
             //assume result is in $v0
             this.assemblySupport.genStoreWord("$v0", offset, "$a0");
         }
