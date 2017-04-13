@@ -10,6 +10,7 @@ package bantam.visitor;
 import bantam.ast.Class_;
 import bantam.ast.Field;
 import bantam.ast.Method;
+import bantam.util.ClassTreeNode;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,11 @@ public class DispatchTableAdderVisitor extends Visitor {
     private String className;
 
     /**
+     * The tree node of the class we are visiting.
+     */
+    private ClassTreeNode treeNode;
+
+    /**
      * The list of methods in the set,
      * where each method has a reference(value) and a name(key).
      */
@@ -34,17 +40,20 @@ public class DispatchTableAdderVisitor extends Visitor {
     /**
      * Creates a list of methods given a class and the methods of the parent.
      * @param parentList the methods of the parent class
-     * @param classNode the class_ AST node
+     * @param treeNode the tree node of the class
      * @return a list of pairs that is the names of the methods in the class,
      *         pair contains the name of the method and the class in which it is defined
      */
-    public List<Pair<String,String>> getMethodList(List<Pair<String,String>> parentList, Class_ classNode){
-        this.className = classNode.getName();
+    public List<Pair<String,String>> getMethodList(List<Pair<String,String>> parentList, ClassTreeNode treeNode){
+        this.className = treeNode.getName();
+        this.treeNode = treeNode;
         this.methodList = new ArrayList<>();
+        treeNode.getMethodSymbolTable().exitScope();
+        treeNode.getMethodSymbolTable().enterScope();
         for(Pair<String,String> pair : parentList){
             methodList.add(new Pair<>(pair.getKey(), pair.getValue()));
         }
-        classNode.accept(this);
+        treeNode.getASTNode().accept(this);
         return this.methodList;
     }
 
@@ -71,6 +80,7 @@ public class DispatchTableAdderVisitor extends Visitor {
                 return null;
             }
         }
+        this.treeNode.getMethodSymbolTable().add(node.getName(), methodList.size());
         methodList.add(newPair);
         return null;
     }

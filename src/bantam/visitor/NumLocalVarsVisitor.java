@@ -89,7 +89,8 @@ public class NumLocalVarsVisitor extends Visitor {
      * @return the name of the method and number of variables in it
      */
     public Object visit(Method node){
-        int numVars = (int)node.getStmtList().accept(this);
+        int numVars = node.getFormalList().getSize();
+        numVars += (int)node.getStmtList().accept(this);
         return new Pair<>(node.getName(), numVars);
     }
 

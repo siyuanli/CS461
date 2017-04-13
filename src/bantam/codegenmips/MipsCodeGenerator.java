@@ -318,7 +318,7 @@ public class MipsCodeGenerator {
     private void genDispatchTables(ClassTreeNode treeNode,
                                   List<Pair<String,String>> parentList){
         DispatchTableAdderVisitor visitor = new DispatchTableAdderVisitor();
-        List<Pair<String,String>> methodList = visitor.getMethodList(parentList,treeNode.getASTNode());
+        List<Pair<String,String>> methodList = visitor.getMethodList(parentList,treeNode);
         assemblySupport.genLabel(treeNode.getName() + "_dispatch_table");
         for(Pair<String,String> pair : methodList){
             String methodName = pair.getValue() + "." + pair.getKey();
