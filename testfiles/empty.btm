@@ -1,1 +1,12 @@
-class Main {void main() {}}
+/* Testing multiple assignments in a single expression.
+   @author Marc Corliss
+*/
+class Main {
+    /* main method */
+    void main() {
+    TextIO io = new TextIO();
+	int x = 3;
+	int y = 4;
+	io.putInt(y);
+	}
+}

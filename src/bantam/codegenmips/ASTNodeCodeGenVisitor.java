@@ -28,10 +28,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
 
     public ASTNodeCodeGenVisitor(MipsSupport assemblySupport,
                                  Map<String, String> stringConstantsMap, List<String> classNamesList){
-        this.stringConstantsMap = new HashMap<>();
-        for(Map.Entry<String,String> entry : stringConstantsMap.entrySet()){
-            stringConstantsMap.put(entry.getValue(),entry.getKey());
-        }
+        this.stringConstantsMap = stringConstantsMap;
         this.classNamesList = classNamesList;
         this.assemblySupport = assemblySupport;
     }
@@ -122,7 +119,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(DeclStmt node) {
-        this.treeNode.getVarSymbolTable().add(node.getName(), new Location("$fp",this.currentLocalVars*4 ));
+        this.treeNode.getVarSymbolTable().add(node.getName(), new Location("$fp",this.currentLocalVars*4));
         this.assemblySupport.genComment("Init of DeclStatement: ");
         node.getInit().accept(this);
         this.assemblySupport.genComment("Assigning value to: " + node.getName());
@@ -282,52 +279,47 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     //TODO: HOW DOES SUPER WORK?!?!?!
     //TODO: THE REST OF DISPATCH EXPR
     public Object visit(DispatchExpr node) {
-        this.assemblySupport.genComment("Dispatch expression: ");
+        this.assemblySupport.genComment("Dispatch expression: "+node.getExprType()+"."+node.getMethodName());
         this.push("$a0");
         int methodIndex;
         SymbolTable methodSymbolTable = this.treeNode.getMethodSymbolTable();
-
-        if(node.getRefExpr()!=null) {
+        String refName = null;
+        if(node.getRefExpr() instanceof VarExpr){
+            refName = ((VarExpr)node.getRefExpr()).getName();
+        }
+        if(node.getRefExpr() == null){
+            refName = "this";
+        }
+        if("super".equals(refName)||"this".equals(refName)) {
             Expr refExpr = node.getRefExpr();
-            if(refExpr instanceof VarExpr){
-                if (((VarExpr)refExpr).getName().equals("super")){
-                    String parentName = this.treeNode.getParent().getName();
-                    methodIndex = (int)methodSymbolTable.lookup(node.getMethodName(),
-                            methodSymbolTable.getCurrScopeLevel()-1);
-                    this.assemblySupport.genLoadAddr("$v0", parentName+"_dispatch_table");
-                }
-                else if (((VarExpr)refExpr).getName().equals("this")){
-                    methodIndex = (int)methodSymbolTable.lookup(node.getMethodName());
-                    this.assemblySupport.genLoadWord("$v0", -8, "$a0"); //dispatch table
-                }
-                else{
-                    node.getRefExpr().accept(this);
-                    this.assemblySupport.genCondBeq("$v0", "$zero","_null_pointer_error");
-                    this.assemblySupport.genMove("$a0", "$v0");
-                    methodIndex = (int)methodSymbolTable.lookup(node.getMethodName());;
-                    this.assemblySupport.genLoadWord("$v0", -8, "$a0"); //dispatch table
-
-
-                }
+            if (((VarExpr)refExpr).getName().equals("super")){
+                String parentName = this.treeNode.getParent().getName();
+                methodIndex = (int)methodSymbolTable.lookup(node.getMethodName(),
+                        methodSymbolTable.getCurrScopeLevel()-1);
+                this.assemblySupport.genLoadAddr("$v0", parentName+"_dispatch_table");
             }
             else{
-                node.getRefExpr().accept(this);
-                this.assemblySupport.genCondBeq("v0", "$zero", "_null_pointer_error");
-                this.assemblySupport.genMove("$a0", "$v0");
-                methodIndex = (int)this.treeNode.getClassMap()
-                        .get(node.getRefExpr().getExprType())
-                        .getMethodSymbolTable()
-                        .lookup(node.getMethodName());
-                this.assemblySupport.genLoadWord("$v0", -8, "$a0"); //dispatch table
+                methodIndex = (int)methodSymbolTable.lookup(node.getMethodName());
+                this.assemblySupport.genLoadWord("$v0", 8, "$a0"); //dispatch table
             }
         }
         else{
-            methodIndex = (int)methodSymbolTable.lookup(node.getMethodName());
-            this.assemblySupport.genLoadWord("$v0", -8, "$a0"); //dispatch table
+            node.getRefExpr().accept(this);
+            this.assemblySupport.genComment("The object reference is in $v0:");
+            this.assemblySupport.genCondBeq("$v0", "$zero", "_null_pointer_error");
+            this.assemblySupport.genMove("$a0", "$v0");
+            methodIndex = (int)this.treeNode.getClassMap()
+                    .get(node.getRefExpr().getExprType())
+                    .getMethodSymbolTable()
+                    .lookup(node.getMethodName());
+            this.assemblySupport.genComment("Moving the dispatch table to $v0");
+            this.assemblySupport.genLoadWord("$v0", 8, "$a0"); //dispatch table
         }
-
-        this.assemblySupport.genLoadWord("$s0", -4*methodIndex, "$s0"); //method into register
+        this.assemblySupport.genComment("Loading Method into Register:");
+        this.assemblySupport.genLoadWord("$s0", 4*methodIndex, "$v0"); //method into register
+        this.assemblySupport.genComment("Evaluating Parameters:");
         node.getActualList().accept(this);
+        this.assemblySupport.genComment("Calling Method:");
         this.assemblySupport.genInDirCall("$s0");
         this.pop("$a0");
         return null;
@@ -340,10 +332,14 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(NewExpr node) {
+        this.assemblySupport.genComment("NewExpr:");
         this.push("$a0");
         this.assemblySupport.genLoadAddr("$a0",node.getType()+"_template");
         this.assemblySupport.genDirCall("Object.clone");
+        this.assemblySupport.genMove("$a0","$v0");
+        this.push("$v0");
         this.assemblySupport.genDirCall(node.getType()+"_init");
+        this.pop("$v0");
         this.pop("$a0");
         return null;
     }
