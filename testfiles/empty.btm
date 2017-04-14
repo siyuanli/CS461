@@ -1,9 +1,1 @@
-class Main {void main() {} void foo(int n) {TextIO io = new TextIO();
-            n = io.putString("\n\t\r\\12345\t\\\\").getInt(); }
-            void bar(){}}
-class Child extends Main{
-void foo(int n){}
-}
-class Child2 extends Main{}
-class Grandchild extends Child{}
-class Grandchild2 extends Child2{}
+class Main {void main() {}}

@@ -335,13 +335,15 @@ public class MipsCodeGenerator {
      * Generates init methods for each of the given classes
      */
     private void genInitMethods(){
+        ASTNodeCodeGenVisitor codeGenVisitor = new ASTNodeCodeGenVisitor(
+                this.assemblySupport, this.stringConstantsMap, this.classNamesList);
         FieldAdderVisitor fieldAdderVisitor =
-                new FieldAdderVisitor(this.assemblySupport, new ASTNodeCodeGenVisitor(
-                        this.assemblySupport,this.stringConstantsMap,this.classNamesList));
+                new FieldAdderVisitor(this.assemblySupport, codeGenVisitor);
         for(String name : this.classNamesList){
             this.assemblySupport.genLabel(name+"_init");
             ClassTreeNode treeNode = this.root.getClassMap().get(name);
             ClassTreeNode parent = treeNode.getParent();
+            codeGenVisitor.prolog(0);
             if(parent!=null) {
                 this.assemblySupport.genDirCall(parent.getName() + "_init");
             }
@@ -349,7 +351,7 @@ public class MipsCodeGenerator {
                 this.assemblySupport.genMove("$v0","$a0");
             }
             fieldAdderVisitor.initField(treeNode);
-            this.assemblySupport.genRetn();
+            codeGenVisitor.epilogue(0,0);
         }
     }
 

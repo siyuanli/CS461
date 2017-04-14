@@ -47,7 +47,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         this.numLocalVars = numLocalVarsVisitor.getNumsAllLocalVars(this.treeNode.getASTNode());
     }
 
-    private void prolog(int numVariables){
+    public void prolog(int numVariables){
         this.assemblySupport.genComment("Prolog:");
         this.assemblySupport.genComment("Pushing on $ra and $fp");
         this.push("$ra");
@@ -55,9 +55,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         this.assemblySupport.genComment("Making space for " + numVariables + " local vars");
         this.assemblySupport.genAdd("$fp", "$sp", -4*numVariables);
         this.assemblySupport.genMove("$sp", "$fp");
+        this.returnLabel = this.assemblySupport.getLabel();
     }
 
-    private void epilogue(int numVariables, int numParams){
+    public void epilogue(int numVariables, int numParams){
         this.assemblySupport.genComment("Epilogue:");
         this.assemblySupport.genLabel(this.returnLabel);
         this.assemblySupport.genComment("Popping off local vars");
@@ -93,7 +94,6 @@ public class ASTNodeCodeGenVisitor extends Visitor {
 
     public Object visit(Method node){
         this.treeNode.getVarSymbolTable().enterScope();
-        this.returnLabel = this.assemblySupport.getLabel();
         String name = this.treeNode.getName() + "." + node.getName();
         this.assemblySupport.genLabel(name);
         int numVariables = this.numLocalVars.get(name);
