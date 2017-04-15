@@ -35,16 +35,18 @@ public class FieldAdderVisitor extends Visitor {
     }
 
     public Object visit(Field field){
-        this.numField++;
-        int offset = this.treeNode.getVarSymbolTable().getSize()*4 + 12 - 4*this.numField;
+        int offset = 12 + 4*this.numField;
+        Location loc = new Location("$a0", offset);
         this.treeNode.getVarSymbolTable().set(field.getName(),
-                new Location("$a0", offset), treeNode.getVarSymbolTable().getSize()-1);
+                loc, treeNode.getVarSymbolTable().getCurrScopeLevel()-1);
         if(field.getInit()!=null){
             this.assemblySupport.genComment("Initializing Field: " + field.getName());
             field.getInit().accept(codeGenVisitor);
             //assume result is in $v0
             this.assemblySupport.genStoreWord("$v0", offset, "$a0");
         }
+        this.assemblySupport.genMove("$v0", "$a0");
+        this.numField++;
         return null;
     }
 }

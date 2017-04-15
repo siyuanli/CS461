@@ -25,6 +25,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     private String returnLabel;
     private Map<String, String> stringConstantsMap;
     private List<String> classNamesList;
+    private int fieldsScope;
 
     public ASTNodeCodeGenVisitor(MipsSupport assemblySupport,
                                  Map<String, String> stringConstantsMap, List<String> classNamesList){
@@ -40,6 +41,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
 
     public void setTreeNode(ClassTreeNode treeNode){
         this.treeNode = treeNode;
+        this.fieldsScope = this.treeNode.getVarSymbolTable().getCurrScopeLevel() - 1;
         NumLocalVarsVisitor numLocalVarsVisitor = new NumLocalVarsVisitor();
         this.numLocalVars = numLocalVarsVisitor.getNumsAllLocalVars(this.treeNode.getASTNode());
     }
@@ -276,10 +278,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @param node the dispatch expression node
      * @return result of the visit
      */
-    //TODO: HOW DOES SUPER WORK?!?!?!
-    //TODO: THE REST OF DISPATCH EXPR
     public Object visit(DispatchExpr node) {
-        this.assemblySupport.genComment("Dispatch expression: "+node.getExprType()+"."+node.getMethodName());
         this.push("$a0");
         int methodIndex;
         SymbolTable methodSymbolTable = this.treeNode.getMethodSymbolTable();
@@ -291,8 +290,8 @@ public class ASTNodeCodeGenVisitor extends Visitor {
             refName = "this";
         }
         if("super".equals(refName)||"this".equals(refName)) {
-            Expr refExpr = node.getRefExpr();
-            if (((VarExpr)refExpr).getName().equals("super")){
+            this.assemblySupport.genComment("Dispatch expression: "+refName+"."+node.getMethodName());
+            if (refName.equals("super")){
                 String parentName = this.treeNode.getParent().getName();
                 methodIndex = (int)methodSymbolTable.lookup(node.getMethodName(),
                         methodSymbolTable.getCurrScopeLevel()-1);
@@ -304,6 +303,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
             }
         }
         else{
+            this.assemblySupport.genComment("Dispatch expression:"+node.getRefExpr().getExprType()+"."+node.getMethodName());
             node.getRefExpr().accept(this);
             this.assemblySupport.genComment("The object reference is in $v0:");
             this.assemblySupport.genCondBeq("$v0", "$zero", "_null_pointer_error");
@@ -316,7 +316,8 @@ public class ASTNodeCodeGenVisitor extends Visitor {
             this.assemblySupport.genLoadWord("$v0", 8, "$a0"); //dispatch table
         }
         this.assemblySupport.genComment("Loading Method into Register:");
-        this.assemblySupport.genLoadWord("$s0", 4*methodIndex, "$v0"); //method into register
+        this.assemblySupport.genLoadWord("$s0", 4*methodIndex, "$v0"); //TODO: $s0 will get messed up if do a method call inside a parameter
+        this.assemblySupport.genLoadWord("$a0", 0, "$sp");
         this.assemblySupport.genComment("Evaluating Parameters:");
         node.getActualList().accept(this);
         this.assemblySupport.genComment("Calling Method:");
@@ -675,24 +676,27 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(VarExpr node) {
-
         String refname = null;
         if(node.getRef()!=null){
             refname = ((VarExpr) node.getRef()).getName();
         }
         Location loc;
-        if(!"super".equals(refname)){//refname is absent or "this"
+        if(refname == null){//refname is absent or "this"
             loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName());
+        }
+        else if ("this".equals(refname)){
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
+                    this.fieldsScope );
         }
         else{//refname is super
             loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
-                    this.treeNode.getVarSymbolTable().getCurrScopeLevel()-1);
+                    this.fieldsScope -1 );
         }
         this.assemblySupport.genComment("Moves the address of the variable into $v1");
         this.assemblySupport.genMove("$v1", loc.getBaseReg());
         this.assemblySupport.genAdd("$v1","$v1",loc.getOffset());
         this.assemblySupport.genComment("Loads the value of the variable into $v0");
-        this.assemblySupport.genLoadWord("$v0",loc.getOffset(),"$v1");
+        this.assemblySupport.genLoadWord("$v0",0,"$v1");
         return null;
     }
 

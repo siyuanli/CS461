@@ -1,12 +1,36 @@
-/* Testing multiple assignments in a single expression.
-   @author Marc Corliss
-*/
 class Main {
-    /* main method */
-    void main() {
     TextIO io = new TextIO();
-	int x = 3;
-	int y = 4;
-	io.putInt(y);
+    int jo = 8;
+
+
+    void test1(){
+        int jo = 4;
+        io.putInt(5);
+        io.putInt(jo);
+        io.putInt(this.jo);
+    }
+
+    int test(int x, int y, String z){
+        io.putInt(x);
+        io.putInt(y);
+        io.putString(z);
+        return 5;
+    }
+
+
+    void main() {
+        int a = 2;
+        int x = 3;
+        String yo = "yoyo";
+        io.putString(yo);
+        this.io.putString(yo);
+        io.putInt(jo);
+        io.putInt(this.jo);
+        this.test1();
+
+        //this.test(a, x, yo);
+        /*int d = test(a, x, yo);
+        this.io.putInt(d);
+        this.io.putInt(io);*/
 	}
 }
