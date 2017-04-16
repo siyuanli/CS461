@@ -34,6 +34,7 @@ class Main extends Parent{
     int y = 20;
     String s;
     boolean b;
+    int z;
     int k = y*2;
     Main thisThing = this;
 
@@ -128,9 +129,16 @@ class Main extends Parent{
     void testFields(){
         io.putInt(this.jo);
         io.putInt(this.k);
+        io.putInt(this.z);
         io.putString(this.s);
-        this.printExpected("8400");
+        this.printExpected("84000");
 
+        if(this.s == null){
+            io.putString("Correct: default value for an object should be null \n");
+        }
+        else{
+            io.putString("Correct: default value for an object should be null \n");
+        }
 
         if (this.b){
             io.putString("Incorrect: default value for boolean should be false \n\n");
