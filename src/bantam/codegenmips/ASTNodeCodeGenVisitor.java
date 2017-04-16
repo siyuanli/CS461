@@ -1,3 +1,10 @@
+/*
+ * File: ASTNodeCodeGenVisitor.java
+ * CS461 Project 4B
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/17/17
+ */
+
 package bantam.codegenmips;
 
 import bantam.ast.*;
@@ -6,9 +13,6 @@ import bantam.util.Location;
 import bantam.util.SymbolTable;
 import bantam.visitor.NumLocalVarsVisitor;
 import bantam.visitor.Visitor;
-
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 

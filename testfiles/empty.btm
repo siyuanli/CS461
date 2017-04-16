@@ -1,3 +1,10 @@
+/*
+ * File: empty.btm
+ * CS461 Project 4B
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/17/17
+ */
+
 class C extends B {
    int foo(){
    return 3;
@@ -769,9 +776,6 @@ class Main extends Parent{
         TextIO io5 = null;
         io5.putInt(5);
     }
-
-
-
 
     void main() {
         int a = 2;

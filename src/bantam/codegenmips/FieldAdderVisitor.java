@@ -1,3 +1,10 @@
+/*
+ * File: FieldAdderVisitor.java
+ * CS461 Project 4B
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/17/17
+ */
+
 package bantam.codegenmips;
 
 import bantam.ast.Field;
