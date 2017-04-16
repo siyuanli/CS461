@@ -91,6 +91,21 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         this.pop("$v1");
     }
 
+    private Location getLocation(String name, String refname) {
+        Location loc;
+        if(refname == null){//refname is absent or "this"
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(name);
+        }
+        else if ("this".equals(refname)){
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(name, this.fieldsScope);
+        }
+        else{//refname is super
+            loc = (Location) this.treeNode.getVarSymbolTable().lookup(name,
+                    this.fieldsScope -1 );
+        }
+        return loc;
+    }
+
     public Object visit(Field field){
         return null;
     }
@@ -383,14 +398,26 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         }
         else{
             this.assemblySupport.genComment("Downcheck instanceof:");
+            String nullLabel = this.assemblySupport.getLabel();
+            this.assemblySupport.genCondBeq("$v0", "$zero", nullLabel);
             this.assemblySupport.genLoadWord("$t0",0,"$v0");
             int type = this.classNamesList.indexOf(node.getType());
             int numDescendants = this.treeNode.getClassMap().get(node.getType()).getNumDescendants();
             this.assemblySupport.genLoadImm("$t1",type);
+            this.assemblySupport.genComment("If instanceOf left operand is descendant of right operand");
             this.assemblySupport.genBinaryOp("sge","$v0","$t0","$t1");
             this.assemblySupport.genLoadImm("$t1",type+numDescendants);
             this.assemblySupport.genBinaryOp("sle","$v1","$t0","$t1");
             this.assemblySupport.genAnd("$v0","$v0","$v1");
+            String endLabel = this.assemblySupport.getLabel();
+            this.assemblySupport.genUncondBr(endLabel);
+            this.assemblySupport.genComment("If instanceOf left operand is null: ");
+            this.assemblySupport.genLabel(nullLabel);
+            this.assemblySupport.genLoadImm("$v0", 1);
+            this.assemblySupport.genLabel(endLabel);
+
+
+
         }
         return null;
     }
@@ -405,6 +432,8 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         node.getExpr().accept(this);
         if(!node.getUpCast()){
             this.assemblySupport.genComment("Downcast Expr:");
+            String endLabel = this.assemblySupport.getLabel();
+            this.assemblySupport.genCondBeq("$v0", "$zero", endLabel);
             this.assemblySupport.genLoadWord("$t0",0,"$v0");
             int type = this.classNamesList.indexOf(node.getType());
             int numDescendants = this.treeNode.getClassMap().get(node.getType()).getNumDescendants();
@@ -412,6 +441,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
             this.assemblySupport.genCondBlt("$t0","$t1","_class_cast_error");
             this.assemblySupport.genLoadImm("$t1",type+numDescendants);
             this.assemblySupport.genCondBgt("$t0","$t1","_class_cast_error");
+            this.assemblySupport.genLabel(endLabel);
         }
         return null;
     }
@@ -423,17 +453,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(AssignExpr node) {
-        Location loc;
-        if(!"super".equals(node.getRefName())){//refname is absent or "this"
-            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName());
-        }
-        else{//refname is super
-            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
-                    this.treeNode.getVarSymbolTable().getCurrScopeLevel()-1);
-        }
+        Location loc = this.getLocation(node.getName(), node.getRefName());
         this.assemblySupport.genComment("Assign Expr:");
         node.getExpr().accept(this);
-        this.assemblySupport.genLoadWord("$v0",loc.getOffset(),loc.getBaseReg());
+        this.assemblySupport.genStoreWord("$v0", loc.getOffset(), loc.getBaseReg());
         return null;
     }
 
@@ -574,7 +597,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     public Object visit(BinaryArithDivideExpr node) {
         this.assemblySupport.genComment("Binary Divide Expr:");
         this.binaryProlog(node);
-        this.assemblySupport.genCondBeq("$v1","$zero","_divide_zero_error");
+        this.assemblySupport.genCondBeq("$v0","$zero","_divide_zero_error");
         this.assemblySupport.genDiv("$v0","$v1","$v0");
         return null;
     }
@@ -588,7 +611,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     public Object visit(BinaryArithModulusExpr node) {
         this.assemblySupport.genComment("Binary Modulus Expr:");
         this.binaryProlog(node);
-        this.assemblySupport.genCondBeq("$v1","$zero","_divide_zero_error");
+        this.assemblySupport.genCondBeq("$v0","$zero","_divide_zero_error");
         this.assemblySupport.genMod("$v0","$v1","$v0");
         return null;
     }
@@ -645,8 +668,17 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(UnaryNotExpr node) {
+        this.assemblySupport.genComment("Unary Not Expr: ");
         node.getExpr().accept(this);
-        this.assemblySupport.genNot("$v0","$v0");
+        String trueLabel = this.assemblySupport.getLabel();
+        String endLabel = this.assemblySupport.getLabel();
+        this.assemblySupport.genCondBeq("$v0", "$zero", trueLabel);
+        this.assemblySupport.genLoadImm("$v0", 0);
+        this.assemblySupport.genUncondBr(endLabel);
+        this.assemblySupport.genLabel(trueLabel);
+        this.assemblySupport.genComment("Node was true");
+        this.assemblySupport.genLoadImm("$v0", 1);
+        this.assemblySupport.genLabel(endLabel);
         return null;
     }
 
@@ -676,10 +708,18 @@ public class ASTNodeCodeGenVisitor extends Visitor {
 
     private void genIncrDecr(UnaryExpr node, int num){
         node.getExpr().accept(this);
-        this.assemblySupport.genLoadWord("$t0",0,"$v0");
-        this.assemblySupport.genAdd("$t0","$t0",num);
-        this.assemblySupport.genStoreWord("$t0",0,"$v1");
-        this.assemblySupport.genMove("$v0","$t0");
+        if (node.isPostfix()){
+            this.assemblySupport.genComment("Saving original value for postfix.");
+            this.assemblySupport.genMove("$t0", "$v0");
+        }
+
+        this.assemblySupport.genAdd("$v0","$v0",num);
+        this.assemblySupport.genStoreWord("$v0",0,"$v1");
+
+        if(node.isPostfix()) {
+            this.assemblySupport.genComment("Returning original value for postfix.");
+            this.assemblySupport.genMove("$v0", "$t0");
+        }
     }
 
     /**
@@ -689,27 +729,33 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(VarExpr node) {
+        this.assemblySupport.genComment("VarExper: " + node.getName());
         String refname = null;
         if(node.getRef()!=null){
             refname = ((VarExpr) node.getRef()).getName();
         }
-        Location loc;
-        if(refname == null){//refname is absent or "this"
-            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName());
+        Location loc = this.getLocation(node.getName(), refname);
+        if (loc != null) {
+            this.assemblySupport.genComment("Moves the address of " + node.getName() + " into $v1");
+            this.assemblySupport.genMove("$v1", loc.getBaseReg());
+            this.assemblySupport.genAdd("$v1", "$v1", loc.getOffset());
+            this.assemblySupport.genComment("Loads the value of " + node.getName() + " into $v0");
+            this.assemblySupport.genLoadWord("$v0", 0, "$v1");
         }
-        else if ("this".equals(refname)){
-            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
-                    this.fieldsScope );
+        else{
+            if (node.getName().equals("this")){
+                this.assemblySupport.genMove("$v0", "$a0");
+                this.assemblySupport.genMove("$v1", "$a0");
+            }
+            else if (node.getName().equals("null")) {
+                this.assemblySupport.genComment("Location was null.");
+                this.assemblySupport.genMove("$v0", "$zero");
+                this.assemblySupport.genMove("$v1", "$zero");
+            }
+            else {
+                System.out.println("Variable undefined?");
+            }
         }
-        else{//refname is super
-            loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
-                    this.fieldsScope -1 );
-        }
-        this.assemblySupport.genComment("Moves the address of " + node.getName() + " into $v1");
-        this.assemblySupport.genMove("$v1", loc.getBaseReg());
-        this.assemblySupport.genAdd("$v1","$v1",loc.getOffset());
-        this.assemblySupport.genComment("Loads the value of " + node.getName() + " into $v0");
-        this.assemblySupport.genLoadWord("$v0",0,"$v1");
         return null;
     }
 

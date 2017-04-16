@@ -1,7 +1,98 @@
-class Main {
+class C extends B {
+   int foo(){
+   return 3;
+   }
+}
+class B extends A {
+   int foo(){
+       return 4;
+   }
+}
+class A {
+   int foo(){
+       return 5;
+   }
+}
+
+
+class Parent{
+    int x;
+    int y = 7;
+
+    void setX(int x){
+        this.x = x;
+    }
+
+    String parentMethod(){
+        return "parent";
+    }
+}
+
+class Main extends Parent{
     TextIO io = new TextIO();
     int jo = 8;
+    int y = 20;
+    String s;
+    boolean b;
+    int k = y*2;
+    Main thisThing = this;
 
+    void printExpected(String expected){
+        io.putString("\n");
+        io.putString("Expected value: ");
+        io.putString(expected).putString("\n\n");
+    }
+
+    void testAssign(){
+        io.putInt(jo);
+        io.putString(" : ");
+        this.jo = 16;
+        io.putInt(jo);
+
+        int z = 5;
+        z = 10;
+        io.putInt(z);
+
+        this.printExpected("startJoVal : 1610");
+    }
+
+    void setX(int x){
+        this.x = x*5;
+    }
+
+    void testFunctionOverriding(){
+         io.putInt(x);
+         io.putString(" : ");
+         super.setX(10);
+         io.putInt(x);
+         this.setX(20);
+         io.putInt(x);
+         setX(30);
+         io.putInt(x);
+         this.printExpected("startValX : 10100150");
+    }
+
+    void testInheritedFields(){
+        super.setX(5);
+        io.putInt(this.y);
+        io.putInt(super.y);
+        io.putInt(x);
+        io.putInt(this.x);
+        io.putInt(super.x);
+        this.printExpected("207555");
+    }
+
+    void testInheritedMethods(){
+        io.putString(this.parentMethod());
+        io.putString(parentMethod());
+        io.putString(super.parentMethod());
+        this.printExpected("parentparentparent");
+    }
+
+    void testMethodChaining(){
+        io.putString("Method ").putString("chaining").putString(" is bad.");
+        this.printExpected("Method chaining is bad.");
+    }
 
     int testReturn(){
         return 10;
@@ -10,18 +101,21 @@ class Main {
     void testLocalVSField(){
         int jo = 4;
         io.putInt(jo);
-        io.putInt(this.jo).putString("\n");
+        io.putInt(this.jo);
+        this.printExpected("48");
     }
 
-    void testThis(){
+    void testThisMethod(){
         String yo = "yoyo";
         io.putString(yo);
-        this.io.putString(yo).putString("\n");
+        this.io.putString(yo);
+        this.printExpected("yoyoyoyo");
 
     }
 
     void testMethodCallInception(){
-        io.putInt(this.testReturn()).putString("\n");
+        io.putInt(this.testReturn());
+        this.printExpected("10");
     }
 
     int testParams(int x, int y, String z){
@@ -31,22 +125,710 @@ class Main {
         return 5;
     }
 
+    void testFields(){
+        io.putInt(this.jo);
+        io.putInt(this.k);
+        io.putString(this.s);
+        this.printExpected("8400");
+
+
+        if (this.b){
+            io.putString("Incorrect: default value for boolean should be false \n\n");
+        }
+        else{
+            io.putString("Correct: default value for boolean should be false \n\n");
+        }
+
+    }
+
+    void testBinaryArith(){
+        int a = 5 + 10;
+        io.putInt(a);
+        io.putInt(a-5);
+        io.putInt(a*2);
+        io.putInt(a/5);
+        io.putInt(a%5);
+        io.putInt(a%2);
+        this.printExpected("151030301");
+    }
+
+    void testBinaryComp(){
+        int a = 6;
+        int b = 10;
+        int c = a;
+        io.putString("a = 6, b = 10, c = 6").putString("\n");
+
+        if (a == c){
+            io.putString("Correct: a==c").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a==c").putString("\n");
+        }
+
+        if (a != b){
+            io.putString("Correct: a!=b").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a!=b").putString("\n");
+        }
+
+        if (a < b){
+            io.putString("Correct: a < b").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a < b").putString("\n");
+        }
+
+        if (a <= c){
+            io.putString("Correct: a<=c").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a<=c").putString("\n");
+        }
+
+        if (a <= b){
+            io.putString("Correct: a<=b").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a<=b").putString("\n");
+        }
+
+        if (c >= a){
+            io.putString("Correct: c >= a").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: c >= a").putString("\n");
+        }
+
+        if (b >= a){
+            io.putString("Correct: b >= a").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: b >= a").putString("\n");
+        }
+
+        if (b > a){
+            io.putString("Correct: b > a").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: b > a").putString("\n");
+        }
+    }
+
+    void testBinaryLogic(){
+        int a = 6;
+        int b = 10;
+        int c = a;
+        io.putString("a = 6, b = 10, c = 6").putString("\n");
+
+        if (true && true){
+            io.putString("Correct: true && true should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: true && true should be True").putString("\n");
+        }
+
+        if (true && false){
+            io.putString("Incorrect: true && false should be False").putString("\n");
+        }
+        else{
+            io.putString("Correct: true && false should be False").putString("\n");
+        }
+
+        if (false && true){
+            io.putString("Incorrect: false && true should be False").putString("\n");
+        }
+        else{
+            io.putString("Correct: false && true should be False").putString("\n");
+        }
+
+        if (false && false){
+            io.putString("Incorrect: false && false should be False").putString("\n");
+        }
+        else{
+            io.putString("Correct: false && false should be False").putString("\n");
+        }
+
+
+        if (a < c && (a++ < b)){
+            io.putString("Incorrect: a < c && (a++ < b) should be False").putString("\n");
+        }
+        else{
+            io.putString("Correct: a < c && (a++ < b) should be False").putString("\n");
+        }
+        io.putInt(a);
+        this.printExpected("a = 6");
+
+
+        if (a == c && (b++ > a)){
+            io.putString("Correct: a == c && (b++ > a) should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a == c && (b++ > a) should be True").putString("\n");
+        }
+        io.putInt(b);
+        this.printExpected("b = 11");
+
+
+
+        if (true || true){
+            io.putString("Correct: true || true should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: true || true should be True").putString("\n");
+        }
+
+        if (true || false){
+            io.putString("Correct: true || false should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: true && false should be True").putString("\n");
+        }
+
+        if (false || true){
+            io.putString("Correct: false || true should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: false || true should be True").putString("\n");
+        }
+
+        if (false || false){
+            io.putString("Incorrect: false || false should be False").putString("\n");
+        }
+        else{
+            io.putString("Correct: false || false should be False").putString("\n");
+        }
+
+
+        if (a == c || (a++ < b)){
+            io.putString("Correct: a == c || (a++ < b) should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a == c || (a++ < b) should be True").putString("\n");
+        }
+        io.putInt(a);
+        this.printExpected("a = 6");
+
+
+        if (a != c || (b++ > a)){
+            io.putString("Correct: a != c || (b++ > a) should be True").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: a != c || (b++ > a) should be True").putString("\n");
+        }
+        io.putInt(b);
+        this.printExpected("b = 12");
+
+
+    }
+
+    void testUnary(){
+        int z = -5;
+        int a = -z;
+        io.putInt(z);
+        io.putInt(z + 10);
+        io.putInt(a);
+        this.printExpected("-555");
+
+        if (!true){
+            io.putString("Incorrect: !true should be false").putString("\n");
+        }
+        else{
+            io.putString("Correct: !true should be false").putString("\n");
+        }
+
+        if (!false){
+            io.putString("Correct: !false should be true").putString("\n");
+        }
+        else{
+            io.putString("Incorrect: !false should be true").putString("\n");
+        }
+
+        io.putString("\n");
+
+        int c = 10;
+        io.putInt(++c);
+        io.putInt(c++);
+        io.putInt(c);
+        this.printExpected("111112");
+
+        io.putInt(--c);
+        io.putInt(c--);
+        io.putInt(c);
+        this.printExpected("111110");
+    }
+
+    int testRecursion(int i){
+       if(i==1){
+           io.putInt(i);
+           return 1;
+       }
+       else if(i%2==0){
+           io.putInt(i).putString(",");
+           return testRecursion(i/2);
+       }
+       else{
+           io.putInt(i).putString(",");
+           return testRecursion(3*i+1);
+       }
+       //Should never be reached
+       return 1;
+    }
+
+    void testNull(Object thing){
+       if(thing == null){
+           io.putString("SUCCESS: String was null \n");
+       }
+       else{
+           io.putString("FAIL: String was not null \n");
+       }
+
+       Object x = null;
+       if(x == null){
+           io.putString("SUCCESS: x was null \n");
+       }
+       else{
+           io.putString("FAIL: x was not null \n");
+       }
+
+       String y = null;
+       if(x == y){
+           io.putString("SUCCESS: x and y are both null and are equal \n");
+       }
+       else{
+           io.putString("FAIL: x and y are both null and are not equal \n");
+       }
+
+       y = (String) (x);
+       x = (Object) (null);
+
+       boolean bool = null instanceof Object;
+
+
+       if(bool){
+          io.putString("SUCCESS: null is an instance of Object \n");
+       }
+       else{
+          io.putString("FAIL: null is not an instance of Object \n");
+       }
+       bool = (new Object()).equals(x);
+       if(bool){
+          io.putString("FAIL:null should not be equal to a new Object \n");
+       }
+       else{
+          io.putString("SUCCESS: null is not equal to a new Object \n");
+       }
+
+       if(null == null){
+           io.putString("SUCCESS: null is null \n\n");
+       }
+       else{
+           io.putString("FAIL: null is not null \n\n ");
+       }
+    }
+
+    void testThis(){
+       if (this == this.thisTestHelper()){
+           io.putString("SUCCESS: this is this \n");
+       }
+       else{
+           io.putString("FAIL: this should be this \n");
+       }
+
+       if(this instanceof Parent){
+           io.putString("SUCCESS: this instanceof Parent \n");
+       }
+       else{
+           io.putString("FAIL: this should be instanceof Parent \n");
+       }
+
+
+       if(this instanceof Main){
+          io.putString("SUCCESS: this instanceof Main \n");
+      }
+      else{
+          io.putString("FAIL: this should be instanceof Main \n");
+      }
+
+       Main thing = this;
+       if(thisThing == thing.thisTestHelper()){
+           io.putString("SUCCESS: this is this \n\n");
+       }
+       else{
+           io.putString("FAIL: this should be this \n\n");
+       }
+    }
+
+    Main thisTestHelper(){
+       return this;
+    }
+
+    void testIf(){
+       if(true){
+           io.putString("SUCCESS: true holds \n");
+       }
+       else if(true){
+           io.putString("FAIL: should not have gone here since if was true \n");
+       }
+       else{
+           io.putString("FAIL: should not have gone here since if was true \n");
+       }
+
+       if(true){
+           io.putString("SUCCESS: true holds \n");
+       }
+       else if(false){
+           io.putString("FAIL: if was false \n");
+       }
+       else{
+           io.putString("FAIL: should not have gone here since if was true \n");
+       }
+
+       if(false){
+           io.putString("FAIL: if was false \n");
+       }
+       else if(true){
+           io.putString("SUCCESS: true holds \n");
+       }
+       else{
+           io.putString("FAIL: should not have gone here since else-if was true \n");
+       }
+
+       if(false){
+           io.putString("FAIL: if was false \n\n");
+       }
+       else if(false){
+           io.putString("FAIL: else-if was false \n\n");
+       }
+       else{
+           io.putString("SUCCESS: should have gone here since if and else-if were false \n\n");
+       }
+
+
+       int x = 5;
+       if ( x == 0){
+           io.putString("Incorrect: x is not equal to 0. \n");
+       }
+       else if (x == 1){
+           io.putString("Incorrect: x is not equal to 1. \n");
+       }
+       else if (x == 2){
+            io.putString("Incorrect: x is not equal to 2. \n");
+       }
+       else if (x == 5){
+            io.putString("Correct: x is equal to 5. \n");
+       }
+
+    }
+
+    void testWhile(){
+       int i = 10;
+       while(i>0){
+           i--;
+           io.putInt(i).putString(",");
+       }
+       io.putInt(i);
+       this.printExpected("9,8,7,6,5,4,3,2,1,0,0");
+       while(true){
+           while(true){
+               break;
+           }
+           io.putString("Broke out of inner loop\n");
+           break;
+       }
+       io.putString("Broke out of outer loop\n\n");
+       while(false){
+           io.putString("If this prints, something is wrong");
+       }
+    }
+
+
+    void testFor(){
+        int j = 0;
+        for (;;){
+            if (j == 10){
+                io.putString("Breaking!");
+                break;
+            }
+            j++;
+        }
+        io.putInt(j);
+        this.printExpected("10");
+
+        for (;;j++){
+            if(j == 20){
+                io.putString("Breaking!");
+                break;
+            }
+        }
+        io.putInt(j);
+        this.printExpected("20");
+
+        j = 0;
+        int i = 0;
+        for(;j<10;j++){
+            i++;
+        }
+        io.putInt(i);
+        io.putInt(j);
+        this.printExpected("1010");
+
+        i = 0;
+        for(j=0; j<20; j++){
+            i++;
+        }
+        io.putInt(i);
+        io.putInt(j);
+        this.printExpected("2020");
+
+        for(j = 0; ; j++){
+            if (j == 15){
+                io.putString("Breaking!");
+                break;
+            }
+        }
+        io.putInt(j);
+        this.printExpected("15");
+
+        for(j = 0; j <16;){
+            j++;
+        }
+        io.putInt(j);
+        this.printExpected("16");
+
+        for(j = 0;;){
+            if (j == 5){
+                io.putString("Breaking!");
+                break;
+            }
+            j++;
+        }
+        io.putInt(j);
+        this.printExpected("5");
+
+        j = 0;
+        i = 10;
+        for (;j<10;){
+            i++;
+            j++;
+        }
+        io.putInt(j);
+        io.putInt(i);
+        this.printExpected("1020");
+    }
+
+    void testNew(){
+       new String();
+       Main main = new Main();
+       int x = main.testReturn();
+       if (x == 10){
+            io.putString("Success: Main is an object! New expr works.");
+       }
+    }
+
+    void testScoping(){
+        String s = "hi";
+        this.s = "hello";
+        io.putString(s);
+        io.putString(this.s);
+        {
+            int z = 10;
+            for (;true;z++){
+                if (z==10){
+                    {
+                        int d = 6;
+                        io.putInt(z);
+                        io.putInt(d);
+                    }
+                    io.putString(this.s);
+                    io.putString(s);
+                }
+                int i = 0;
+                int j = 0;
+                for (; i< 5; i++){
+                    j++;
+                }
+                io.putInt(j);
+
+                if (z == 15){
+                    break;
+                }
+            }
+            io.putInt(z);
+
+        }
+        int z = 20;
+        io.putInt(z);
+        String d = "yo";
+        io.putString(d);
+        this.printExpected("hihello106hellohi555551520yo");
+
+    }
+
+    void testInstanceofAndCast(){
+       B b = new B();
+       if(b instanceof A){
+           io.putString("SUCCESS: b instanceof A\n");
+       }
+       else{
+           io.putString("FAIL: b should be instance of A\n");
+       }
+
+       if(b instanceof B){
+           io.putString("SUCCESS: b instanceof B\n");
+       }
+       else{
+           io.putString("FAIL: b should be instance of B\n");
+       }
+
+       if(b instanceof C){
+           io.putString("FAIL: b should not be instanceof C\n");
+       }
+       else{
+           io.putString("SUCCESS: b is not an instance of C\n");
+       }
+
+       A typeAactualB = (A) (b);
+       if(typeAactualB instanceof B){
+           io.putString("SUCCESS: typeAactualB is an instance of B\n");
+       }
+       else{
+           io.putString("FAIL: typeAactualB should be an instance of B\n");
+       }
+
+       if(typeAactualB instanceof C){
+           io.putString("FAIL: typeAactualB should not be an instance of C\n");
+       }
+       else{
+           io.putString("SUCCESS: typeAactualB is not an instance of C\n");
+       }
+
+       A typeAactualC = new C();
+       b = (B) (typeAactualC);
+       C c = (C) (b);
+       typeAactualC = (A) (c);
+       typeAactualC = (A) (typeAactualC);
+    }
+
+    void testPolymorphism(){
+       C c = new C();
+       io.putInt(c.foo());
+       B b = c;
+       io.putInt(c.foo());
+       A a = b;
+       io.putInt(c.foo());
+       this.printExpected("333");
+
+       a = new A();
+       io.putInt(a.foo());
+       a = new B();
+       io.putInt(b.foo());
+       a = new C();
+       io.putInt(a.foo());
+       this.printExpected("543");
+    }
+
+
+
+    void testDeclStmt(){
+       int num = 6;
+       String str = "Jo";
+       A a = new A();
+       io.putString(str);
+       io.putInt(num);
+       io.putString(a.toString());
+       this.printExpected("6joLocationInMemory");
+
+    }
+
+    void testDivZeroException(){
+       int m = 100 / 0;
+    }
+
+    void testModZeroException(){
+       int m = 100 % 0;
+    }
+
+    void testIllegalCastException(){
+       String str = "Bad casting";
+       Object obj = (Object)(str);
+       Sys sys = (Sys)(obj);
+    }
+
+    void testNullPointerException(){
+        TextIO io5 = null;
+        io5.putInt(5);
+    }
+
+
+
 
     void main() {
         int a = 2;
         int x = 3;
 
+        this.testFields(); //8400
+
         int returning = this.testReturn();
         io.putInt(returning); //10
+        this.printExpected("10");
 
         this.testLocalVSField(); //48
 
-        this.testThis(); //yoyoyoyo
+        this.testThisMethod(); //yoyoyoyo
 
         this.testMethodCallInception(); //10
 
         int d = this.testParams(a, x, "hihi"); //23hihi
-        io.putInt(d).putString("\n"); //5
+        this.printExpected("23hihi");
 
+        this.testAssign(); //1610
+
+        this.testFunctionOverriding(); // 0 : 10100150
+
+        this.testInheritedFields(); //207555
+
+        this.testInheritedMethods(); //parentparentparent
+
+        this.testMethodChaining(); //Method chaining is bad.
+
+        this.testBinaryArith();
+
+        this.testBinaryComp();
+
+        this.testBinaryLogic();
+
+        this.testUnary();
+
+        this.testRecursion(5);
+        this.printExpected("5,16,8,4,2,1");
+
+        this.testNull(null);
+
+        this.testIf();
+
+        this.testThis();
+
+        //this.testDivZeroException();
+
+        //this.testModZeroException();
+
+        //this.testIllegalCastException();
+
+        //this.testNullPointerException();
+
+        this.testWhile();
+
+        this.testFor();
+
+        this.testNew();
+
+        this.testScoping();
+
+        this.testPolymorphism();
+
+        this.testInstanceofAndCast();
+
+        this.testDeclStmt();
 	}
 }

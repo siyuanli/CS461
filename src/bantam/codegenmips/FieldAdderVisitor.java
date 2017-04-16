@@ -35,7 +35,7 @@ public class FieldAdderVisitor extends Visitor {
     }
 
     public Object visit(Field field){
-        int offset = 12 + 4*this.numField;
+        int offset = this.treeNode.getParent().getVarSymbolTable().getSize()*4 + 12 + 4*this.numField;
         Location loc = new Location("$a0", offset);
         this.treeNode.getVarSymbolTable().set(field.getName(),
                 loc, treeNode.getVarSymbolTable().getCurrScopeLevel()-1);
