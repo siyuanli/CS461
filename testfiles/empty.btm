@@ -622,7 +622,9 @@ class Main extends Parent{
        Main main = new Main();
        int x = main.testReturn();
        if (x == 10){
-            io.putString("Success: Main is an object! New expr works.");
+            io.putInt(x);
+            this.printExpected("10");
+            io.putString("Success: Main is an object! New expr works.\n\n");
        }
     }
 
@@ -661,7 +663,7 @@ class Main extends Parent{
         io.putInt(z);
         String d = "yo";
         io.putString(d);
-        this.printExpected("hihello106hellohi555551520yo");
+        this.printExpected("hihello106hellohi5555551520yo");
 
     }
 
@@ -722,7 +724,7 @@ class Main extends Parent{
        a = new A();
        io.putInt(a.foo());
        a = new B();
-       io.putInt(b.foo());
+       io.putInt(a.foo());
        a = new C();
        io.putInt(a.foo());
        this.printExpected("543");
@@ -737,7 +739,7 @@ class Main extends Parent{
        io.putString(str);
        io.putInt(num);
        io.putString(a.toString());
-       this.printExpected("6joLocationInMemory");
+       this.printExpected("Jo6LocationInMemory");
 
     }
 
