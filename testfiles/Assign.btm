@@ -1,7 +1,7 @@
 /* Testing multiple assignments in a single expression.
    @author Marc Corliss
 */
-class bantam.Main {
+class Main {
     /* main method */
     void main() {
 	TextIO io = new TextIO();

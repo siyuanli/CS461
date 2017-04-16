@@ -3,14 +3,28 @@ class Main {
     int jo = 8;
 
 
-    void test1(){
-        int jo = 4;
-        io.putInt(5);
-        io.putInt(jo);
-        io.putInt(this.jo);
+    int testReturn(){
+        return 10;
     }
 
-    int test(int x, int y, String z){
+    void testLocalVSField(){
+        int jo = 4;
+        io.putInt(jo);
+        io.putInt(this.jo).putString("\n");
+    }
+
+    void testThis(){
+        String yo = "yoyo";
+        io.putString(yo);
+        this.io.putString(yo).putString("\n");
+
+    }
+
+    void testMethodCallInception(){
+        io.putInt(this.testReturn()).putString("\n");
+    }
+
+    int testParams(int x, int y, String z){
         io.putInt(x);
         io.putInt(y);
         io.putString(z);
@@ -21,16 +35,18 @@ class Main {
     void main() {
         int a = 2;
         int x = 3;
-        String yo = "yoyo";
-        io.putString(yo);
-        this.io.putString(yo);
-        io.putInt(jo);
-        io.putInt(this.jo);
-        this.test1();
 
-        //this.test(a, x, yo);
-        /*int d = test(a, x, yo);
-        this.io.putInt(d);
-        this.io.putInt(io);*/
+        int returning = this.testReturn();
+        io.putInt(returning); //10
+
+        this.testLocalVSField(); //48
+
+        this.testThis(); //yoyoyoyo
+
+        this.testMethodCallInception(); //10
+
+        int d = this.testParams(a, x, "hihi"); //23hihi
+        io.putInt(d).putString("\n"); //5
+
 	}
 }

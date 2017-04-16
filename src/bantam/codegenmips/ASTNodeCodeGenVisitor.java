@@ -21,6 +21,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
     private ClassTreeNode treeNode;
     private Map<String, Integer> numLocalVars;
     private int currentLocalVars;
+    private int currentParam;
+    private int totalParams;
+    private int totalLocalVars;
+
     private String breakToLabel;
     private String returnLabel;
     private Map<String, String> stringConstantsMap;
@@ -95,21 +99,23 @@ public class ASTNodeCodeGenVisitor extends Visitor {
         this.treeNode.getVarSymbolTable().enterScope();
         String name = this.treeNode.getName() + "." + node.getName();
         this.assemblySupport.genLabel(name);
-        int numVariables = this.numLocalVars.get(name);
-        this.prolog(numVariables);
+        this.totalLocalVars = this.numLocalVars.get(name);
+        this.prolog(totalLocalVars);
         this.currentLocalVars = 0;
+        this.currentParam = 0;
+        this.totalParams = node.getFormalList().getSize();
         node.getFormalList().accept(this);
         this.assemblySupport.genComment("Body: ");
         node.getStmtList().accept(this);
-        this.epilogue(numVariables, node.getFormalList().getSize());
+        this.epilogue(totalLocalVars, node.getFormalList().getSize());
         this.treeNode.getVarSymbolTable().exitScope();
         return null;
     }
 
     public Object visit(Formal node) {
         this.assemblySupport.genComment("Parameter: " + node.getName());
-        this.treeNode.getVarSymbolTable().add(node.getName(), new Location("$fp", this.currentLocalVars*4));
-        this.currentLocalVars++;
+        this.treeNode.getVarSymbolTable().add(node.getName(), new Location("$fp", 8 + this.totalLocalVars*4 + this.totalParams*4 - this.currentParam*4 - 4));
+        this.currentParam++;
         return null;
     }
 
@@ -253,6 +259,7 @@ public class ASTNodeCodeGenVisitor extends Visitor {
      * @return result of the visit
      */
     public Object visit(ReturnStmt node) {
+        this.assemblySupport.genComment("Return Statement: ");
         if (node.getExpr() != null) {
             node.getExpr().accept(this);
         }
@@ -315,14 +322,20 @@ public class ASTNodeCodeGenVisitor extends Visitor {
             this.assemblySupport.genComment("Moving the dispatch table to $v0");
             this.assemblySupport.genLoadWord("$v0", 8, "$a0"); //dispatch table
         }
-        this.assemblySupport.genComment("Loading Method into Register:");
-        this.assemblySupport.genLoadWord("$s0", 4*methodIndex, "$v0"); //TODO: $s0 will get messed up if do a method call inside a parameter
-        this.assemblySupport.genLoadWord("$a0", 0, "$sp");
-        this.assemblySupport.genComment("Evaluating Parameters:");
+        this.assemblySupport.genComment("Loading " + node.getMethodName() +" into Register $t0: ");
+        this.assemblySupport.genLoadWord("$t0", 4*methodIndex, "$v0");
+        this.push("$a0");
+        this.assemblySupport.genLoadWord("$a0", 4, "$sp");
+        this.push("$t0");
+        this.assemblySupport.genComment("Evaluating Parameters for: " + node.getMethodName());
         node.getActualList().accept(this);
-        this.assemblySupport.genComment("Calling Method:");
-        this.assemblySupport.genInDirCall("$s0");
+        this.assemblySupport.genComment("Calling Method: " + node.getMethodName());
+        this.assemblySupport.genLoadWord("$t0", node.getActualList().getSize()*4,"$sp");
+        this.assemblySupport.genLoadWord("$a0", node.getActualList().getSize()*4 + 4,"$sp");
+        this.assemblySupport.genInDirCall("$t0");
+        this.assemblySupport.genAdd("$sp", "$sp", 8);
         this.pop("$a0");
+        this.assemblySupport.genComment("End of Dispatch Expr: " + node.getMethodName());
         return null;
     }
 
@@ -692,10 +705,10 @@ public class ASTNodeCodeGenVisitor extends Visitor {
             loc = (Location) this.treeNode.getVarSymbolTable().lookup(node.getName(),
                     this.fieldsScope -1 );
         }
-        this.assemblySupport.genComment("Moves the address of the variable into $v1");
+        this.assemblySupport.genComment("Moves the address of " + node.getName() + " into $v1");
         this.assemblySupport.genMove("$v1", loc.getBaseReg());
         this.assemblySupport.genAdd("$v1","$v1",loc.getOffset());
-        this.assemblySupport.genComment("Loads the value of the variable into $v0");
+        this.assemblySupport.genComment("Loads the value of " + node.getName() + " into $v0");
         this.assemblySupport.genLoadWord("$v0",0,"$v1");
         return null;
     }
