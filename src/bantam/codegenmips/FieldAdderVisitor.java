@@ -13,23 +13,42 @@ import bantam.util.ClassTreeNode;
 import bantam.util.Location;
 import bantam.visitor.Visitor;
 
-import java.util.Map;
-
 /**
- * Created by joseph on 4/5/17.
+ * Visitor which adds fields to the variable symbol table for a specific object.
  */
 public class FieldAdderVisitor extends Visitor {
 
+    /**
+     * Support class which formats and writes the resulting mips code.
+     */
     private MipsSupport assemblySupport;
+    /**
+     * The classTreeNode that this object is generating the fields for.
+     */
     private ClassTreeNode treeNode;
+    /**
+     * The current number of fields that have been generated for the current object.
+     */
     private int numField;
+    /**
+     * Generates Bantam Java code for expressions, statements, and other nodes.
+     */
     private ASTNodeCodeGenVisitor codeGenVisitor;
 
+    /**
+     * Creates a new FieldAdderVisitor with the given MipsSupport object and ASTNodeCodeGenVisitor
+     * @param assemblySupport the MipsSupport object
+     * @param codeGenVisitor ASTNodeCodeGenVisitor
+     */
     public FieldAdderVisitor(MipsSupport assemblySupport, ASTNodeCodeGenVisitor codeGenVisitor){
         this.assemblySupport = assemblySupport;
         this.codeGenVisitor = codeGenVisitor;
     }
 
+    /**
+     * Initializes the field for the class corresponding to the given ClassTreeNode
+     * @param treeNode the ClassTreeNode
+     */
     public void initField(ClassTreeNode treeNode){
         this.numField = 0;
         this.treeNode = treeNode;
@@ -37,10 +56,21 @@ public class FieldAdderVisitor extends Visitor {
         this.treeNode.getASTNode().accept(this);
     }
 
+    /**
+     * Does Nothing
+     * @param method the method node
+     * @return null
+     */
     public Object visit(Method method){
         return null;
     }
 
+    /**
+     * Adds the given field to the symbol table with a valid location and generates the
+     * code to initialize that field
+     * @param field the ASTNode Field object
+     * @return null
+     */
     public Object visit(Field field){
         int offset = this.treeNode.getParent().getVarSymbolTable().getSize()*4 + 12 + 4*this.numField;
         Location loc = new Location("$a0", offset);
