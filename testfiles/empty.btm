@@ -5,52 +5,133 @@
  * Date: 4/17/17
  */
 
-class C extends B {
-   int foo(){
-   return 3;
-   }
-}
-class B extends A {
-   int foo(){
-       return 4;
-   }
-}
+/**
+ * A hypothetical class to test inheritance
+ */
 class A {
+   /**
+    * Return the number 5
+    * @return 5
+    */
    int foo(){
        return 5;
    }
 }
 
+/**
+ * A hypothetical class that inherits from class A
+ */
+class B extends A {
+   /**
+    * Return the number 4
+    * @return 4
+    */
+   int foo(){
+       return 4;
+   }
+}
 
+/**
+ * A hypothetical class that inherits from class B
+ */
+class C extends B {
+   /**
+    * Return the number 3
+    * @return 3
+    */
+   int foo(){
+      return 3;
+   }
+}
+
+/**
+ * The hypothetical parent class of the class Main
+ */
 class Parent{
+   /**
+    * An integer variable
+    */
     int x;
+
+   /**
+    * An integer initialized to 7
+    */
     int y = 7;
 
+    /**
+     * Set the value of an integer to itself
+     */
     void setX(int x){
         this.x = x;
     }
 
+    /**
+     * Return the string "parent"
+     * @return "parent"
+     */
     String parentMethod(){
         return "parent";
     }
 }
 
+/**
+ * The Main class of the testing program that inherits from the Parent class
+ */
 class Main extends Parent{
+
+   /**
+    * An object that prints the output
+    */
     TextIO io = new TextIO();
+
+   /**
+    * An integer variable
+    */
     int jo = 8;
+
+   /**
+    * An integer variable
+    */
     int y = 20;
-    String s;
-    boolean b;
+
+   /**
+    * An integer variable
+    */
     int z;
+
+   /**
+    * A string variable
+    */
+    String s;
+
+   /**
+    * A boolean variable
+    */
+    boolean b;
+
+   /**
+    * An integer variable of twice the size of y
+    */
     int k = y*2;
+
+    /**
+     * A variable to test 'this' reference
+     */
     Main thisThing = this;
 
+    /**
+     * Print the expected output of a testing function
+     * @param expected  The expected string for the test
+     */
     void printExpected(String expected){
         io.putString("\n");
         io.putString("Expected value: ");
         io.putString(expected).putString("\n\n");
     }
 
+    /**
+     * Test re-assigning the assign expression
+     */
     void testAssign(){
         io.putInt(jo);
         io.putString(" : ");
@@ -64,10 +145,17 @@ class Main extends Parent{
         this.printExpected("startJoVal : 1610");
     }
 
+    /**
+     * Set the value to its multiple of 5
+     * @param x  the numerical value
+     */
     void setX(int x){
         this.x = x*5;
     }
 
+    /**
+     * Test overriding inherited functions
+     */
     void testFunctionOverriding(){
          io.putInt(x);
          io.putString(" : ");
@@ -80,6 +168,9 @@ class Main extends Parent{
          this.printExpected("startValX : 10100150");
     }
 
+    /**
+     * Test calling inherited fields
+     */
     void testInheritedFields(){
         super.setX(5);
         io.putInt(this.y);
@@ -90,6 +181,9 @@ class Main extends Parent{
         this.printExpected("207555");
     }
 
+    /**
+     * Test calling inherited methods
+     */
     void testInheritedMethods(){
         io.putString(this.parentMethod());
         io.putString(parentMethod());
@@ -97,15 +191,24 @@ class Main extends Parent{
         this.printExpected("parentparentparent");
     }
 
+    /**
+     * Test using method chaining
+     */
     void testMethodChaining(){
         io.putString("Method ").putString("chaining").putString(" is bad.");
         this.printExpected("Method chaining is bad.");
     }
 
+    /**
+     * Test the return statement
+     */
     int testReturn(){
         return 10;
     }
 
+    /**
+     * Test fields and local variables
+     */
     void testLocalVSField(){
         int jo = 4;
         io.putInt(jo);
@@ -113,19 +216,30 @@ class Main extends Parent{
         this.printExpected("48");
     }
 
+    /**
+     * Test referencing 'this' to a variable
+     */
     void testThisMethod(){
         String yo = "yoyo";
         io.putString(yo);
         this.io.putString(yo);
         this.printExpected("yoyoyoyo");
-
     }
 
+    /**
+     * Test a method call within a method call
+     */
     void testMethodCallInception(){
         io.putInt(this.testReturn());
         this.printExpected("10");
     }
 
+    /**
+     * Test the parameters of the method are passed in correctly
+     * @params x  an integer
+     * @params y  an integer
+     * @params z  a string
+     */
     int testParams(int x, int y, String z){
         io.putInt(x);
         io.putInt(y);
@@ -133,6 +247,9 @@ class Main extends Parent{
         return 5;
     }
 
+    /**
+     * Test referencing the fields
+     */
     void testFields(){
         io.putInt(this.jo);
         io.putInt(this.k);
@@ -156,6 +273,9 @@ class Main extends Parent{
 
     }
 
+    /**
+     * Test all binary arithmetic operations
+     */
     void testBinaryArith(){
         int a = 5 + 10;
         io.putInt(a);
@@ -167,6 +287,9 @@ class Main extends Parent{
         this.printExpected("151030301");
     }
 
+    /**
+     * Test all binary comparative operations
+     */
     void testBinaryComp(){
         int a = 6;
         int b = 10;
@@ -230,6 +353,9 @@ class Main extends Parent{
         }
     }
 
+    /**
+     * Test all binary logical operations
+     */
     void testBinaryLogic(){
         int a = 6;
         int b = 10;
@@ -264,7 +390,6 @@ class Main extends Parent{
             io.putString("Correct: false && false should be False").putString("\n");
         }
 
-
         if (a < c && (a++ < b)){
             io.putString("Incorrect: a < c && (a++ < b) should be False").putString("\n");
         }
@@ -274,7 +399,6 @@ class Main extends Parent{
         io.putInt(a);
         this.printExpected("a = 6");
 
-
         if (a == c && (b++ > a)){
             io.putString("Correct: a == c && (b++ > a) should be True").putString("\n");
         }
@@ -283,8 +407,6 @@ class Main extends Parent{
         }
         io.putInt(b);
         this.printExpected("b = 11");
-
-
 
         if (true || true){
             io.putString("Correct: true || true should be True").putString("\n");
@@ -314,7 +436,6 @@ class Main extends Parent{
             io.putString("Correct: false || false should be False").putString("\n");
         }
 
-
         if (a == c || (a++ < b)){
             io.putString("Correct: a == c || (a++ < b) should be True").putString("\n");
         }
@@ -324,7 +445,6 @@ class Main extends Parent{
         io.putInt(a);
         this.printExpected("a = 6");
 
-
         if (a != c || (b++ > a)){
             io.putString("Correct: a != c || (b++ > a) should be True").putString("\n");
         }
@@ -333,10 +453,11 @@ class Main extends Parent{
         }
         io.putInt(b);
         this.printExpected("b = 12");
-
-
     }
 
+    /**
+     * Test all unary operations
+     */
     void testUnary(){
         int z = -5;
         int a = -z;
@@ -373,6 +494,9 @@ class Main extends Parent{
         this.printExpected("111110");
     }
 
+    /**
+     * Test recursive function calls
+     */
     int testRecursion(int i){
        if(i==1){
            io.putInt(i);
@@ -390,6 +514,9 @@ class Main extends Parent{
        return 1;
     }
 
+    /**
+     * Test the null reference
+     */
     void testNull(Object thing){
        if(thing == null){
            io.putString("SUCCESS: String was null \n");
@@ -419,7 +546,6 @@ class Main extends Parent{
 
        boolean bool = null instanceof Object;
 
-
        if(bool){
           io.putString("SUCCESS: null is an instance of Object \n");
        }
@@ -442,6 +568,9 @@ class Main extends Parent{
        }
     }
 
+    /**
+     * Test the 'this' reference
+     */
     void testThis(){
        if (this == this.thisTestHelper()){
            io.putString("SUCCESS: this is this \n");
@@ -456,7 +585,6 @@ class Main extends Parent{
        else{
            io.putString("FAIL: this should be instanceof Parent \n");
        }
-
 
        if(this instanceof Main){
           io.putString("SUCCESS: this instanceof Main \n");
@@ -474,10 +602,17 @@ class Main extends Parent{
        }
     }
 
+    /**
+     * Return the reference 'this'
+     * @return 'this'
+     */
     Main thisTestHelper(){
        return this;
     }
 
+    /**
+     * Test the if else statment
+     */
     void testIf(){
        if(true){
            io.putString("SUCCESS: true holds \n");
@@ -519,7 +654,6 @@ class Main extends Parent{
            io.putString("SUCCESS: should have gone here since if and else-if were false \n\n");
        }
 
-
        int x = 5;
        if ( x == 0){
            io.putString("Incorrect: x is not equal to 0. \n");
@@ -536,6 +670,9 @@ class Main extends Parent{
 
     }
 
+    /**
+     * Test the while loop and the break statement
+     */
     void testWhile(){
        int i = 10;
        while(i>0){
@@ -557,7 +694,9 @@ class Main extends Parent{
        }
     }
 
-
+    /**
+     * Test the for loop and the break statement
+     */
     void testFor(){
         int j = 0;
         for (;;){
@@ -632,6 +771,9 @@ class Main extends Parent{
         this.printExpected("1020");
     }
 
+    /**
+     * Test the new expression
+     */
     void testNew(){
        new String();
        Main main = new Main();
@@ -643,6 +785,9 @@ class Main extends Parent{
        }
     }
 
+    /**
+     * Test accessing variables in different layers of scopes
+     */
     void testScoping(){
         String s = "hi";
         this.s = "hello";
@@ -682,6 +827,9 @@ class Main extends Parent{
 
     }
 
+    /**
+     * Test instanceof expression and cast expression
+     */
     void testInstanceofAndCast(){
        B b = new B();
        if(b instanceof A){
@@ -727,6 +875,9 @@ class Main extends Parent{
        typeAactualC = (A) (typeAactualC);
     }
 
+    /**
+     * Test dynamic method invocation
+     */
     void testPolymorphism(){
        C c = new C();
        io.putInt(c.foo());
@@ -745,8 +896,9 @@ class Main extends Parent{
        this.printExpected("543");
     }
 
-
-
+    /**
+     * Test the declaration statement
+     */
     void testDeclStmt(){
        int num = 6;
        String str = "Jo";
@@ -758,27 +910,49 @@ class Main extends Parent{
 
     }
 
+    /**
+     * Test throwing divide_by_zero exception for divide
+     */
     void testDivZeroException(){
        int m = 100 / 0;
     }
 
+    /**
+     * Test throwing divide_by_zero exception for modulus
+     */
     void testModZeroException(){
        int m = 100 % 0;
     }
 
+    /**
+     * Test throwing class_cast_error for illegal casting
+     */
     void testIllegalCastException(){
        String str = "Bad casting";
        Object obj = (Object)(str);
        Sys sys = (Sys)(obj);
     }
 
+    /**
+     * Test throwing null_pointer exception
+     */
     void testNullPointerException(){
         TextIO io5 = null;
         io5.putInt(5);
     }
 
+    /**
+     * The main function that calls all testing functions
+     */
     void main() {
+
+        /**
+         * A hypothetical input
+         */
         int a = 2;
+        /**
+         * A hypothetical input
+         */
         int x = 3;
 
         this.testFields(); //8400
