@@ -34,7 +34,6 @@
 package bantam.codegenmips;
 
 import bantam.util.ClassTreeNode;
-import bantam.visitor.DispatchTableAdderVisitor;
 import javafx.util.Pair;
 import java.io.FileOutputStream;
 import java.io.IOException;

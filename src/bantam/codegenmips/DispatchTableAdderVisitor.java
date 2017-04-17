@@ -5,12 +5,13 @@
  * Date: 4/2/17
  */
 
-package bantam.visitor;
+package bantam.codegenmips;
 
 import bantam.ast.Class_;
 import bantam.ast.Field;
 import bantam.ast.Method;
 import bantam.util.ClassTreeNode;
+import bantam.visitor.Visitor;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.List;

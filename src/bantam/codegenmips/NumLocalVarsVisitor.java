@@ -5,9 +5,10 @@
  * Date: 3/11/17
  */
 
-package bantam.visitor;
+package bantam.codegenmips;
 
 import bantam.ast.*;
+import bantam.visitor.Visitor;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;

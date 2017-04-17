@@ -36,6 +36,7 @@ package bantam;/* Bantam Java Compiler and Language Toolset.
 import bantam.ast.Program;
 import bantam.codegenjvm.JVMCodeGenerator;
 import bantam.codegenmips.MipsCodeGenerator;
+import bantam.codegenmips.NumLocalVarsVisitor;
 import bantam.codegenmips.StringConstantsVisitor;
 import bantam.codegenx86.X86CodeGenerator;
 import bantam.interp.Interpreter;

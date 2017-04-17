@@ -11,7 +11,6 @@ import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.util.Location;
 import bantam.util.SymbolTable;
-import bantam.visitor.NumLocalVarsVisitor;
 import bantam.visitor.Visitor;
 import java.util.List;
 import java.util.Map;
