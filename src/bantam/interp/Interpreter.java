@@ -26,6 +26,7 @@
 
 package bantam.interp;
 
+import bantam.ast.NewExpr;
 import bantam.util.*;
 
 /** The <tt>Interpreter</tt> class interprets Bantam Java programs.  It
@@ -58,10 +59,14 @@ public class Interpreter {
       * See the lab manual for the details.
       * */
     public void interpret() {
-	// comment out
-	throw new RuntimeException("Interpreter unimplemented");
-
-	// add code below...
+	    ClassTreeNode main = root.getClassMap().get("Main");
+        ObjectData mainObject = new ObjectData("Main");
+        InterpreterVisitor interpreterVisitor = new InterpreterVisitor(root.getClassMap(), mainObject);
+        InstantiationVisitor instantiationVisitor = new InstantiationVisitor(interpreterVisitor);
+        instantiationVisitor.initObject(mainObject, main);
+        int scope = mainObject.getMethodScope("main", false);
+        mainObject.setHierarchyLevel(scope);
+        mainObject.getMethod("main", scope).accept(interpreterVisitor);
     }
 }
 
