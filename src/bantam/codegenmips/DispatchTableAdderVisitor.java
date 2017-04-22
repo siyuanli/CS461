@@ -7,7 +7,6 @@
 
 package bantam.codegenmips;
 
-import bantam.ast.Class_;
 import bantam.ast.Field;
 import bantam.ast.Method;
 import bantam.util.ClassTreeNode;

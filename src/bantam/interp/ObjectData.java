@@ -1,9 +1,6 @@
 package bantam.interp;
 
-import bantam.ast.Class_;
 import bantam.ast.Method;
-import bantam.util.ClassTreeNode;
-
 import java.util.*;
 
 /**
@@ -49,6 +46,24 @@ public class ObjectData{
         return null;
     }
 
+    public int getHierarchyLevel() {
+        return this.hierarchyLevel;
+    }
+
+    public void setField(String varName, Object value, boolean hasRefSuper){
+        int startI = this.hierarchyLevel;
+        if (hasRefSuper){
+            startI++;
+        }
+        for (int i = startI; i < this.fields.size(); i++){
+            HashMap<String, Object> scope = this.fields.get(i);
+            if(scope.containsKey(varName)){
+                scope.put(varName,value);
+                return;
+            }
+        }
+    }
+
     public int getMethodScope(String name, boolean hasRefSuper){
         int startI = this.hierarchyLevel;
         if (hasRefSuper){
@@ -70,5 +85,13 @@ public class ObjectData{
 
     public void setHierarchyLevel(int hierarchyLevel){
         this.hierarchyLevel = hierarchyLevel;
+    }
+
+    public String getType(){
+        return this.type;
+    }
+
+    public boolean isBuiltIn(){
+        return false;
     }
 }

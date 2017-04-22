@@ -26,7 +26,6 @@
 
 package bantam.interp;
 
-import bantam.ast.NewExpr;
 import bantam.util.*;
 
 /** The <tt>Interpreter</tt> class interprets Bantam Java programs.  It
