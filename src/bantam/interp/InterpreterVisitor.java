@@ -27,15 +27,15 @@ public class InterpreterVisitor extends Visitor{
         this.thisObject = mainObject;
     }
 
-    private void pushMethodScope(){
+    public void pushMethodScope(){
         this.localVars.add(new HashMap<>());
     }
 
-    private void popMethodScope(){
+    public void popMethodScope(){
         this.localVars.remove(this.localVars.size()-1);
     }
 
-    private HashMap<String,Object> getCurrentMethodScope(){
+    public HashMap<String,Object> getCurrentMethodScope(){
         return  this.localVars.get(this.localVars.size()-1);
     }
 
@@ -47,27 +47,34 @@ public class InterpreterVisitor extends Visitor{
      * is true if the variable was a local variable
      *
      */
-    private Pair<Object, Boolean> getObjectAndIsLocal(String ref, String name){
-        if(ref!=null){
-            Object obj = this.thisObject.getField(name,ref.equals("super"));
-            return new Pair<>(obj,false);
+    private Object getVariableValue(String ref, String name){
+        boolean isLocal = this.isLocal(ref,name);
+        if(isLocal){
+            return this.getCurrentMethodScope().get(name);
         }
         else{
-            if(this.getCurrentMethodScope().containsKey(name)){
-                return new Pair<>(this.getCurrentMethodScope().get(name),true);
-            }
-            else{
-                return new Pair<>(this.thisObject.getField(name,false),false);
-            }
+            return this.thisObject.getField(name,"super".equals(ref));
         }
     }
 
-    //TODO: This
-    public Object visit(Method node) {
-        node.getStmtList().accept(this);
+    private boolean isLocal(String ref, String name){
+        if(ref!=null){
+            return false;
+        }
+        else{
+            return this.getCurrentMethodScope().containsKey(name);
+        }
+    }
 
+    public Object visit(Method node) {
+        Object returnValue = null;
+        try {
+            node.getStmtList().accept(this);
+        } catch (ReturnStmtException e){
+            returnValue = e.getReturnValue();
+        }
         this.popMethodScope();
-        return null;
+        return returnValue;
     }
 
 
@@ -95,19 +102,13 @@ public class InterpreterVisitor extends Visitor{
                     +node.getMethodName()+" on line "+node.getLineNum()+" is null");
         }
 
+
         int scope = objectData.getMethodScope(node.getMethodName(), isSuper);
         int currentHierarchy = this.thisObject.getHierarchyLevel();
         objectData.setHierarchyLevel(scope);
-        Method method = objectData.getMethod(node.getMethodName(), scope);
-        this.putParameters(method.getFormalList(), node.getActualList());
-        Object returnValue;
-        if (!this.classMap.get(objectData.getType()).isBuiltIn()) {
-            returnValue = method.accept(this);
-        }
-        else{
-            returnValue = null;
-            //returnValue = (BuiltInObjectData) objectData.callMethod(name,paramList)
-        }
+        MethodBody methodBody = objectData.getMethod(node.getMethodName(), scope);
+
+        Object returnValue = methodBody.execute(node.getActualList());
         this.thisObject.setHierarchyLevel(currentHierarchy);
         return returnValue;
     }
@@ -115,17 +116,6 @@ public class InterpreterVisitor extends Visitor{
     public Object visit(Formal node) {
         return node.getName();
     }
-
-    private void putParameters(FormalList requiredParams, ExprList actualParams){
-        this.pushMethodScope();
-
-        for (int i = 0; i<requiredParams.getSize(); i++){
-            String name = (String)requiredParams.get(i).accept(this);
-            Object data = actualParams.get(i).accept(this);
-            this.getCurrentMethodScope().put(name, data);
-        }
-    }
-
 
     public Object visit(NewExpr newExpr){
         ClassTreeNode classTreeNode = this.classMap.get(newExpr.getType());
@@ -169,9 +159,11 @@ public class InterpreterVisitor extends Visitor{
      * @return result of the visit
      */
     public Object visit(WhileStmt node) {
-        while((boolean)node.getPredExpr().accept(this)) {
-            node.getBodyStmt().accept(this);
-        }
+        try {
+            while((boolean)node.getPredExpr().accept(this)) {
+                node.getBodyStmt().accept(this);
+            }
+        } catch(BreakStmtException ignored){}
         return null;
     }
 
@@ -185,12 +177,14 @@ public class InterpreterVisitor extends Visitor{
         if (node.getInitExpr() != null) {
             node.getInitExpr().accept(this);
         }
-        while(node.getPredExpr()==null || (boolean)node.getPredExpr().accept(this)) {
-            node.getBodyStmt().accept(this);
-            if (node.getUpdateExpr() != null) {
-                node.getUpdateExpr().accept(this);
+        try{
+            while(node.getPredExpr()==null || (boolean)node.getPredExpr().accept(this)) {
+                node.getBodyStmt().accept(this);
+                if (node.getUpdateExpr() != null) {
+                    node.getUpdateExpr().accept(this);
+                }
             }
-        }
+        } catch (BreakStmtException ignored){}
         return null;
     }
 
@@ -200,9 +194,8 @@ public class InterpreterVisitor extends Visitor{
      * @param node the break statement node
      * @return result of the visit
      */
-    //TODO: whether to use jankily use exceptions or to jankily use flags
     public Object visit(BreakStmt node) {
-        return null;
+        throw new BreakStmtException();
     }
 
     /**
@@ -211,12 +204,13 @@ public class InterpreterVisitor extends Visitor{
      * @param node the return statement node
      * @return result of the visit
      */
-    //TODO: whether to use jankily use exceptions or to jankily use flags
     public Object visit(ReturnStmt node) {
+        Object returnValue = null;
         if (node.getExpr() != null) {
-            node.getExpr().accept(this);
+            returnValue = node.getExpr().accept(this);
         }
-        return null;
+        throw new ReturnStmtException(returnValue);
+
     }
 
     /**
@@ -274,7 +268,7 @@ public class InterpreterVisitor extends Visitor{
      */
     public Object visit(AssignExpr node) {
         Object obj = node.getExpr().accept(this);
-        boolean isLocal = this.getObjectAndIsLocal(node.getRefName(),node.getName()).getValue();
+        boolean isLocal = this.isLocal(node.getRefName(),node.getName());
         if(isLocal){
             this.getCurrentMethodScope().put(node.getName(),obj);
         }
@@ -485,9 +479,9 @@ public class InterpreterVisitor extends Visitor{
         if (expr.getRef() != null){
             refName = ((VarExpr)expr.getRef()).getName();
         }
-        Pair<Object, Boolean> objAndLocation = this.getObjectAndIsLocal(refName, expr.getName());
-        int newValue = (int) objAndLocation.getKey() + incrementValue;
-        if (objAndLocation.getValue()){
+        int oldValue = (int)this.getVariableValue(refName,expr.getName());
+        int newValue = oldValue + incrementValue;
+        if (this.isLocal(refName,expr.getName())){
             this.getCurrentMethodScope().put(expr.getName(), newValue);
         }
         else{
@@ -495,7 +489,7 @@ public class InterpreterVisitor extends Visitor{
         }
 
         if (node.isPostfix()) {
-            return objAndLocation.getKey();
+            return oldValue;
         }
         else{
             return newValue;
@@ -523,7 +517,7 @@ public class InterpreterVisitor extends Visitor{
         if (node.getRef() != null) {
             refName = ((VarExpr)node.getRef()).getName();
         }
-        return this.getObjectAndIsLocal(refName,node.getName()).getKey();
+        return this.getVariableValue(refName,node.getName());
     }
 
     /**
@@ -552,6 +546,7 @@ public class InterpreterVisitor extends Visitor{
      * @param node the string constant expression node
      * @return result of the visit
      */
+    //TODO: Fix this so that it makes an ObjectData object
     public Object visit(ConstStringExpr node) {
         return node.getConstant();
     }

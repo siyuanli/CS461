@@ -26,6 +26,7 @@
 
 package bantam.interp;
 
+import bantam.ast.ExprList;
 import bantam.util.*;
 
 /** The <tt>Interpreter</tt> class interprets Bantam Java programs.  It
@@ -65,7 +66,7 @@ public class Interpreter {
         instantiationVisitor.initObject(mainObject, main);
         int scope = mainObject.getMethodScope("main", false);
         mainObject.setHierarchyLevel(scope);
-        mainObject.getMethod("main", scope).accept(interpreterVisitor);
+        mainObject.getMethod("main", scope).execute(new ExprList(-1));
     }
 }
 

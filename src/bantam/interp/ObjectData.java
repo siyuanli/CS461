@@ -10,7 +10,7 @@ public class ObjectData{
 
     private List<HashMap<String, Object>> fields;
 
-    private List<HashMap<String, Method>> methods;
+    private List<HashMap<String, MethodBody>> methods;
 
     private String type;
 
@@ -27,7 +27,7 @@ public class ObjectData{
         this.fields.add(hashMap);
     }
 
-    public void pushMethods(HashMap<String, Method> hashMap){
+    public void pushMethods(HashMap<String, MethodBody> hashMap){
         this.methods.add(hashMap);
     }
 
@@ -71,7 +71,7 @@ public class ObjectData{
         }
 
         for (int i = startI; i < this.methods.size(); i++){
-            HashMap<String, Method> scope = this.methods.get(i);
+            HashMap<String, MethodBody> scope = this.methods.get(i);
             if(scope.containsKey(name)){
                 return i;
             }
@@ -79,7 +79,7 @@ public class ObjectData{
         return -1;
     }
 
-    public Method getMethod(String name, int scope){
+    public MethodBody getMethod(String name, int scope){
         return this.methods.get(scope).get(name);
     }
 
@@ -91,7 +91,4 @@ public class ObjectData{
         return this.type;
     }
 
-    public boolean isBuiltIn(){
-        return false;
-    }
 }

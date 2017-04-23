@@ -1,5 +1,6 @@
 package bantam.interp;
 
+import bantam.ast.ExprList;
 import bantam.ast.Field;
 import bantam.ast.Method;
 import bantam.util.ClassTreeNode;
@@ -7,14 +8,12 @@ import bantam.visitor.Visitor;
 
 import java.util.HashMap;
 
-/**
- * Created by Phoebe Hughes on 4/20/2017.
- */
+
 public class InstantiationVisitor extends Visitor {
     private ObjectData objectData;
     private InterpreterVisitor interpreterVisitor;
     private HashMap<String, Object> fields;
-    private HashMap<String, Method> methods;
+    private HashMap<String, MethodBody> methods;
 
     public InstantiationVisitor(InterpreterVisitor interpreterVisitor){
         this.interpreterVisitor = interpreterVisitor;
@@ -22,21 +21,44 @@ public class InstantiationVisitor extends Visitor {
 
     public void initObject(ObjectData objectData, ClassTreeNode classTreeNode){
         this.objectData = objectData;
-        this.addFieldsAndMethods(classTreeNode);
+        this.addMembers(classTreeNode);
     }
 
-    private void addFieldsAndMethods(ClassTreeNode classTreeNode){
+    private void addMembers(ClassTreeNode classTreeNode){
         HashMap<String, Object> childFields = this.fields;
-        HashMap<String, Method> childMethods = this.methods;
+        HashMap<String, MethodBody> childMethods = this.methods;
 
-        this.fields = new HashMap<>();
-        this.objectData.pushField(fields);
+        if (classTreeNode.isBuiltIn()) {
+            switch (classTreeNode.getName()) {
+                case "Object":
 
-        this.methods = new HashMap<>();
-        this.objectData.pushMethods(methods);
+                    break;
 
-        if (classTreeNode.getParent() != null){
-            this.addFieldsAndMethods(classTreeNode.getParent());
+                case "String":
+
+                    break;
+
+                case "Sys":
+
+                    break;
+
+                case "TextIO":
+
+                    break;
+            }
+        }
+        else {
+
+            this.fields = new HashMap<>();
+            this.objectData.pushField(fields);
+
+            this.methods = new HashMap<>();
+            this.objectData.pushMethods(methods);
+
+        }
+
+        if (classTreeNode.getParent() != null) {
+            this.addMembers(classTreeNode.getParent());
             this.fields = childFields;
             this.methods = childMethods;
         }
@@ -61,7 +83,20 @@ public class InstantiationVisitor extends Visitor {
     }
 
     public Object visit(Method node) {
-        this.methods.put(node.getName(), node);
+        this.methods.put(node.getName(), new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                interpreterVisitor.pushMethodScope();
+                for(int i = 0; i< actualParams.getSize();i++){
+                    String name = (String)node.getFormalList().get(i).accept(interpreterVisitor);
+                    Object data = actualParams.get(i).accept(interpreterVisitor);
+                    interpreterVisitor.getCurrentMethodScope().put(name, data);
+                }
+                Object returnValue = node.accept(interpreterVisitor);
+                interpreterVisitor.popMethodScope();
+                return returnValue;
+            }
+        });
         return null;
     }
 
