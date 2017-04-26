@@ -27,42 +27,44 @@ public class InstantiationVisitor extends Visitor {
     private void addMembers(ClassTreeNode classTreeNode){
         HashMap<String, Object> childFields = this.fields;
         HashMap<String, MethodBody> childMethods = this.methods;
+        BuiltInMemberGenerator memberGenerator = new BuiltInMemberGenerator(this.interpreterVisitor);
 
-        if (classTreeNode.isBuiltIn()) {
-            switch (classTreeNode.getName()) {
-                case "Object":
+        this.fields = new HashMap<>();
+        this.objectData.pushFields(this.fields);
 
-                    break;
-
-                case "String":
-
-                    break;
-
-                case "Sys":
-
-                    break;
-
-                case "TextIO":
-
-                    break;
-            }
-        }
-        else {
-
-            this.fields = new HashMap<>();
-            this.objectData.pushField(fields);
-
-            this.methods = new HashMap<>();
-            this.objectData.pushMethods(methods);
-
-        }
+        this.methods = new HashMap<>();
+        this.objectData.pushMethods(this.methods);
 
         if (classTreeNode.getParent() != null) {
             this.addMembers(classTreeNode.getParent());
             this.fields = childFields;
             this.methods = childMethods;
         }
-        classTreeNode.getASTNode().accept(this);
+
+        if (classTreeNode.isBuiltIn()) {
+            switch (classTreeNode.getName()) {
+                case "Object":
+                    memberGenerator.genObjectMembers(this.methods, this.fields);
+                    break;
+
+                case "String":
+                    memberGenerator.genStringMembers(this.methods, this.fields);
+                    break;
+
+                case "Sys":
+                    memberGenerator.genSysMembers(this.methods);
+                    break;
+
+                case "TextIO":
+                    this.fields.put("*this", objectData);
+                    memberGenerator.genTextIOMembers(this.methods, this.fields);
+                    break;
+            }
+        }
+        else {
+            classTreeNode.getASTNode().accept(this);
+        }
+
     }
 
     public Object visit(Field node) {

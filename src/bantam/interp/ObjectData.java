@@ -23,7 +23,7 @@ public class ObjectData{
         this.type = type;
     }
 
-    public void pushField(HashMap<String, Object> hashMap){
+    public void pushFields(HashMap<String, Object> hashMap){
         this.fields.add(hashMap);
     }
 
