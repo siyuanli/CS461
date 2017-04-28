@@ -25,14 +25,14 @@ public class InstantiationVisitor extends Visitor {
     }
 
     private void addMembers(ClassTreeNode classTreeNode){
-        HashMap<String, Object> childFields = this.fields;
-        HashMap<String, MethodBody> childMethods = this.methods;
         BuiltInMemberGenerator memberGenerator = new BuiltInMemberGenerator(this.interpreterVisitor);
 
         this.fields = new HashMap<>();
+        HashMap<String, Object> childFields = this.fields;
         this.objectData.pushFields(this.fields);
 
         this.methods = new HashMap<>();
+        HashMap<String, MethodBody> childMethods = this.methods;
         this.objectData.pushMethods(this.methods);
 
         if (classTreeNode.getParent() != null) {
@@ -44,6 +44,7 @@ public class InstantiationVisitor extends Visitor {
         if (classTreeNode.isBuiltIn()) {
             switch (classTreeNode.getName()) {
                 case "Object":
+                    this.fields.put("*this", objectData);
                     memberGenerator.genObjectMembers(this.methods, this.fields);
                     break;
 
@@ -52,11 +53,10 @@ public class InstantiationVisitor extends Visitor {
                     break;
 
                 case "Sys":
-                    memberGenerator.genSysMembers(this.methods);
+                    memberGenerator.genSysMembers(this.methods, this.fields);
                     break;
 
                 case "TextIO":
-                    this.fields.put("*this", objectData);
                     memberGenerator.genTextIOMembers(this.methods, this.fields);
                     break;
             }

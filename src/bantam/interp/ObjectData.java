@@ -91,4 +91,11 @@ public class ObjectData{
         return this.type;
     }
 
+    public void copyFields(ObjectData objectData){
+        for(int i = 0; i< this.fields.size();i++){
+            for(Map.Entry<String, Object> entry : this.fields.get(i).entrySet()){
+                objectData.fields.get(i).put(entry.getKey(),entry.getValue());
+            }
+        }
+    }
 }

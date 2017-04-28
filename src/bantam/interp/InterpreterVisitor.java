@@ -22,6 +22,7 @@ public class InterpreterVisitor extends Visitor{
 
     public InterpreterVisitor(Hashtable<String, ClassTreeNode> classMap, ObjectData mainObject){
         this.localVars = new ArrayList<>();
+        this.localVars.add(new HashMap<>());
         this.classMap = classMap;
         this.instantiationVisitor = new InstantiationVisitor(this);
         this.thisObject = mainObject;
@@ -38,6 +39,7 @@ public class InterpreterVisitor extends Visitor{
     public HashMap<String,Object> getCurrentMethodScope(){
         return  this.localVars.get(this.localVars.size()-1);
     }
+
 
     /**
      *
@@ -546,9 +548,34 @@ public class InterpreterVisitor extends Visitor{
      * @param node the string constant expression node
      * @return result of the visit
      */
-    //TODO: Fix this so that it makes an ObjectData object
     public Object visit(ConstStringExpr node) {
-        return node.getConstant();
+        ObjectData strObjectData = new ObjectData("String");
+        this.instantiationVisitor.initObject(strObjectData,this.classMap.get("String"));
+        String oldstr = node.getConstant();
+        String newstr = "";
+        //Taken from mipsSupport, edited by PYYLCH, SL, JDM
+        for (int i = 0; i < oldstr.length(); i++) {
+            if (oldstr.charAt(i) == '\\' && i < oldstr.length() - 1) {
+                if (oldstr.charAt(i + 1) == 'n') {
+                    newstr+="\n";
+                } else if (oldstr.charAt(i + 1) == 't') {
+                    newstr+="\t";
+                } else if (oldstr.charAt(i + 1) == 'f') {
+                    newstr+="\f";
+                } else if (oldstr.charAt(i + 1) == '"') {
+                    newstr+="\"";
+                } else if (oldstr.charAt(i + 1) == '\\') {
+                    newstr+="\\";
+                }
+                // backslash is not allowed in front of any other char
+                i++;
+            } else {
+                newstr+=oldstr.charAt(i);
+            }
+        }
+        strObjectData.setField("length",newstr.length(),false);
+        strObjectData.setField("*str",newstr,false);
+        return strObjectData;
     }
 
 }

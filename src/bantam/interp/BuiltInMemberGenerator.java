@@ -2,6 +2,8 @@ package bantam.interp;
 
 import bantam.ast.ConstStringExpr;
 import bantam.ast.ExprList;
+import bantam.ast.NewExpr;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -152,7 +154,10 @@ public class BuiltInMemberGenerator {
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
-                String string = (String)objectData.getField("*str", false);
+                String string = "null";
+                if(objectData != null){
+                    string = (String)objectData.getField("*str", false);
+                }
                 ((PrintStream)fields.get("*outputStream")).print(string);
                 return fields.get("*this");
             }
@@ -167,7 +172,7 @@ public class BuiltInMemberGenerator {
         });
     }
 
-    public void genSysMembers(HashMap<String,MethodBody> methods) {
+    public void genSysMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields) {
         methods.put("exit", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
@@ -191,6 +196,33 @@ public class BuiltInMemberGenerator {
     }
 
     public void genObjectMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields) {
+        methods.put("toString", new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                ObjectData objectData = (ObjectData)fields.get("*this");
+                String data = objectData.toString();
+                return objectData.getType() + data.substring(data.indexOf("@"));
+            }
+        });
+        methods.put("equals", new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                ObjectData otherObject = (ObjectData)actualParams.get(0).accept(interpreterVisitor);
+                ObjectData thisObject = (ObjectData)fields.get("*this");
+                return thisObject.equals(otherObject);
+            }
+        });
+        methods.put("clone", new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                ObjectData thisObject = (ObjectData)fields.get("*this");
+                ObjectData newObject = (ObjectData)(new NewExpr(-1,thisObject.getType()))
+                        .accept(interpreterVisitor);
+                thisObject.copyFields(newObject);
+                return newObject;
+            }
+        });
+
 
     }
 }
