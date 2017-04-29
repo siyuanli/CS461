@@ -1,8 +1,12 @@
 /*
  * File: empty.btm
- * CS461 Project 4B
+ * CS461 Project 5
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/17/17
+ * Date: 4/30/17
+ */
+
+/**
+ * The test file that tests all functionality of Bantam Java
  */
 
 /**

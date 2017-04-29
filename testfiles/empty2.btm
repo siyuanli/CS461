@@ -1,4 +1,17 @@
+/*
+ * File: empty2.btm
+ * CS461 Project 5
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/30/17
+ */
+
+/**
+ * The class that runs tests on readFile, writeFile, readStdin, and writeStderr of TextIO
+ */
 class Main{
+    /**
+     * The main function that calls all testing methods
+     */
     void main(){
         TextIO printIO = new TextIO();
         TextIO io = new TextIO();
