@@ -1,3 +1,10 @@
+/*
+ * File: BuiltInMemberGenerator.java
+ * CS461 Project 5 First Extension
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/30/17
+ */
+
 package bantam.interp;
 
 import bantam.ast.ConstStringExpr;
@@ -8,7 +15,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.HashMap;
-import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 

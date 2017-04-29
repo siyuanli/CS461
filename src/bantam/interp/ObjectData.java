@@ -1,6 +1,11 @@
-package bantam.interp;
+/*
+ * File: ObjectData.java
+ * CS461 Project 5 First Extension
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/30/17
+ */
 
-import bantam.ast.Method;
+package bantam.interp;
 import java.util.*;
 
 /**

@@ -1,10 +1,14 @@
+/*
+ * File: InterpreterVisitor.java
+ * CS461 Project 5 First Extension
+ * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
+ * Date: 4/30/17
+ */
 package bantam.interp;
 
 import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.visitor.Visitor;
-import javafx.util.Pair;
-
 import java.util.*;
 
 /**
