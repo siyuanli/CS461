@@ -15,11 +15,12 @@ public class InstantiationVisitor extends Visitor {
     private HashMap<String, Object> fields;
     private HashMap<String, MethodBody> methods;
 
-    public InstantiationVisitor(InterpreterVisitor interpreterVisitor){
+    public InstantiationVisitor(InterpreterVisitor interpreterVisitor, ObjectData objectData, ClassTreeNode classTreeNode){
         this.interpreterVisitor = interpreterVisitor;
+        this.initObject(objectData, classTreeNode);
     }
 
-    public void initObject(ObjectData objectData, ClassTreeNode classTreeNode){
+    private void initObject(ObjectData objectData, ClassTreeNode classTreeNode){
         this.objectData = objectData;
         this.addMembers(classTreeNode);
     }

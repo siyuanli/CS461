@@ -18,13 +18,10 @@ public class InterpreterVisitor extends Visitor{
 
     private List<HashMap<String, Object>> localVars;
 
-    private InstantiationVisitor instantiationVisitor;
-
     public InterpreterVisitor(Hashtable<String, ClassTreeNode> classMap, ObjectData mainObject){
         this.localVars = new ArrayList<>();
         this.localVars.add(new HashMap<>());
         this.classMap = classMap;
-        this.instantiationVisitor = new InstantiationVisitor(this);
         this.thisObject = mainObject;
     }
 
@@ -122,7 +119,6 @@ public class InterpreterVisitor extends Visitor{
         //Set hierarchy to new hierarchy level while saving old one
         int oldHierarchy = objectData.getHierarchyLevel();
         objectData.setHierarchyLevel(scope);
-
         MethodBody methodBody = objectData.getMethod(node.getMethodName(), scope);
 
         Object returnValue = methodBody.execute(node.getActualList());
@@ -140,7 +136,7 @@ public class InterpreterVisitor extends Visitor{
     public Object visit(NewExpr newExpr){
         ClassTreeNode classTreeNode = this.classMap.get(newExpr.getType());
         ObjectData objectData = new ObjectData(newExpr.getType());
-        this.instantiationVisitor.initObject(objectData, classTreeNode);
+        new InstantiationVisitor(this, objectData, classTreeNode);
         return objectData;
     }
 
@@ -569,7 +565,7 @@ public class InterpreterVisitor extends Visitor{
      */
     public Object visit(ConstStringExpr node) {
         ObjectData strObjectData = new ObjectData("String");
-        this.instantiationVisitor.initObject(strObjectData,this.classMap.get("String"));
+        new InstantiationVisitor(this, strObjectData,this.classMap.get("String"));
         String oldstr = node.getConstant();
         String newstr = "";
         //Taken from mipsSupport, edited by PYYLCH, SL, JDM

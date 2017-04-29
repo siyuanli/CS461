@@ -71,18 +71,6 @@ public class ObjectData{
             startI++;
         }
 
-        System.out.println("method:"+name);
-        System.out.println(this.methods.get(0).containsKey("testReturn"));
-        if(name.equals("testReturn")){
-            System.out.println("testReturnIfStatement");
-            for(HashMap<String, MethodBody> map : this.methods) {
-                System.out.println("new scope");
-                for (Map.Entry<String, MethodBody> entry : map.entrySet()) {
-
-                    System.out.println(entry);
-                }
-            }
-        }
         for (int i = startI; i < this.methods.size(); i++){
             HashMap<String, MethodBody> scope = this.methods.get(i);
 

@@ -62,8 +62,7 @@ public class Interpreter {
 	    ClassTreeNode main = root.getClassMap().get("Main");
         ObjectData mainObject = new ObjectData("Main");
         InterpreterVisitor interpreterVisitor = new InterpreterVisitor(root.getClassMap(), mainObject);
-        InstantiationVisitor instantiationVisitor = new InstantiationVisitor(interpreterVisitor);
-        instantiationVisitor.initObject(mainObject, main);
+        new InstantiationVisitor(interpreterVisitor, mainObject, main);
         int scope = mainObject.getMethodScope("main", false);
         mainObject.setHierarchyLevel(scope);
         mainObject.getMethod("main", scope).execute(new ExprList(-1));
