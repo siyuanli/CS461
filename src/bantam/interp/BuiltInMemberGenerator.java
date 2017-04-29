@@ -10,7 +10,6 @@ package bantam.interp;
 import bantam.ast.ConstStringExpr;
 import bantam.ast.ExprList;
 import bantam.ast.NewExpr;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -19,21 +18,38 @@ import java.util.Random;
 import java.util.Scanner;
 
 /**
- * Created by joseph on 4/23/17.
+ * Generate the builtin classes (Object String Sys TextIO) of Bantam Java
  */
 public class BuiltInMemberGenerator {
 
+    /**
+     * The interpreter visitor that interprets Bantam Java
+     */
     private InterpreterVisitor interpreterVisitor;
 
+    /**
+     * Create a new builtin memeber generator
+     * @param visitor the interpreter visitor
+     */
     public BuiltInMemberGenerator(InterpreterVisitor visitor){
         this.interpreterVisitor = visitor;
     }
 
+    /**
+     * Generate the builtin methods of String
+     * @param methods a hashmap of methods
+     * @param fields a hashmap of fields
+     */
     public void genStringMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields){
         fields.put("length", 0);
         fields.put("*str","");
         methods.put("length", actualParams -> fields.get("length"));
         methods.put("equals", new MethodBody() {
+            /**
+             * Implement the equals method of String
+             * @param actualParams the string to compare with
+             * @return a boolean indicating if strings are equal
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
@@ -44,12 +60,22 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("toString", new MethodBody() {
+            /**
+             * Implement the equals method of String
+             * @param actualParams the parameters of the method
+             * @return the string itself
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 return interpreterVisitor.visit(new ConstStringExpr(-1, (String)fields.get("*str"))) ;
             }
         });
         methods.put("substring", new MethodBody() {
+            /**
+             * Implement the substring method of String
+             * @param actualParams the parameters of the method
+             * @return the substring between the two indices
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 Integer startI = (Integer) actualParams.get(0).accept(interpreterVisitor);
@@ -59,6 +85,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("concat", new MethodBody() {
+            /**
+             * Implement the concat method of String
+             * @param actualParams the parameters of the method
+             * @return the concatenated string
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
@@ -69,12 +100,23 @@ public class BuiltInMemberGenerator {
         });
     }
 
+    /**
+     * Generate the builtin methods of TextIO
+     * @param methods a hashmap of methods
+     * @param fields a hashmap of fields
+     * @param thisObject the current object
+     */
     public void genTextIOMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields, ObjectData thisObject){
         fields.put("*outputStream", System.out);
         Scanner stdIn = new Scanner(System.in);
         fields.put("*inputStream", stdIn);
 
         methods.put("readStdin", new MethodBody() {
+            /**
+             * Implement the readStdin method of TextIO set to read from standard input
+             * @param actualParams the parameters of the method
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 if(!fields.get("*inputStream").equals(stdIn)) {
@@ -85,6 +127,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("readFile", new MethodBody() {
+            /**
+             * Implement the readFile method of TextIO that set to read from standard input
+             * @param actualParams the parameters of the method
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
@@ -103,6 +150,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("writeStdout", new MethodBody() {
+            /**
+             * Implement the writeStdout method of TextIO that set to write to standard output
+             * @param actualParams the parameters of the method
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 PrintStream outputStream = (PrintStream) fields.get("*outputStream");
@@ -114,6 +166,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("writeStderr", new MethodBody() {
+            /**
+             * Implement the writeStderr method of TextIO that set to write to standard error
+             * @param actualParams the parameters of the method
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 PrintStream outputStream = (PrintStream) fields.get("*outputStream");
@@ -125,6 +182,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("writeFile", new MethodBody() {
+            /**
+             * Implement the writeFile method of TextIO that set to write to specified file
+             * @param actualParams the parameters of the method
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
@@ -144,6 +206,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("getString", new MethodBody() {
+            /**
+             * Implement the getString method of TextIO that read next string
+             * @param actualParams the parameters of the method
+             * @return the next string
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 String s = ((Scanner)fields.get("*inputStream")).nextLine();
@@ -151,6 +218,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("getInt", new MethodBody() {
+            /**
+             * Implement the getInt method of TextIO that read next int
+             * @param actualParams the parameters of the method
+             * @return the next int
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 try {
@@ -162,6 +234,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("putString", new MethodBody() {
+            /**
+             * Implement the putString method of TextIO that write specified string
+             * @param actualParams the input string to be written
+             * @return the current object
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
@@ -174,6 +251,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("putInt", new MethodBody() {
+            /**
+             * Implement the putInt method of TextIO that write specified int
+             * @param actualParams the input int to be written
+             * @return the current object
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 Integer integer = (Integer) actualParams.get(0).accept(interpreterVisitor);
@@ -183,8 +265,17 @@ public class BuiltInMemberGenerator {
         });
     }
 
+    /**
+     * Generate the builtin methods of Sys
+     * @param methods a hashmap of methods
+     */
     public void genSysMembers(HashMap<String,MethodBody> methods) {
         methods.put("exit", new MethodBody() {
+            /**
+             * Implement the exit method of Sys that exit program with specified status
+             * @param actualParams the numerical status
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 Integer integer = (Integer) actualParams.get(0).accept(interpreterVisitor);
@@ -193,12 +284,22 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("time", new MethodBody() {
+            /**
+             * Implement the time method of Sys that return UTC time
+             * @param actualParams the parameters of the method
+             * @return the UTC time in seconds
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 return (int)(System.currentTimeMillis()/1000);
             }
         });
         methods.put("random", new MethodBody() {
+            /**
+             * Implement the random method of Sys that return a random int
+             * @param actualParams the parameters of the method
+             * @return a random int
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 return (new Random()).nextInt(Integer.MAX_VALUE) ;
@@ -206,8 +307,19 @@ public class BuiltInMemberGenerator {
         });
     }
 
+    /**
+     * Generate the builtin methods of Object
+     * @param methods a hashmap of methods
+     * @param thisObject the object
+     */
     public void genObjectMembers(HashMap<String,MethodBody> methods, ObjectData thisObject) {
         methods.put("toString", new MethodBody() {
+            /**
+             * Implements the toString method of Object that return a string
+             * representation of object
+             * @param actualParams the parameters of the method
+             * @return the string representation of object
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 String data = thisObject.toString();
@@ -218,6 +330,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("equals", new MethodBody() {
+            /**
+             * Implements the equals method of Object that test if objects are equal
+             * @param actualParams the input object to compare with
+             * @return a boolean indicating if two objects are equal
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData otherObject = (ObjectData)actualParams.get(0).accept(interpreterVisitor);
@@ -225,6 +342,11 @@ public class BuiltInMemberGenerator {
             }
         });
         methods.put("clone", new MethodBody() {
+            /**
+             * Implements the clone method of Object that copy an object
+             * @param actualParams the parameters of the method
+             * @return the cloned object
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData newObject = (ObjectData)(new NewExpr(-1,thisObject.getType()))
@@ -233,7 +355,6 @@ public class BuiltInMemberGenerator {
                 return newObject;
             }
         });
-
 
     }
 }

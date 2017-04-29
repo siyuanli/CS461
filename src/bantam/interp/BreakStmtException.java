@@ -7,7 +7,9 @@
 
 package bantam.interp;
 
-
+/**
+ * A runtime exception returned when reaching a break statement.
+ */
 public class BreakStmtException extends RuntimeException {
 
 }
