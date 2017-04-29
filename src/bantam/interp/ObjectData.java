@@ -64,14 +64,28 @@ public class ObjectData{
         }
     }
 
+    //TODO: Fix this (0-level methods don't exist?)
     public int getMethodScope(String name, boolean hasRefSuper){
         int startI = this.hierarchyLevel;
         if (hasRefSuper){
             startI++;
         }
 
+        System.out.println("method:"+name);
+        System.out.println(this.methods.get(0).containsKey("testReturn"));
+        if(name.equals("testReturn")){
+            System.out.println("testReturnIfStatement");
+            for(HashMap<String, MethodBody> map : this.methods) {
+                System.out.println("new scope");
+                for (Map.Entry<String, MethodBody> entry : map.entrySet()) {
+
+                    System.out.println(entry);
+                }
+            }
+        }
         for (int i = startI; i < this.methods.size(); i++){
             HashMap<String, MethodBody> scope = this.methods.get(i);
+
             if(scope.containsKey(name)){
                 return i;
             }

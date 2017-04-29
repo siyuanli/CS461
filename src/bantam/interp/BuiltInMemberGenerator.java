@@ -60,7 +60,7 @@ public class BuiltInMemberGenerator {
         });
     }
 
-    public void genTextIOMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields){
+    public void genTextIOMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields, ObjectData thisObject){
         /*fields.put("readFD", 0);
         fields.put("writeFD", 1);*/
         //TODO:Check if this is correct
@@ -159,7 +159,7 @@ public class BuiltInMemberGenerator {
                     string = (String)objectData.getField("*str", false);
                 }
                 ((PrintStream)fields.get("*outputStream")).print(string);
-                return fields.get("*this");
+                return thisObject;
             }
         });
         methods.put("putInt", new MethodBody() {
@@ -167,12 +167,12 @@ public class BuiltInMemberGenerator {
             public Object execute(ExprList actualParams) {
                 Integer integer = (Integer) actualParams.get(0).accept(interpreterVisitor);
                 ((PrintStream)fields.get("*outputStream")).print(integer);
-                return fields.get("*this");
+                return thisObject;
             }
         });
     }
 
-    public void genSysMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields) {
+    public void genSysMembers(HashMap<String,MethodBody> methods) {
         methods.put("exit", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
@@ -195,27 +195,27 @@ public class BuiltInMemberGenerator {
         });
     }
 
-    public void genObjectMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields) {
+    public void genObjectMembers(HashMap<String,MethodBody> methods, ObjectData thisObject) {
         methods.put("toString", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
-                ObjectData objectData = (ObjectData)fields.get("*this");
-                String data = objectData.toString();
-                return objectData.getType() + data.substring(data.indexOf("@"));
+                String data = thisObject.toString();
+                String toString = thisObject.getType() + data.substring(data.indexOf("@"));
+                ObjectData toStringObject =
+                        (ObjectData) interpreterVisitor.visit(new ConstStringExpr(-1,toString));
+                return toStringObject;
             }
         });
         methods.put("equals", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData otherObject = (ObjectData)actualParams.get(0).accept(interpreterVisitor);
-                ObjectData thisObject = (ObjectData)fields.get("*this");
                 return thisObject.equals(otherObject);
             }
         });
         methods.put("clone", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
-                ObjectData thisObject = (ObjectData)fields.get("*this");
                 ObjectData newObject = (ObjectData)(new NewExpr(-1,thisObject.getType()))
                         .accept(interpreterVisitor);
                 thisObject.copyFields(newObject);

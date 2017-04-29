@@ -777,6 +777,7 @@ class Main extends Parent{
     void testNew(){
        new String();
        Main main = new Main();
+       io.putString(main.toString());
        int x = main.testReturn();
        if (x == 10){
             io.putInt(x);

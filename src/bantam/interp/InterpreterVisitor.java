@@ -28,8 +28,8 @@ public class InterpreterVisitor extends Visitor{
         this.thisObject = mainObject;
     }
 
-    public void pushMethodScope(){
-        this.localVars.add(new HashMap<>());
+    public void pushMethodScope(HashMap<String, Object> hashMap){
+        this.localVars.add(hashMap);
     }
 
     public void popMethodScope(){
@@ -37,7 +37,15 @@ public class InterpreterVisitor extends Visitor{
     }
 
     public HashMap<String,Object> getCurrentMethodScope(){
-        return  this.localVars.get(this.localVars.size()-1);
+        return this.localVars.get(this.localVars.size()-1);
+    }
+
+    public ObjectData getThisObject() {
+        return thisObject;
+    }
+
+    public void setThisObject(ObjectData thisObject) {
+        this.thisObject = thisObject;
     }
 
 
@@ -50,6 +58,9 @@ public class InterpreterVisitor extends Visitor{
      *
      */
     private Object getVariableValue(String ref, String name){
+        if(name.equals("this")){
+            return thisObject;
+        }
         boolean isLocal = this.isLocal(ref,name);
         if(isLocal){
             return this.getCurrentMethodScope().get(name);
@@ -75,13 +86,14 @@ public class InterpreterVisitor extends Visitor{
         } catch (ReturnStmtException e){
             returnValue = e.getReturnValue();
         }
-        this.popMethodScope();
         return returnValue;
     }
 
 
     public Object visit(DispatchExpr node) {
+        //Change "this" object over to new method callee
         ObjectData objectData = this.thisObject;
+
         String refName = null;
         if(node.getRefExpr() instanceof VarExpr){
             refName = ((VarExpr)node.getRefExpr()).getName();
@@ -97,21 +109,27 @@ public class InterpreterVisitor extends Visitor{
         }
         else if (!"this".equals(refName)){ //different object
             objectData = (ObjectData)node.getRefExpr().accept(this);
+            if(objectData == null){
+                throw new NullPointerException("Reference object of call to "
+                        +node.getMethodName()+" on line "+node.getLineNum()+" is null");
+            }
         }
 
-        if(objectData == null){
-            throw new NullPointerException("Reference object of call to "
-                    +node.getMethodName()+" on line "+node.getLineNum()+" is null");
-        }
 
 
         int scope = objectData.getMethodScope(node.getMethodName(), isSuper);
-        int currentHierarchy = this.thisObject.getHierarchyLevel();
+
+        //Set hierarchy to new hierarchy level while saving old one
+        int oldHierarchy = objectData.getHierarchyLevel();
         objectData.setHierarchyLevel(scope);
+
         MethodBody methodBody = objectData.getMethod(node.getMethodName(), scope);
 
         Object returnValue = methodBody.execute(node.getActualList());
-        this.thisObject.setHierarchyLevel(currentHierarchy);
+
+        //Set hierarchy back to before value
+        objectData.setHierarchyLevel(oldHierarchy);
+
         return returnValue;
     }
 
@@ -223,7 +241,7 @@ public class InterpreterVisitor extends Visitor{
      */
     public Object visit(InstanceofExpr node) {
         ObjectData obj = (ObjectData)node.getExpr().accept(this);
-        if(node.getUpCheck()){
+        if(node.getUpCheck() || obj == null){
             return true;
         }
         else{
@@ -246,19 +264,20 @@ public class InterpreterVisitor extends Visitor{
      */
     public Object visit(CastExpr node) {
         ObjectData obj = (ObjectData)node.getExpr().accept(this);
-        if(node.getUpCast()){
+        if(node.getUpCast() || obj == null){
             return obj;
         }
         else{
             ClassTreeNode classTreeNode = this.classMap.get(obj.getType());
-            while(classTreeNode!=null){
-                if(!classTreeNode.getName().equals(node.getType())){
+            while (classTreeNode != null) {
+                if (!classTreeNode.getName().equals(node.getType())) {
                     return obj;
                 }
                 classTreeNode = classTreeNode.getParent();
             }
-            throw new ClassCastException("Cannot cast object of type "+obj.getType()+
-                    " to type "+node.getType() + " on line "+ node.getLineNum());
+            throw new ClassCastException("Cannot cast object of type " + obj.getType() +
+
+                    " to type " + node.getType() + " on line " + node.getLineNum());
         }
     }
 

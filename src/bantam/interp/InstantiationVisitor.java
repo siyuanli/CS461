@@ -44,8 +44,7 @@ public class InstantiationVisitor extends Visitor {
         if (classTreeNode.isBuiltIn()) {
             switch (classTreeNode.getName()) {
                 case "Object":
-                    this.fields.put("*this", objectData);
-                    memberGenerator.genObjectMembers(this.methods, this.fields);
+                    memberGenerator.genObjectMembers(this.methods, objectData);
                     break;
 
                 case "String":
@@ -53,11 +52,11 @@ public class InstantiationVisitor extends Visitor {
                     break;
 
                 case "Sys":
-                    memberGenerator.genSysMembers(this.methods, this.fields);
+                    memberGenerator.genSysMembers(this.methods);
                     break;
 
                 case "TextIO":
-                    memberGenerator.genTextIOMembers(this.methods, this.fields);
+                    memberGenerator.genTextIOMembers(this.methods, this.fields, objectData);
                     break;
             }
         }
@@ -88,14 +87,18 @@ public class InstantiationVisitor extends Visitor {
         this.methods.put(node.getName(), new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
-                interpreterVisitor.pushMethodScope();
+                HashMap<String, Object> methodScope = new HashMap<>();
                 for(int i = 0; i< actualParams.getSize();i++){
                     String name = (String)node.getFormalList().get(i).accept(interpreterVisitor);
                     Object data = actualParams.get(i).accept(interpreterVisitor);
-                    interpreterVisitor.getCurrentMethodScope().put(name, data);
+                    methodScope.put(name, data);
                 }
+                ObjectData oldThisObject = interpreterVisitor.getThisObject();
+                interpreterVisitor.setThisObject(objectData);
+                interpreterVisitor.pushMethodScope(methodScope);
                 Object returnValue = node.accept(interpreterVisitor);
                 interpreterVisitor.popMethodScope();
+                interpreterVisitor.setThisObject(oldThisObject);
                 return returnValue;
             }
         });
