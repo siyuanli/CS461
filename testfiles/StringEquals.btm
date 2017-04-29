@@ -1,7 +1,7 @@
 // This class tests the string equals method
 // Note: running this program should result in a null 
 // pointer error at the end
-class bantam.Main {
+class Main {
     // With these fields, bantam.Main object will match "abc"
     // representation exactly except in ID and dispatch pointer
     int length = 3;
@@ -15,7 +15,7 @@ class bantam.Main {
 	String s2 = "abc";
 	String s3 = "abcd";
 	String s4 = "ab";
-	Object m = new bantam.Main();
+	Object m = new Main();
 	String s5 = "";
 	String s6 = null;
 	// an io object for printing the results

@@ -243,7 +243,7 @@ public class InterpreterVisitor extends Visitor{
         else{
             ClassTreeNode classTreeNode = this.classMap.get(obj.getType());
             while(classTreeNode!=null){
-                if(!classTreeNode.getName().equals(node.getType())){
+                if(classTreeNode.getName().equals(node.getType())){
                     return true;
                 }
                 classTreeNode = classTreeNode.getParent();
@@ -266,13 +266,12 @@ public class InterpreterVisitor extends Visitor{
         else{
             ClassTreeNode classTreeNode = this.classMap.get(obj.getType());
             while (classTreeNode != null) {
-                if (!classTreeNode.getName().equals(node.getType())) {
+                if (classTreeNode.getName().equals(node.getType())) {
                     return obj;
                 }
                 classTreeNode = classTreeNode.getParent();
             }
             throw new ClassCastException("Cannot cast object of type " + obj.getType() +
-
                     " to type " + node.getType() + " on line " + node.getLineNum());
         }
     }
@@ -290,7 +289,7 @@ public class InterpreterVisitor extends Visitor{
             this.getCurrentMethodScope().put(node.getName(),obj);
         }
         else{
-            this.thisObject.setField(node.getName(),obj,node.getRefName().equals("super"));
+            this.thisObject.setField(node.getName(),obj,"super".equals(node.getRefName()));
         }
         return obj;
     }
@@ -442,8 +441,10 @@ public class InterpreterVisitor extends Visitor{
      */
     public Object visit(BinaryLogicAndExpr node) {
         boolean left = (boolean)node.getLeftExpr().accept(this);
-        boolean right = (boolean)node.getRightExpr().accept(this);
-        return left && right;
+        if(left) {
+            return node.getRightExpr().accept(this);
+        }
+        return false;
     }
 
     /**
@@ -454,8 +455,10 @@ public class InterpreterVisitor extends Visitor{
      */
     public Object visit(BinaryLogicOrExpr node) {
         boolean left = (boolean)node.getLeftExpr().accept(this);
-        boolean right = (boolean)node.getRightExpr().accept(this);
-        return left || right;
+        if(!left) {
+            return node.getRightExpr().accept(this);
+        }
+        return true;
     }
 
     /**

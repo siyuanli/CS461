@@ -1,4 +1,4 @@
-class bantam.Main {
+class Main {
     void main() {
 	String s = "abcdefghijklmnopqrstuvwxyz";
 	String s2 = "abcdefghijklmnopqrstuvwxyz";

@@ -31,6 +31,9 @@ public class BuiltInMemberGenerator {
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
+                if(objectData == null){
+                    return false;
+                }
                 return fields.get("*str").equals(objectData.getField("*str",false));
             }
         });
@@ -61,17 +64,17 @@ public class BuiltInMemberGenerator {
     }
 
     public void genTextIOMembers(HashMap<String,MethodBody> methods, HashMap<String,Object> fields, ObjectData thisObject){
-        /*fields.put("readFD", 0);
-        fields.put("writeFD", 1);*/
-        //TODO:Check if this is correct
         fields.put("*outputStream", System.out);
-        fields.put("*inputStream", new Scanner(System.in));
+        Scanner stdIn = new Scanner(System.in);
+        fields.put("*inputStream", stdIn);
 
         methods.put("readStdin", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
-                ((Scanner)fields.get("*inputStream")).close();
-                fields.put("*inputStream", new Scanner(System.in));
+                if(!fields.get("*inputStream").equals(stdIn)) {
+                    ((Scanner) fields.get("*inputStream")).close();
+                }
+                fields.put("*inputStream", stdIn);
                 return null;
             }
         });
@@ -81,7 +84,9 @@ public class BuiltInMemberGenerator {
                 ObjectData objectData = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
                 String fileName = (String)objectData.getField("*str", false);
                 try {
-                    ((Scanner)fields.get("*inputStream")).close();
+                    if(!fields.get("*inputStream").equals(stdIn)) {
+                        ((Scanner) fields.get("*inputStream")).close();
+                    }
                     fields.put("*inputStream", new Scanner(new FileInputStream(fileName)));
                 }
                 catch (FileNotFoundException e){
@@ -143,9 +148,9 @@ public class BuiltInMemberGenerator {
             @Override
             public Object execute(ExprList actualParams) {
                 try {
-                    return ((Scanner) fields.get("*inputStream")).nextInt();
+                    return Integer.parseInt(((Scanner) fields.get("*inputStream")).nextLine());
                 }
-                catch (InputMismatchException e){
+                catch (NumberFormatException e){
                     return 0;
                 }
             }

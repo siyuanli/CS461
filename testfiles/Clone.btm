@@ -1,4 +1,4 @@
-class bantam.Main {
+class Main {
     TextIO io = new TextIO();
     int x;
     int y;
@@ -18,13 +18,13 @@ class bantam.Main {
     }
     void main() {
 	io.putString("Creating main object (m) and setting X to 5 and Y to 3\n");
-	bantam.Main m = new bantam.Main();
+	Main m = new Main();
 	m.setX(5);
 	m.setY(3);
 	io.putString("m.x=").putInt(m.getX()).putString("\n");
 	io.putString("m.y=").putInt(m.getY()).putString("\n");
 	io.putString("Cloning main object (m2) and setting X to 6\n");
-	bantam.Main m2 = (bantam.Main)(m.clone());
+	Main m2 = (Main)(m.clone());
 	m2.setX(6);
 	io.putString("m.x=").putInt(m.getX()).putString("\n");
 	io.putString("m.y=").putInt(m.getY()).putString("\n");

@@ -1,4 +1,4 @@
-class bantam.Main {
+class Main {
     void main() {
 	TextIO io = new TextIO();
 	int n = io.putString("Enter the number of repetitions: ").getInt();

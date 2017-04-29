@@ -1,4 +1,25 @@
-class test{
-    String hellloooo = "HIHIHIH JOseph";
-    String str = "test";
+class Main{
+    void main(){
+        TextIO printIO = new TextIO();
+        TextIO io = new TextIO();
+        printIO.putString("reading file\n");
+
+        io.readFile("testfiles/FileIO-input.txt");
+        String input = io.getString();
+        io.writeStderr();
+        printIO.putString("printing contents of file to Stderr\n");
+        io.putString(input).putString("\n");
+
+        printIO.putString("writing contents to file");
+        io.writeFile("testfiles/FileIO-output.txt");
+        io.putString(input);
+
+        io.writeStdout();
+        io.putString("writing to stdout");
+        io.readStdin();
+        io.readStdin();
+        printIO.putString("Please enter a number to be printed to stdout:");
+        int thing = io.getInt();
+        io.putInt(thing);
+    }
 }

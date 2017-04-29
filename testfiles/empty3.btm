@@ -1,3 +1,26 @@
-class test2 extends Main{
-    String byeee = "Byeeee Joseph";
+class Main{
+    void main(){
+        Sys sys = new Sys();
+        TextIO io = new TextIO();
+        io.putString("time:");
+        io.putInt(sys.time()).putString("\n");
+        io.putInt(sys.random()).putString("\n");
+        io.putInt(sys.random()).putString("\n");
+        io.putInt(sys.random()).putString("\n");
+        io.putInt(sys.random()).putString("\n");
+        io.putInt(sys.random()).putString("\n");
+        int i = 0;
+        //time-wasting loop
+        while(i<10000000){
+            sys.random();
+            i++;
+        }
+        io.putString("time:");
+        io.putInt(sys.time()).putString("\n");
+        io.putString("exiting...exciting!");
+        sys.exit(0);
+        io.putInt(sys.time()).putString("\n");
+        io.putInt(sys.time()).putString("\n");
+        io.putInt(sys.time()).putString("\n");
+    }
 }
