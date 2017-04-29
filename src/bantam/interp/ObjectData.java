@@ -138,7 +138,7 @@ public class ObjectData{
     /**
      * Gets a method from a given hierarchy
      * @param name the name of the method
-     * @param scope the hiearchy level it is in
+     * @param scope the hierarchy level it is in
      * @return the method body of the method
      */
     public MethodBody getMethod(String name, int scope){
@@ -162,7 +162,7 @@ public class ObjectData{
     }
 
     /**
-     * Copies the values of the vields into another object data
+     * Copies the values of the fields into another object data
      * @param objectData the object data to copy the fields into
      */
     public void copyFields(ObjectData objectData){
