@@ -8,12 +8,16 @@
 package bantam.interp;
 
 import bantam.ast.ExprList;
-
-import java.util.List;
-
-
+/**
+ * A Method in our interpreter
+ */
 public interface MethodBody {
 
+    /**
+     * What gets executed when you call a method
+     * @param actualParams the parameters of the method
+     * @return the return value of the method
+     */
     public Object execute(ExprList actualParams);
 
 

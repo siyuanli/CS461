@@ -65,9 +65,11 @@ public class Interpreter {
       * See the lab manual for the details.
       * */
     public void interpret() {
+        //creating a new main class and calling the main method
 	    ClassTreeNode main = root.getClassMap().get("Main");
         ObjectData mainObject = new ObjectData("Main");
-        InterpreterVisitor interpreterVisitor = new InterpreterVisitor(root.getClassMap(), mainObject);
+        InterpreterVisitor interpreterVisitor =
+                new InterpreterVisitor(root.getClassMap(), mainObject);
         new InstantiationVisitor(interpreterVisitor, mainObject, main);
         int scope = mainObject.getMethodScope("main", false);
         mainObject.setHierarchyLevel(scope);
