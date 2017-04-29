@@ -17,21 +17,45 @@ import java.util.HashMap;
 
 
 public class InstantiationVisitor extends Visitor {
+
+    /**The object being instantiated*/
     private ObjectData objectData;
+
+    /**The interpreter visitor that this object will use in order to initialize fields*/
     private InterpreterVisitor interpreterVisitor;
+
+    /**The hashmap from field names to values which is currently being worked on*/
     private HashMap<String, Object> fields;
+
+    /**The hashmap from method names to methods which is currently being worked on*/
     private HashMap<String, MethodBody> methods;
 
+    /**
+     * Creates a new InstantiationVisitor with the given interpreter visitor which will
+     * populate the given objectData with fields and methods from the given ClassTreeNode
+     * @param interpreterVisitor the interpreter visitor to initialize fields with
+     * @param objectData the object to be populated
+     * @param classTreeNode the ClassTreeNode of the object type
+     */
     public InstantiationVisitor(InterpreterVisitor interpreterVisitor, ObjectData objectData, ClassTreeNode classTreeNode){
         this.interpreterVisitor = interpreterVisitor;
         this.initObject(objectData, classTreeNode);
     }
 
+    /**
+     * Initilazes the given object with the fields and methods contained in ClassTreeNode
+     * @param objectData the object to be populated
+     * @param classTreeNode the ClassTreeNode corresponding to the object type
+     */
     private void initObject(ObjectData objectData, ClassTreeNode classTreeNode){
         this.objectData = objectData;
         this.addMembers(classTreeNode);
     }
 
+    /**
+     * Adds the members for the given ClassTreeNode to the object being worked on
+     * @param classTreeNode the ClassTreeNode object
+     */
     private void addMembers(ClassTreeNode classTreeNode){
         BuiltInMemberGenerator memberGenerator = new BuiltInMemberGenerator(this.interpreterVisitor);
 
@@ -49,6 +73,7 @@ public class InstantiationVisitor extends Visitor {
             this.methods = childMethods;
         }
 
+        //A separate class handles populating the fields and methods for built-ins*/
         if (classTreeNode.isBuiltIn()) {
             switch (classTreeNode.getName()) {
                 case "Object":
@@ -74,6 +99,11 @@ public class InstantiationVisitor extends Visitor {
 
     }
 
+    /**
+     * Initializes the given field and adds it to the hashmap for the current object
+     * @param node the field node
+     * @return null
+     */
     public Object visit(Field node) {
         Object value = null;
         if (node.getType().equals("int")){
@@ -91,6 +121,11 @@ public class InstantiationVisitor extends Visitor {
         return null;
     }
 
+    /**
+     * Initializes the given method and adds it to the hashmap for the current object
+     * @param node the method node
+     * @return null
+     */
     public Object visit(Method node) {
         this.methods.put(node.getName(), new MethodBody() {
             @Override
