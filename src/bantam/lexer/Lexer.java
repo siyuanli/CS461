@@ -1,8 +1,8 @@
 /*
  * File: lexer.java, lexer.jlex
- * CS461 Project 4A
+ * CS461 Project 6
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/2/17
+ * Date: 5/10/2017
  */
 /* Bantam Java Compiler and Language Toolset.
    Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 
@@ -402,27 +402,27 @@ public class Lexer implements java_cup.runtime.Scanner {
 		/* 51 */ YY_NO_ANCHOR,
 		/* 52 */ YY_NO_ANCHOR,
 		/* 53 */ YY_NO_ANCHOR,
-		/* 54 */ YY_END,
-		/* 55 */ YY_NOT_ACCEPT,
+		/* 54 */ YY_NO_ANCHOR,
+		/* 55 */ YY_NO_ANCHOR,
 		/* 56 */ YY_NO_ANCHOR,
-		/* 57 */ YY_NO_ANCHOR,
-		/* 58 */ YY_NO_ANCHOR,
-		/* 59 */ YY_NOT_ACCEPT,
+		/* 57 */ YY_END,
+		/* 58 */ YY_NOT_ACCEPT,
+		/* 59 */ YY_NO_ANCHOR,
 		/* 60 */ YY_NO_ANCHOR,
-		/* 61 */ YY_NOT_ACCEPT,
-		/* 62 */ YY_NO_ANCHOR,
-		/* 63 */ YY_NOT_ACCEPT,
-		/* 64 */ YY_NO_ANCHOR,
-		/* 65 */ YY_NOT_ACCEPT,
-		/* 66 */ YY_NO_ANCHOR,
-		/* 67 */ YY_NOT_ACCEPT,
-		/* 68 */ YY_NO_ANCHOR,
-		/* 69 */ YY_NOT_ACCEPT,
-		/* 70 */ YY_NO_ANCHOR,
-		/* 71 */ YY_NOT_ACCEPT,
-		/* 72 */ YY_NO_ANCHOR,
+		/* 61 */ YY_NO_ANCHOR,
+		/* 62 */ YY_NOT_ACCEPT,
+		/* 63 */ YY_NO_ANCHOR,
+		/* 64 */ YY_NOT_ACCEPT,
+		/* 65 */ YY_NO_ANCHOR,
+		/* 66 */ YY_NOT_ACCEPT,
+		/* 67 */ YY_NO_ANCHOR,
+		/* 68 */ YY_NOT_ACCEPT,
+		/* 69 */ YY_NO_ANCHOR,
+		/* 70 */ YY_NOT_ACCEPT,
+		/* 71 */ YY_NO_ANCHOR,
+		/* 72 */ YY_NOT_ACCEPT,
 		/* 73 */ YY_NO_ANCHOR,
-		/* 74 */ YY_NO_ANCHOR,
+		/* 74 */ YY_NOT_ACCEPT,
 		/* 75 */ YY_NO_ANCHOR,
 		/* 76 */ YY_NO_ANCHOR,
 		/* 77 */ YY_NO_ANCHOR,
@@ -454,48 +454,60 @@ public class Lexer implements java_cup.runtime.Scanner {
 		/* 103 */ YY_NO_ANCHOR,
 		/* 104 */ YY_NO_ANCHOR,
 		/* 105 */ YY_NO_ANCHOR,
-		/* 106 */ YY_NO_ANCHOR
+		/* 106 */ YY_NO_ANCHOR,
+		/* 107 */ YY_NO_ANCHOR,
+		/* 108 */ YY_NO_ANCHOR,
+		/* 109 */ YY_NO_ANCHOR,
+		/* 110 */ YY_NO_ANCHOR,
+		/* 111 */ YY_NO_ANCHOR,
+		/* 112 */ YY_NO_ANCHOR,
+		/* 113 */ YY_NO_ANCHOR,
+		/* 114 */ YY_NO_ANCHOR,
+		/* 115 */ YY_NO_ANCHOR
 	};
 	private int yy_cmap[] = unpackFromString(1,130,
-"46:9,5,1,46,5,47,46:18,5,39,45,46:2,35,40,46,27,28,3,34,25,33,26,2,42:10,46" +
-",24,36,38,37,46:2,43:26,29,4,30,46,44,46,8,22,6,14,10,18,43,20,16,43,23,7,4" +
-"3,13,17,43:2,19,9,12,21,43,15,11,43:2,31,41,32,46:2,0,48")[0];
+"47:9,5,1,47,5,48,47:18,5,40,46,47:2,36,41,47,28,29,3,35,26,34,27,2,43:10,47" +
+",25,37,39,38,47:2,44:26,30,4,31,47,45,47,8,22,6,14,10,18,44,20,16,44,23,7,4" +
+"4,13,17,44:2,19,9,12,21,44,15,11,24,44,32,42,33,47:2,0,49")[0];
 
-	private int yy_rmap[] = unpackFromString(1,107,
-"0,1,2,1:2,3,1:9,4,5,1,6,7,8,9,10,11,12,13,14,15,1:9,12,1,15:2,1,15:2,1,15:6" +
+	private int yy_rmap[] = unpackFromString(1,116,
+"0,1,2,1:2,3,1:9,4,5,1,6,7,8,9,10,11,12,13,14,15,1:9,12,1,15:3,1,15:2,1,15:8" +
 ",16,17,18,12,19,20,21,22,23,24,25,26,27,28,29,30,20,31,32,33,34,35,36,37,38" +
 ",39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63" +
-",64,15,65,66,67,68")[0];
+",64,65,66,67,68,69,70,15,71,72,73,74")[0];
 
-	private int yy_nxt[][] = unpackFromString(69,49,
-"1,51,2,3,4,51,5,102:3,86,102,87,75,102,104,53,102,76,105,102:2,106,102,6,7," +
-"8,9,10,11,12,13,14,15,16,17,18,19,20,21,52,57,22,102,23,24,4,51,1,-1:51,25," +
-"26,-1:51,102,88,102:16,-1:18,102:3,-1:37,28,-1:49,29,-1:52,30,-1:48,31,-1:4" +
-"8,32,-1:48,33,-1:16,23:18,-1:18,22,23:2,-1:10,23:18,-1:18,23:3,-1:5,36,37:2" +
-",55,37:40,38,37,54,36,-1:2,25:45,-1:3,26:2,59,26:44,-1:7,102:18,-1:18,102:3" +
-",-1:5,51,-1:3,51,-1:41,51,-1:41,34,-1:14,102:7,91,102:4,27,102:5,-1:18,102:" +
-"3,-1:6,61:2,37,61:7,37:2,61:4,37:2,61:25,37,61,-1:3,67:2,69,67:44,-1:42,35," +
-"-1:13,102:9,39,102:8,-1:18,102:3,-1:5,26,41,63,26:44,-1:7,102:13,40,102:4,-" +
-"1:18,102:3,-1:6,61:2,65,61:40,44,61:2,-1:7,102:4,42,102:13,-1:18,102:3,-1:5" +
-",26,56,59,26:44,-1:7,102:4,43,102:13,-1:18,102:3,-1:6,61:45,-1:8,102:3,45,1" +
-"02:14,-1:18,102:3,-1:10,102:4,46,102:13,-1:18,102:3,-1:5,67,41,71,67:44,-1:" +
-"7,102:17,47,-1:18,102:3,-1:5,67,56,69,67:44,-1:7,102:7,48,102:10,-1:18,102:" +
-"3,-1:10,102:3,49,102:14,-1:18,102:3,-1:10,102:12,50,102:5,-1:18,102:3,-1:10" +
-",102:4,58,102:13,-1:18,102:3,-1:10,102:2,92,102:8,60,102:6,-1:18,102:3,-1:1" +
-"0,102:3,62,102:14,-1:18,102:3,-1:10,102:15,64,102:2,-1:18,102:3,-1:10,102:3" +
-",66,102:14,-1:18,102:3,-1:10,102,68,102:16,-1:18,102:3,-1:10,102:3,64,102:1" +
-"4,-1:18,102:3,-1:10,102:2,70,102:15,-1:18,102:3,-1:10,102:13,72,102:4,-1:18" +
-",102:3,-1:10,102:8,73,102:9,-1:18,102:3,-1:10,102:11,74,102:6,-1:18,102:3,-" +
-"1:10,102,77,102:3,89,102:12,-1:18,102:3,-1:10,102:13,78,102:4,-1:18,102:3,-" +
-"1:10,102:2,79,102:15,-1:18,102:3,-1:10,102:6,94,102:11,-1:18,102:3,-1:10,10" +
-"2:10,80,102:7,-1:18,102:3,-1:10,102:3,95,102:14,-1:18,102:3,-1:10,102,81,10" +
-"2:16,-1:18,102:3,-1:10,102:4,82,102:13,-1:18,102:3,-1:10,102:4,97,102:13,-1" +
-":18,102:3,-1:10,102:6,98,102:11,-1:18,102:3,-1:10,102:15,83,102:2,-1:18,102" +
-":3,-1:10,102:7,84,102:10,-1:18,102:3,-1:10,102:2,99,102:15,-1:18,102:3,-1:1" +
-"0,102:7,100,102:10,-1:18,102:3,-1:10,101,102:17,-1:18,102:3,-1:10,102:4,85," +
-"102:13,-1:18,102:3,-1:10,102:6,96,102:11,-1:18,102:3,-1:10,102:14,90,102:3," +
-"-1:18,102:3,-1:10,102:4,103,102:13,-1:18,102:3,-1:10,102:13,93,102:4,-1:18," +
-"102:3,-1:4");
+	private int yy_nxt[][] = unpackFromString(75,50,
+"1,54,2,3,4,54,5,111:3,94,111,81,82,111,113,56,111,83,114,111:2,115,111:2,6," +
+"7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,55,60,22,111,23,24,4,54,1,-1:52,2" +
+"5,26,-1:52,111,95,96,111:16,-1:18,111:3,-1:38,28,-1:50,29,-1:53,30,-1:49,31" +
+",-1:49,32,-1:49,33,-1:16,23:19,-1:18,22,23:2,-1:10,23:19,-1:18,23:3,-1:5,36" +
+",37:2,58,37:41,38,37,57,36,-1:2,25:46,-1:3,26:2,62,26:45,-1:7,111:19,-1:18," +
+"111:3,-1:5,54,-1:3,54,-1:42,54,-1:42,34,-1:14,111:7,100,111:4,27,111:6,-1:1" +
+"8,111:3,-1:6,64:2,37,64:7,37:2,64:4,37:2,64:26,37,64,-1:3,70:2,72,70:45,-1:" +
+"43,35,-1:13,111:15,69,111:2,39,-1:18,111:3,-1:5,26,42,66,26:45,-1:7,111:9,4" +
+"0,111:9,-1:18,111:3,-1:6,64:2,68,64:41,45,64:2,-1:7,111:13,41,111:5,-1:18,1" +
+"11:3,-1:5,26,59,62,26:45,-1:7,111:4,43,111:14,-1:18,111:3,-1:6,64:46,-1:8,1" +
+"11:4,44,111:14,-1:18,111:3,-1:10,111:3,46,111:15,-1:18,111:3,-1:5,70,42,74," +
+"70:45,-1:7,111:14,47,111:4,-1:18,111:3,-1:5,70,59,72,70:45,-1:7,111:9,48,11" +
+"1:9,-1:18,111:3,-1:10,111:4,49,111:14,-1:18,111:3,-1:10,111:17,50,111,-1:18" +
+",111:3,-1:10,111:7,51,111:11,-1:18,111:3,-1:10,111:3,52,111:15,-1:18,111:3," +
+"-1:10,111:12,53,111:6,-1:18,111:3,-1:10,111:13,61,98,111:4,-1:18,111:3,-1:1" +
+"0,111:4,63,111:14,-1:18,111:3,-1:10,111:2,101,111:8,65,111:7,-1:18,111:3,-1" +
+":10,111:3,67,111:15,-1:18,111:3,-1:10,111:3,71,111:15,-1:18,111:3,-1:10,73," +
+"111:18,-1:18,111:3,-1:10,111:11,75,111:7,-1:18,111:3,-1:10,111,76,111:17,-1" +
+":18,111:3,-1:10,111:3,69,111:15,-1:18,111:3,-1:10,111:2,77,111:16,-1:18,111" +
+":3,-1:10,111:13,78,111:5,-1:18,111:3,-1:10,111:8,79,111:10,-1:18,111:3,-1:1" +
+"0,111:11,80,111:7,-1:18,111:3,-1:10,111,84,111:3,97,111:13,-1:18,111:3,-1:1" +
+"0,111:2,85,111:16,-1:18,111:3,-1:10,111:6,86,111:12,-1:18,111:3,-1:10,111:6" +
+",103,111:12,-1:18,111:3,-1:10,111:13,87,111:5,-1:18,111:3,-1:10,111:10,88,1" +
+"11:8,-1:18,111:3,-1:10,111:3,104,111:15,-1:18,111:3,-1:10,111,89,111:17,-1:" +
+"18,111:3,-1:10,111:4,90,111:14,-1:18,111:3,-1:10,111:4,106,111:14,-1:18,111" +
+":3,-1:10,111:6,107,111:12,-1:18,111:3,-1:10,111:15,91,111:3,-1:18,111:3,-1:" +
+"10,111:7,92,111:11,-1:18,111:3,-1:10,111:2,108,111:16,-1:18,111:3,-1:10,111" +
+":7,109,111:11,-1:18,111:3,-1:10,110,111:18,-1:18,111:3,-1:10,111:4,93,111:1" +
+"4,-1:18,111:3,-1:10,111:6,105,111:12,-1:18,111:3,-1:10,111:14,99,111:4,-1:1" +
+"8,111:3,-1:10,111:4,112,111:14,-1:18,111:3,-1:10,111:13,102,111:5,-1:18,111" +
+":3,-1:4");
 
 	public java_cup.runtime.Symbol next_token ()
 		throws java.io.IOException {
@@ -777,157 +789,154 @@ public class Lexer implements java_cup.runtime.Scanner {
 					case -39:
 						break;
 					case 39:
-						{ return new Symbol(TokenIds.NEW,
-						    new Token("NEW", yyline)); }
+						{ return new Symbol(TokenIds.TRY,
+						    new Token("TRY", yyline)); }
 					case -40:
 						break;
 					case 40:
-						{ return new Symbol(TokenIds.FOR,
-						    new Token("FOR", yyline)); }
+						{ return new Symbol(TokenIds.NEW,
+						    new Token("NEW", yyline)); }
 					case -41:
 						break;
 					case 41:
-						{/*Regex for block comments*/}
+						{ return new Symbol(TokenIds.FOR,
+						    new Token("FOR", yyline)); }
 					case -42:
 						break;
 					case 42:
-						{ return new Symbol(TokenIds.ELSE,
-						    new Token("ELSE", yyline)); }
+						{/*Regex for block comments*/}
 					case -43:
 						break;
 					case 43:
-						{ return new Symbol(TokenIds.BOOLEAN_CONST,
-						                new Token("BOOLEAN_CONST", yytext(), yyline));}
+						{ return new Symbol(TokenIds.ELSE,
+						    new Token("ELSE", yyline)); }
 					case -44:
 						break;
 					case 44:
+						{ return new Symbol(TokenIds.BOOLEAN_CONST,
+						                new Token("BOOLEAN_CONST", yytext(), yyline));}
+					case -45:
+						break;
+					case 45:
 						{ /*matches illegal escape sequences in strings*/
                                         return new Symbol(TokenIds.LEX_ERROR,
                                           new Token("LEX_ERROR", yytext() +
                                             " contains an illegal escape character.",
                                              yyline)); }
-					case -45:
-						break;
-					case 45:
-						{ return new Symbol(TokenIds.CLASS,
-						    new Token("CLASS",null, yyline, getCurrFilename())); }
 					case -46:
 						break;
 					case 46:
-						{ return new Symbol(TokenIds.WHILE,
-						    new Token("WHILE", yyline)); }
+						{ return new Symbol(TokenIds.CLASS,
+						    new Token("CLASS",null, yyline, getCurrFilename())); }
 					case -47:
 						break;
 					case 47:
-						{ return new Symbol(TokenIds.BREAK,
-						    new Token("BREAK", yyline)); }
+						{ return new Symbol(TokenIds.CATCH,
+						    new Token("CATCH", yyline)); }
 					case -48:
 						break;
 					case 48:
-						{ return new Symbol(TokenIds.RETURN,
-						    new Token("RETURN", yyline)); }
+						{ return new Symbol(TokenIds.THROW,
+						    new Token("THROW", yyline)); }
 					case -49:
 						break;
 					case 49:
-						{ return new Symbol(TokenIds.EXTENDS,
-						    new Token("EXTENDS", yyline)); }
+						{ return new Symbol(TokenIds.WHILE,
+						    new Token("WHILE", yyline)); }
 					case -50:
 						break;
 					case 50:
-						{ return new Symbol(TokenIds.INSTANCEOF,
-						    new Token("INSTANCEOF", yyline)); }
+						{ return new Symbol(TokenIds.BREAK,
+						    new Token("BREAK", yyline)); }
 					case -51:
 						break;
 					case 51:
-						{/*This is the regex for white spaces*/}
+						{ return new Symbol(TokenIds.RETURN,
+						    new Token("RETURN", yyline)); }
 					case -52:
 						break;
 					case 52:
+						{ return new Symbol(TokenIds.EXTENDS,
+						    new Token("EXTENDS", yyline)); }
+					case -53:
+						break;
+					case 53:
+						{ return new Symbol(TokenIds.INSTANCEOF,
+						    new Token("INSTANCEOF", yyline)); }
+					case -54:
+						break;
+					case 54:
+						{/*This is the regex for white spaces*/}
+					case -55:
+						break;
+					case 55:
 						{ /*matches any non-legal character*/
                                       return new Symbol(TokenIds.LEX_ERROR,
                                         new Token("LEX_ERROR", yytext() +
                                           " is an illegal character.", yyline)); }
-					case -53:
+					case -56:
 						break;
-					case 53:
+					case 56:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
-					case -54:
+					case -57:
 						break;
-					case 54:
+					case 57:
 						{ /*matches unterminated string*/
                                         return new Symbol(TokenIds.LEX_ERROR,
                                           new Token("LEX_ERROR", "Unterminated string.",
                                             yyline)); }
-					case -55:
+					case -58:
 						break;
-					case 56:
+					case 59:
 						{/*Regex for block comments*/}
-					case -56:
+					case -59:
 						break;
-					case 57:
+					case 60:
 						{ /*matches any non-legal character*/
                                       return new Symbol(TokenIds.LEX_ERROR,
                                         new Token("LEX_ERROR", yytext() +
                                           " is an illegal character.", yyline)); }
-					case -57:
-						break;
-					case 58:
-						{ /*matches legal identifiers*/
-                                      return new Symbol(TokenIds.ID,
-                                        new Token("ID", yytext(), yyline)); }
-					case -58:
-						break;
-					case 60:
-						{ /*matches legal identifiers*/
-                                      return new Symbol(TokenIds.ID,
-                                        new Token("ID", yytext(), yyline)); }
-					case -59:
-						break;
-					case 62:
-						{ /*matches legal identifiers*/
-                                      return new Symbol(TokenIds.ID,
-                                        new Token("ID", yytext(), yyline)); }
 					case -60:
 						break;
-					case 64:
+					case 61:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -61:
 						break;
-					case 66:
+					case 63:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -62:
 						break;
-					case 68:
+					case 65:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -63:
 						break;
-					case 70:
+					case 67:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -64:
 						break;
-					case 72:
+					case 69:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -65:
 						break;
-					case 73:
+					case 71:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -66:
 						break;
-					case 74:
+					case 73:
 						{ /*matches legal identifiers*/
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
@@ -1124,6 +1133,60 @@ public class Lexer implements java_cup.runtime.Scanner {
                                       return new Symbol(TokenIds.ID,
                                         new Token("ID", yytext(), yyline)); }
 					case -99:
+						break;
+					case 107:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -100:
+						break;
+					case 108:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -101:
+						break;
+					case 109:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -102:
+						break;
+					case 110:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -103:
+						break;
+					case 111:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -104:
+						break;
+					case 112:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -105:
+						break;
+					case 113:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -106:
+						break;
+					case 114:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -107:
+						break;
+					case 115:
+						{ /*matches legal identifiers*/
+                                      return new Symbol(TokenIds.ID,
+                                        new Token("ID", yytext(), yyline)); }
+					case -108:
 						break;
 					default:
 						yy_error(YY_E_INTERNAL,false);

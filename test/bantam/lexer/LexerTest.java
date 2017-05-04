@@ -146,6 +146,33 @@ public class LexerTest
     }
 
     /**
+     * Checks if "try" matches the try token
+     * @throws Exception throws an exception if the two do not match
+     */
+    @Test
+    public void tryToken() throws Exception {
+        checkToken(" try ", "TRY");
+    }
+
+    /**
+     * Checks if "catch" matches the catch token
+     * @throws Exception throws an exception if the two do not match
+     */
+    @Test
+    public void catchToken() throws Exception {
+        checkToken(" catch ", "CATCH");
+    }
+
+    /**
+     * Checks if "throw" matches the throw token
+     * @throws Exception throws an exception if the two do not match
+     */
+    @Test
+    public void throwToken() throws Exception {
+        checkToken(" throw ", "THROW");
+    }
+
+    /**
      * Checks if a semicolon matches the semi token
      * @throws Exception throws an exception if the two do not match
      */

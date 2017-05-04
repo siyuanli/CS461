@@ -1,8 +1,8 @@
 /*
  * File: lexer.java, lexer.jlex
- * CS461 Project 4A
+ * CS461 Project 6
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/2/17
+ * Date: 5/10/2017
  */
 
 /* Bantam Java Compiler and Language Toolset.
@@ -241,6 +241,15 @@ import java_cup.runtime.Symbol;
 
 <YYINITIAL>break        { return new Symbol(TokenIds.BREAK,
 						    new Token("BREAK", yyline)); }
+
+<YYINITIAL>try          { return new Symbol(TokenIds.TRY,
+						    new Token("TRY", yyline)); }
+
+<YYINITIAL>catch        { return new Symbol(TokenIds.CATCH,
+						    new Token("CATCH", yyline)); }
+
+<YYINITIAL>throw        { return new Symbol(TokenIds.THROW,
+						    new Token("THROW", yyline)); }
 
 <YYINITIAL>;            { return new Symbol(TokenIds.SEMI,
 						    new Token("SEMI", yyline)); }

@@ -600,6 +600,33 @@ public class ParserTest
 
     }
 
+    @Test
+    public void tryCatchTest() throws Exception{
+        String program = "class Main { void main() { " +
+                "try{ " +
+                "   throw hello;" +
+                "}catch(int x){ " +
+                " int z = 5; " +
+                "}catch (String z) {" +
+                "}}}";
+
+        StmtList stmtList = this.getMethodBody(0,0, program);
+        assertEquals(stmtList.getSize(), 1);
+        TryStmt tryStmt = (TryStmt)stmtList.get(0);
+        StmtList tryStmtStmtList = tryStmt.getStmtList();
+        assertEquals(tryStmtStmtList.getSize(), 1);
+        ThrowStmt throwStmt = (ThrowStmt)tryStmtStmtList.get(0);
+        Expr throwExpr = throwStmt.getExpr();
+        this.varExprTest("hello", false, (VarExpr)throwExpr);
+        CatchList catchList = tryStmt.getCatchList();
+        assertEquals(catchList.getSize(), 2);
+        assertEquals(((CatchStmt)catchList.get(0)).getFormal().getType(), "int");
+        assertEquals(((CatchStmt)catchList.get(0)).getFormal().getName(), "x");
+        assertEquals(((CatchStmt)catchList.get(1)).getFormal().getType(), "String");
+        assertEquals(((CatchStmt)catchList.get(1)).getFormal().getName(), "z");
+
+    }
+
 
     /* INVALID CODE TESTS ----------------------------------------------------------*/
 
@@ -997,6 +1024,24 @@ public class ParserTest
         assert badTestMethod("x[3;");
     }
 
+    @Test
+    public void badTryCatch() throws Exception{
+        assert this.badTestMethod("try{}");
+        assert this.badTestMethod("catch(Exception e){}");
+        assert this.badTestMethod("try{} catch(){}");
+        assert this.badTestMethod("try catch(Exception e){}");
+        assert this.badTestMethod("try{} catch(Exception e1, Exception e1){}");
+        assert this.badTestMethod("try{} catch(Exception e){} catch(){}");
+        assert this.badTestMethod("catch(Exception e){} try{}");
+        assert this.badTestMethod("try{} catch(Exception e){} try{}");
+    }
+
+    @Test
+    public void badThrow() throws Exception {
+        assert this.badTestMethod("throw;");
+        assert this.badTestMethod("throw();");
+        assert this.badTestMethod("throw 5");
+    }
     /**
      * tests the legality of a given program
      * @param str the program

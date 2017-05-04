@@ -1,8 +1,8 @@
 /*
  * File: parser.cup
- * CS461 Project 4A
+ * CS461 Project 6
  * Author: djskrien, Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/2/17
+ * Date: 5/10/2017
  */
 
 /* Bantam Java Compiler and Language Toolset.
@@ -120,7 +120,8 @@ parser code {:
 /* list of terminals, which correspond to tokens returned by the bantam.lexer
  */
 terminal Token LEX_ERROR;
-terminal Token CLASS, EXTENDS, IF, ELSE, WHILE, FOR, BREAK, NEW, RETURN, INSTANCEOF;
+terminal Token CLASS, EXTENDS, IF, ELSE, WHILE, FOR, BREAK, NEW, RETURN, INSTANCEOF,
+    TRY, CATCH, THROW;
 terminal Token PLUS, MINUS, TIMES, DIVIDE, MODULUS, NOT, AND, OR;
 terminal Token EQ, NE, LT, LEQ, GT, GEQ, ASSIGN, INCR, DECR;
 terminal Token LPAREN, RPAREN, LBRACE, RBRACE, LSQBRACE, RSQBRACE;
@@ -173,6 +174,10 @@ nonterminal UnaryIncrExpr unary_incr_expr;
 nonterminal UnaryDecrExpr unary_decr_expr;
 nonterminal VarExpr var_expr;
 nonterminal ArrayExpr array_expr;
+nonterminal TryStmt try_stmt;
+nonterminal CatchStmt catch_stmt;
+nonterminal CatchList catch_list;
+nonterminal ThrowStmt throw_stmt;
 
 
 /* precedence/associativity rules
@@ -347,6 +352,10 @@ stmt
         {: RESULT = rs; :}
     | block_stmt:bks
         {: RESULT = bks; :}
+    | try_stmt:tr
+            {: RESULT = tr; :}
+    | throw_stmt:th
+            {: RESULT = th; :}
     ;
 
 expr_stmt
@@ -695,6 +704,37 @@ array_expr
                                   name.getAttribute(), index); :}
     ;
 
+
+throw_stmt
+    ::=
+    THROW expr:e SEMI
+        {: RESULT = new ThrowStmt(e.getLineNum(), e); :}
+    ;
+
+try_stmt
+    ::=
+    TRY LBRACE stmt_list:sl RBRACE catch_list:cl
+        {: RESULT = new TryStmt(sl.getLineNum(), sl, cl); :}
+    ;
+
+
+catch_stmt
+    ::=
+    CATCH LPAREN formal:f RPAREN LBRACE stmt_list:sl RBRACE
+        {: RESULT = new CatchStmt(f.getLineNum(), f, sl); :}
+    ;
+
+
+catch_list
+    ::=
+    /* Single item */
+    catch_stmt:cat
+        {: RESULT = (CatchList)(new CatchList(cat.getLineNum())).addElement(cat); :}
+
+    /* Multiple items*/
+    | catch_list:cl catch_stmt:cat
+        {: RESULT = (CatchList)cl.addElement(cat); :}
+    ;
 
 
 
