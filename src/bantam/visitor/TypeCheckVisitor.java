@@ -544,23 +544,27 @@ public class TypeCheckVisitor extends Visitor {
      */
     @Override
     public Object visit(DeclStmt stmt) {
-        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         int lineNum = stmt.getLineNum();
         String type = stmt.getType();
         this.errorUtil.registerErrorIfInvalidType(type, lineNum);
         this.errorUtil.registerErrorIfReservedName(stmt.getName(), lineNum);
         stmt.getInit().accept(this);
-        for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > this.fieldScope; i--) {
-            if (varSymbolTable.peek(stmt.getName(), i) != null) {
-                this.errorUtil.registerError(lineNum, "Variable already declared");
-            }
-        }
-        varSymbolTable.add(stmt.getName(), type);
+        this.registerErrorIfLocalVarAlreadyDeclared(stmt.getName(), lineNum);
+        this.classTreeNode.getVarSymbolTable().add(stmt.getName(), type);
         if (!compatibleType(type, stmt.getInit().getExprType())) {
             this.errorUtil.registerError(lineNum,
                     "Type of variable incompatible with assignment.");
         }
         return null;
+    }
+
+    private void registerErrorIfLocalVarAlreadyDeclared(String name, int lineNum) {
+        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
+        for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > this.fieldScope; i--) {
+            if (varSymbolTable.peek(name, i) != null) {
+                this.errorUtil.registerError(lineNum, "Variable already declared");
+            }
+        }
     }
 
     /**
@@ -1310,10 +1314,11 @@ public class TypeCheckVisitor extends Visitor {
     public Object visit(CatchStmt node) {
         SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
         varSymbolTable.enterScope();
-        node.getFormal().accept(this);
+        Formal formal = node.getFormal();
+        this.registerErrorIfLocalVarAlreadyDeclared(formal.getName(), node.getLineNum());
+        formal.accept(this);
 
-        //TODO: Formal cannot have same name as previously defined variable/method
-        if (!this.compatibleType( "Exception", node.getFormal().getType())){
+        if (!this.compatibleType( "Exception", formal.getType())){
             this.errorUtil.registerError(node.getLineNum(),
                     "Object thrown must be an Exception.");
         }

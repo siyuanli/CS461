@@ -1,5 +1,6 @@
 class Main {
     TextIO io = new TextIO();
+    int exception = 8;
 
     void main(){
         OurException e = new OurException();
@@ -17,29 +18,29 @@ class Main {
             int x = 3/0;
             io.putString("This should not be printed after throwing an exception\n");
         }
-        catch(DivideByZeroException e){
+        catch(DivideByZeroException exception){
             io.putString("Caught DivideByZeroException correctly\n");
-            io.putString("Message is: ").putString(e.getMessage()).putString("\n");
+            io.putString("Message is: ").putString(exception.getMessage()).putString("\n");
 
         }
 
         try{
             int x = 5/0;
         }
-        catch(NullPointerException e){
+        catch(NullPointerException exception){
             io.putString("Null pointer was not thrown, should not have gone here.\n");
         }
-        catch(Exception e){
+        catch(Exception exception){
             io.putString("Caught correct type of exception.\n");
         }
 
         try{
             throw (DivideByZeroException) (null);
         }
-        catch(DivideByZeroException e){
+        catch(DivideByZeroException exception){
             io.putString("The value null is not a DivideByZeroException, so should not have gone here.\n");
         }
-        catch(NullPointerException e){
+        catch(NullPointerException exception){
             io.putString("Throwing null correctly made NullPointerException.\n");
         }
 
@@ -50,8 +51,8 @@ class Main {
         try{
             throw e;
         }
-        catch(Exception e){
-            io.putString("New message is: ").putString(e.getMessage()).putString("\n");
+        catch(Exception exception){
+            io.putString("New message is: ").putString(exception.getMessage()).putString("\n");
         }
 
         e.setOurMessage();
@@ -74,6 +75,6 @@ class OurException extends Exception{
     }
 
     void setOurMessage(){
-        super.setMessage("Our new message2");
+        super.setMessage("Our new message 2.");
     }
 }

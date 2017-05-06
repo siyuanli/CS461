@@ -369,7 +369,6 @@ public class BuiltInMemberGenerator {
                 return fields.get("message");
             }
         });
-        //TODO: Fix array index out of bounds exception
         methods.put("setMessage", new MethodBody() {
             @Override
             public Object execute(ExprList actualParams) {
