@@ -73,7 +73,12 @@ public class Interpreter {
         new InstantiationVisitor(interpreterVisitor, mainObject, main);
         int scope = mainObject.getMethodScope("main", false);
         mainObject.setHierarchyLevel(scope);
-        mainObject.getMethod("main", scope).execute(new ExprList(-1));
+        try {
+            mainObject.getMethod("main", scope).execute(new ExprList(-1));
+        }
+        catch (BantamException e){
+            System.err.println(e.getMessage());
+        }
     }
 }
 

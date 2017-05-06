@@ -1143,4 +1143,51 @@ public class SemanticAnalyzerTest {
         this.testInvalidProgram(this.createMethod("int[] x = (new int[x.length]);"));
         this.testInvalidProgram(this.createClass("boolean foo(int n){} "));
     }
+
+    /**
+     * Tests Try Catch statements and Throwing
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void testTryCatch() throws Exception{
+        this.testValidProgram(
+                this.createMethod("try{ int x = 0;} catch(Exception e){ int z = 0; }"));
+        this.testValidProgram(
+                this.createMethod("try{ int x = 0;} catch(Exception e){ int x = 0; }"));
+        this.testValidProgram(
+                this.createMethod("try{ int x = 0;}" +
+                        "catch(DivideByZeroException e){ int z = 0; }"));
+        this.testValidProgram(
+                this.createMethod("try{ int x = 0; }" +
+                        "catch(ClassCastException e){ int z = 0; }"));
+        this.testValidProgram(
+                this.createMethod("try{ int x = 0;}" +
+                        "catch(NullPointerException e){ int z = 0; }"));
+        this.testValidProgram(this.createMethod("throw new Exception();"));
+        this.testValidProgram(this.createMethod("throw new ClassCastException();"));
+        this.testValidProgram(this.createMethod("throw new NullPointerException();"));
+        this.testValidProgram(this.createMethod("throw new DivideByZeroException();"));
+
+        this.testValidProgram(
+                this.createMethod("try{ int x = 0;}" +
+                        "catch(NullPointerException e){ int z = 0; } " +
+                        "catch(DivideByZeroException e){ int z = 0; } " +
+                        "catch(ClassCastException e){ int z = 0; } " +
+                        "catch (Exception e) { int d = 2; } "));
+
+        this.testValidProgram("class MyException extends Exception{ } " +
+                this.createMethod("try{ int x = 0;}" +
+                        "catch(MyException e){ int z = 0; }"));
+
+        this.testValidProgram(this.createMethod("throw null;"));
+
+        this.testInvalidProgram(this.createMethod("try{ int x = 0;}" +
+                "catch(String e){ int z = 0; }"));
+        this.testInvalidProgram(this.createMethod("try{ int x = 0;}" +
+                "catch(Exception e){ int e = 0; }"));
+        this.testInvalidProgram(this.createMethod("int d = 0; " +
+                "try{ int x = 0;}" +
+                "catch(Exception e){ int d = 0; }"));
+        this.testInvalidProgram(this.createMethod("throw 5;"));
+    }
 }

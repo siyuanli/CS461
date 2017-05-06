@@ -87,14 +87,10 @@ public class ParserTest
 
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(4, memberList.getSize());
-        this.fieldTest("String", "x", false,
-                                                    (Field)memberList.get(0));
-        this.fieldTest("int", "y", true,
-                                                    (Field)memberList.get(1));
-        this.fieldTest("Boolean[]", "z", false,
-                                                    (Field)memberList.get(2));
-        this.fieldTest("int[]", "a", true,
-                                                    (Field)memberList.get(3));
+        this.fieldTest("String", "x", false, (Field)memberList.get(0));
+        this.fieldTest("int", "y", true, (Field)memberList.get(1));
+        this.fieldTest("Boolean[]", "z", false, (Field)memberList.get(2));
+        this.fieldTest("int[]", "a", true, (Field)memberList.get(3));
     }
 
     /** tests the case of a Method */
@@ -114,18 +110,12 @@ public class ParserTest
         String[][] method6Params = {{"int", "a"}};
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(6, memberList.getSize());
-        this.methodTest("int", "method1", noParams, 0,
-                                                    (Method)memberList.get(0));
-        this.methodTest("int", "method2", noParams, 1,
-                                                    (Method)memberList.get(1));
-        this.methodTest("int", "method3", method3Params, 2,
-                                                    (Method)memberList.get(2));
-        this.methodTest("int[]", "method4", noParams, 0,
-                                                    (Method)memberList.get(3));
-        this.methodTest("int[]", "method5", noParams, 1,
-                                                    (Method)memberList.get(4));
-        this.methodTest("int[]", "method6", method6Params, 1,
-                                                    (Method)memberList.get(5));
+        this.methodTest("int", "method1", noParams, 0, (Method)memberList.get(0));
+        this.methodTest("int", "method2", noParams, 1, (Method)memberList.get(1));
+        this.methodTest("int", "method3", method3Params, 2, (Method)memberList.get(2));
+        this.methodTest("int[]", "method4", noParams, 0, (Method)memberList.get(3));
+        this.methodTest("int[]", "method5", noParams, 1, (Method)memberList.get(4));
+        this.methodTest("int[]", "method6", method6Params, 1, (Method)memberList.get(5));
     }
 
     /** test the case of both Method and Field  */
@@ -139,10 +129,8 @@ public class ParserTest
         MemberList memberList = this.getClassBody(0, program);
         String[][] noParams = {};
         assertEquals(2, memberList.getSize());
-        this.fieldTest("int", "y", true,
-                                                    (Field)memberList.get(0));
-        this.methodTest("int", "method1", noParams, 0,
-                                                    (Method)memberList.get(1));
+        this.fieldTest("int", "y", true, (Field)memberList.get(0));
+        this.methodTest("int", "method1", noParams, 0, (Method)memberList.get(1));
     }
 
 
@@ -155,8 +143,7 @@ public class ParserTest
 
         MemberList memberList = this.getClassBody(0, program);
         assertEquals(1, memberList.getSize());
-        this.fieldTest("int", "y", true,
-                                                (Field)memberList.get(0));
+        this.fieldTest("int", "y", true, (Field)memberList.get(0));
     }
 
     /**
@@ -588,18 +575,18 @@ public class ParserTest
                 "int d = c[1];" +
                 "}}";
         StmtList stmtList = this.getMethodBody(0, 0, program);
-        this.varExprTest("a", false,
-                            (VarExpr)this.getExprFromDecl(stmtList, 0));
-        this.varExprTest("b", true,
-                            (VarExpr)this.getExprFromDecl(stmtList, 1));
-        this.arrayExprTest("d", true, 2,
-                            (ArrayExpr)this.getExprFromDecl(stmtList, 2));
-        this.arrayExprTest("c", false, 1,
-                            (ArrayExpr)this.getExprFromDecl(stmtList, 3));
+        this.varExprTest("a", false, (VarExpr)this.getExprFromDecl(stmtList, 0));
+        this.varExprTest("b", true, (VarExpr)this.getExprFromDecl(stmtList, 1));
+        this.arrayExprTest("d", true, 2, (ArrayExpr)this.getExprFromDecl(stmtList, 2));
+        this.arrayExprTest("c", false, 1, (ArrayExpr)this.getExprFromDecl(stmtList, 3));
 
 
     }
 
+    /**
+     * Tests legal try, catch, and throw stmts
+     * @throws Exception if the test fails
+     */
     @Test
     public void tryCatchTest() throws Exception{
         String program = "class Main { void main() { " +
@@ -1024,6 +1011,10 @@ public class ParserTest
         assert badTestMethod("x[3;");
     }
 
+    /**
+     * Tests incorrect try catch stmts
+     * @throws Exception if the test fails
+     */
     @Test
     public void badTryCatch() throws Exception{
         assert this.badTestMethod("try{}");
@@ -1034,8 +1025,13 @@ public class ParserTest
         assert this.badTestMethod("try{} catch(Exception e){} catch(){}");
         assert this.badTestMethod("catch(Exception e){} try{}");
         assert this.badTestMethod("try{} catch(Exception e){} try{}");
+        assert this.badTestMethod("throw x");
     }
 
+    /**
+     * Tests illegal usage of throw
+     * @throws Exception if it does not fail
+     */
     @Test
     public void badThrow() throws Exception {
         assert this.badTestMethod("throw;");
@@ -1116,8 +1112,8 @@ public class ParserTest
      * @return the body of the method
      * @throws Exception if something bad happened while parsing
      */
-    private StmtList getMethodBody(
-            int classIndex, int memberIndex, String program) throws Exception{
+    private StmtList getMethodBody(int classIndex, int memberIndex, String program)
+            throws Exception{
         MemberList memberList = this.getClassBody(classIndex, program);
         Method method = (Method)memberList.get(memberIndex);
         return method.getStmtList();
@@ -1233,8 +1229,8 @@ public class ParserTest
      * @param index the index the ArrayExpr should have
      * @param arrayExpr the ArrayExpr being tested
      */
-    private void arrayExprTest(
-            String name, Boolean hasReference, int index, ArrayExpr arrayExpr){
+    private void arrayExprTest(String name, Boolean hasReference,
+                               int index, ArrayExpr arrayExpr){
         assertEquals(name, arrayExpr.getName());
         if (hasReference){
             assertNotNull(arrayExpr.getRef());

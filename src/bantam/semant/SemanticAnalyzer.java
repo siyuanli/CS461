@@ -113,7 +113,6 @@ public class SemanticAnalyzer {
 		this.buildTree();
 		this.checkHierarchy();
 
-
 		// 3 - build the environment for each class (adding class members only) and check
 		// that members are declared properly
 		this.buildEnvironment();
@@ -209,6 +208,7 @@ public class SemanticAnalyzer {
 			}
 		}
 		if (checked.size() != this.classMap.size()){
+            System.out.println("Differnent Sizes!");
             this.errorHandler.register(2, "Illegal Tree Structure.");
         }
 	}
@@ -301,7 +301,7 @@ public class SemanticAnalyzer {
 		// add object class tree node to the mapping
 		classMap.put("Object", root);
 
-		// note: String, TextIO, and Sys all have fields that are not shown below.  Because
+		// note: String, TextIO, and Sys all have fields that are not shown below. Because
 		// these classes cannot be extended and fields are protected,
 		// they cannot be accessed by
 		// other classes, so they do not have to be included in the AST.
@@ -446,5 +446,46 @@ public class SemanticAnalyzer {
 		// create class tree node for Sys, add it to the mapping
 		classMap.put("Sys", new ClassTreeNode(astNode, /*built-in?*/true,
 				/*extendable?*/false, classMap));
+
+
+		astNode =
+				new Class_(-1, "<built-in class>", "Exception", "Object",
+						(MemberList) (new MemberList(-1))
+								.addElement(new Field(-1, "String", "message", null))
+								.addElement(new Method(-1, "String", "getMessage",
+										new FormalList(-1),
+										(StmtList) (new StmtList(-1)).addElement(
+												new ReturnStmt(-1, new VarExpr(-1,
+														new VarExpr(-1, null, "this"),
+														"message")))))
+								.addElement(new Method(-1, "void", "setMessage",
+										(FormalList) (new FormalList(-1))
+												.addElement(new Formal(-1, "String","m")),
+										(StmtList) (new StmtList(-1))
+												.addElement(new ExprStmt(-1,
+														new AssignExpr(-1, "this",
+																"message",
+																new VarExpr(-1,
+																		null, "m")))))));
+
+		classMap.put("Exception", new ClassTreeNode(astNode, /*built-in?*/true,
+				/*extendable?*/true, classMap));
+
+
+		astNode = new Class_(-1, "<built-in class>", "NullPointerException", "Exception",
+				(MemberList) (new MemberList(-1)));
+		classMap.put("NullPointerException",
+                new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
+
+		astNode = new Class_(-1, "<built-in class>", "DivideByZeroException", "Exception",
+				(MemberList) (new MemberList(-1)));
+		classMap.put("DivideByZeroException",
+                new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
+
+
+		astNode = new Class_(-1, "<built-in class>", "ClassCastException", "Exception",
+				(MemberList) (new MemberList(-1)));
+		classMap.put("ClassCastException",
+                new ClassTreeNode(astNode, true, false, classMap));
 	}
 }

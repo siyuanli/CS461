@@ -357,4 +357,28 @@ public class BuiltInMemberGenerator {
         });
 
     }
+
+    public void genExceptionMembers(HashMap<String,MethodBody> methods,
+                                    HashMap<String,Object> fields, ObjectData thisObject) {
+        BantamException e = new BantamException(thisObject.getType(),"",thisObject);
+        fields.put("*e",e);
+        fields.put("message",null);
+        methods.put("getMessage", new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                return fields.get("message");
+            }
+        });
+        //TODO: Fix array index out of bounds exception
+        methods.put("setMessage", new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                ObjectData object = (ObjectData) actualParams.get(0).accept(interpreterVisitor);
+                String newMessage = (String) object.getField("*str", false);
+                fields.put("message",new ConstStringExpr(-1,newMessage).accept(interpreterVisitor));
+                e.setMessage(newMessage);
+                return null;
+            }
+        });
+    }
 }

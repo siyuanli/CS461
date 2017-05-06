@@ -1,0 +1,79 @@
+class Main {
+    TextIO io = new TextIO();
+
+    void main(){
+        OurException e = new OurException();
+        try{
+            this.throwsException(e);
+        }
+        catch(OurException exception){
+            io.putString("This should be printed out.\n");
+        }
+        catch(Exception exception){
+            io.putString("This should not be printed out because exception was already caught\n");
+        }
+
+        try{
+            int x = 3/0;
+            io.putString("This should not be printed after throwing an exception\n");
+        }
+        catch(DivideByZeroException e){
+            io.putString("Caught DivideByZeroException correctly\n");
+            io.putString("Message is: ").putString(e.getMessage()).putString("\n");
+
+        }
+
+        try{
+            int x = 5/0;
+        }
+        catch(NullPointerException e){
+            io.putString("Null pointer was not thrown, should not have gone here.\n");
+        }
+        catch(Exception e){
+            io.putString("Caught correct type of exception.\n");
+        }
+
+        try{
+            throw (DivideByZeroException) (null);
+        }
+        catch(DivideByZeroException e){
+            io.putString("The value null is not a DivideByZeroException, so should not have gone here.\n");
+        }
+        catch(NullPointerException e){
+            io.putString("Throwing null correctly made NullPointerException.\n");
+        }
+
+        io.putString("Before changing message : ").putString(e.getMessage()).putString("\n");
+
+
+        e.setMessage("This is our message.");
+        try{
+            throw e;
+        }
+        catch(Exception e){
+            io.putString("New message is: ").putString(e.getMessage()).putString("\n");
+        }
+
+        e.setOurMessage();
+        io.putString("2nd new message is: ").putString(e.getMessage()).putString("\n");
+    }
+
+    void throwsException(OurException e){
+        try{
+            e.test();
+        }
+        catch(NullPointerException nullPointerException){
+            io.putString("Should not have gone here because wrong type of exception\n");
+        }
+    }
+}
+
+class OurException extends Exception{
+    void test(){
+        throw this;
+    }
+
+    void setOurMessage(){
+        super.setMessage("Our new message2");
+    }
+}

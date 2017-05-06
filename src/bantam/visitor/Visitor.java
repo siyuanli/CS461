@@ -699,4 +699,54 @@ public abstract class Visitor {
     public Object visit(ConstStringExpr node) {
         return null;
     }
+
+
+    /**
+     * Visit a TryStmt node
+     *
+     * @param node the TryStmt node
+     * @return result of the visit
+     */
+    public Object visit(TryStmt node) {
+        node.getStmtList().accept(this);
+        node.getCatchList().accept(this);
+        return null;
+    }
+
+    /**
+     * Visit a ThrowStmt node
+     *
+     * @param node the ThrowStmt node
+     * @return result of the visit
+     */
+    public Object visit(ThrowStmt node) {
+        node.getExpr().accept(this);
+        return null;
+    }
+
+    /**
+     * Visit a CatchStmt node
+     *
+     * @param node the CatchStmt node
+     * @return result of the visit
+     */
+    public Object visit(CatchStmt node) {
+        node.getFormal().accept(this);
+        node.getStmtList().accept(this);
+        return null;
+    }
+
+    /**
+     * Visit a CatchList node
+     *
+     * @param node the CatchList node
+     * @return result of the visit
+     */
+    public Object visit(CatchList node) {
+        for (ASTNode catchNode : node){
+            catchNode.accept(this);
+        }
+        return null;
+    }
+
 }

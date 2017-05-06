@@ -31,6 +31,8 @@ public class InterpreterVisitor extends Visitor{
      */
     private List<HashMap<String, Object>> localVars;
 
+    ObjectData currentException;
+
     /**
      * Creates a new interpreter visitor
      * @param classMap the class map
@@ -45,7 +47,7 @@ public class InterpreterVisitor extends Visitor{
 
     /**
      * Adds a new scope to the local variables
-     * @param hashMap
+     * @param hashMap the new scope
      */
     public void pushMethodScope(HashMap<String, Object> hashMap){
         this.localVars.add(hashMap);
@@ -60,7 +62,7 @@ public class InterpreterVisitor extends Visitor{
 
     /**
      * Gets the current scope of local vairables
-     * @return
+     * @return the current method scope
      */
     public HashMap<String,Object> getCurrentMethodScope(){
         return this.localVars.get(this.localVars.size()-1);
@@ -68,7 +70,7 @@ public class InterpreterVisitor extends Visitor{
 
     /**
      * Gets the current object it is interpreting
-     * @return
+     * @return the current object
      */
     public ObjectData getThisObject() {
         return thisObject;
@@ -76,7 +78,7 @@ public class InterpreterVisitor extends Visitor{
 
     /**
      * Sets the current object it is interpreting
-     * @param thisObject
+     * @param thisObject the new thisObject
      */
     public void setThisObject(ObjectData thisObject) {
         this.thisObject = thisObject;
@@ -117,6 +119,31 @@ public class InterpreterVisitor extends Visitor{
         else{
             return this.getCurrentMethodScope().containsKey(name);
         }
+    }
+
+    /**
+     * Returns if type1 is an ancestor of type2
+     * @param type1 the possible ancestor
+     * @param type2 the object type being checked
+     */
+    public boolean isAncestorOf(String type1, String type2){
+        ClassTreeNode classTreeNode = this.classMap.get(type2);
+        //checks the ancestors types
+        while(classTreeNode!=null){
+            if(classTreeNode.getName().equals(type1)){
+                return true;
+            }
+            classTreeNode = classTreeNode.getParent();
+        }
+        return false;
+    }
+
+    private void throwBantamException(String type, String message, int lineNum){
+        ObjectData error = (ObjectData) new NewExpr(lineNum,type).accept(this);
+        error.setField("message", new ConstStringExpr(lineNum, message).accept(this), false);
+        BantamException exception = ((BantamException)error.getField("*e",false));
+        exception.setMessage(message);
+        throw exception;
     }
 
     /**
@@ -179,7 +206,6 @@ public class InterpreterVisitor extends Visitor{
     public Object visit(DispatchExpr node) {
         //Change "this" object over to new method callee
         ObjectData objectData = this.thisObject;
-
         //figuring out the correct reference
         String refName = null;
         if(node.getRefExpr() instanceof VarExpr){
@@ -197,8 +223,8 @@ public class InterpreterVisitor extends Visitor{
         else if (!"this".equals(refName)){ //different object
             objectData = (ObjectData)node.getRefExpr().accept(this);
             if(objectData == null){
-                throw new NullPointerException("Reference object of call to "
-                        +node.getMethodName()+" on line "+node.getLineNum()+" is null");
+                this.throwBantamException("NullPointerException","Reference object of call to "
+                        +node.getMethodName()+" on line "+node.getLineNum()+" is null",node.getLineNum());
             }
         }
 
@@ -210,9 +236,14 @@ public class InterpreterVisitor extends Visitor{
         int oldHierarchy = objectData.getHierarchyLevel();
         objectData.setHierarchyLevel(scope);
         MethodBody methodBody = objectData.getMethod(node.getMethodName(), scope);
-
-        Object returnValue = methodBody.execute(node.getActualList());
-
+        Object returnValue;
+        try {
+            returnValue = methodBody.execute(node.getActualList());
+        }
+        catch(BantamException e){
+            objectData.setHierarchyLevel(oldHierarchy);
+            throw e;
+        }
         //Set hierarchy back to before value
         objectData.setHierarchyLevel(oldHierarchy);
 
@@ -344,15 +375,7 @@ public class InterpreterVisitor extends Visitor{
             return true;
         }
         else{
-            ClassTreeNode classTreeNode = this.classMap.get(obj.getType());
-            //checks the ancestors types
-            while(classTreeNode!=null){
-                if(classTreeNode.getName().equals(node.getType())){
-                    return true;
-                }
-                classTreeNode = classTreeNode.getParent();
-            }
-            return false;
+            return this.isAncestorOf(node.getType(),obj.getType());
         }
     }
 
@@ -369,16 +392,14 @@ public class InterpreterVisitor extends Visitor{
             return obj;
         }
         else{
-            ClassTreeNode classTreeNode = this.classMap.get(obj.getType());
-            //checks if object is of an ancestors type
-            while (classTreeNode != null) {
-                if (classTreeNode.getName().equals(node.getType())) {
-                    return obj;
-                }
-                classTreeNode = classTreeNode.getParent();
+            if(this.isAncestorOf(node.getType(),obj.getType())){
+                return obj;
             }
-            throw new ClassCastException("Cannot cast object of type " + obj.getType() +
-                    " to type " + node.getType() + " on line " + node.getLineNum());
+            else{
+                this.throwBantamException("ClassCastException","Cannot cast object of type " + obj.getType() +
+                        " to type " + node.getType() + " on line " + node.getLineNum(),node.getLineNum());
+            }
+            return null;
         }
     }
 
@@ -529,7 +550,9 @@ public class InterpreterVisitor extends Visitor{
         int left = (int)node.getLeftExpr().accept(this);
         int right = (int)node.getRightExpr().accept(this);
         if(right == 0){
-            throw new ArithmeticException("Divisor is 0 on line " + node.getLineNum());
+            this.throwBantamException("DivideByZeroException","Divisor is 0 on line "
+                    + node.getLineNum(),node.getLineNum());
+
         }
         return left/right;
     }
@@ -545,7 +568,8 @@ public class InterpreterVisitor extends Visitor{
         int left = (int)node.getLeftExpr().accept(this);
         int right = (int)node.getRightExpr().accept(this);
         if(right == 0){
-            throw new ArithmeticException("Divisor is 0 on line " + node.getLineNum());
+            this.throwBantamException("DivideByZeroException","Divisor is 0 on line "
+                    + node.getLineNum(),node.getLineNum());
         }
         return left%right;
     }
@@ -692,6 +716,70 @@ public class InterpreterVisitor extends Visitor{
         strObjectData.setField("length",newstr.length(),false);
         strObjectData.setField("*str",newstr,false);
         return strObjectData;
+    }
+
+    /**
+     * Visit a TryStmt node
+     *
+     * @param node the TryStmt node
+     * @return result of the visit
+     */
+    public Object visit(TryStmt node) {
+        try {
+            node.getStmtList().accept(this);
+        }
+        catch (BantamException e) {
+            this.currentException = e.getError();
+            node.getCatchList().accept(this);
+        }
+        return null;
+    }
+
+    /**
+     * Visit a ThrowStmt node
+     *
+     * @param node the ThrowStmt node
+     * @return result of the visit
+     */
+    public Object visit(ThrowStmt node) {
+        ObjectData data = (ObjectData)node.getExpr().accept(this);
+        if (data == null){
+            this.throwBantamException("NullPointerException",
+                    "The value null was thrown on line "+node.getLineNum(),node.getLineNum());
+        }
+        else {
+            throw (BantamException)data.getField("*e",false);
+        }
+        return null;
+    }
+
+    /**
+     * Visit a CatchStmt node
+     *
+     * @param node the CatchStmt node
+     * @return result of the visit
+     */
+    public Object visit(CatchStmt node) {
+        this.getCurrentMethodScope().put(node.getFormal().getName(),this.currentException);
+        node.getStmtList().accept(this);
+        return null;
+    }
+
+    /**
+     * Visit a CatchList node
+     *
+     * @param node the CatchList node
+     * @return result of the visit
+     */
+    public Object visit(CatchList node) {
+        for (ASTNode catchNode : node){
+            if(this.isAncestorOf(((CatchStmt) catchNode).getFormal().getType(),
+                    this.currentException.getType())) {
+                catchNode.accept(this);
+                return null;
+            }
+        }
+        throw (BantamException) this.currentException.getField("*e",false);
     }
 
 }

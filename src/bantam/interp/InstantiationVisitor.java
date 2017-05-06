@@ -91,6 +91,9 @@ public class InstantiationVisitor extends Visitor {
                 case "TextIO":
                     memberGenerator.genTextIOMembers(this.methods, this.fields, objectData);
                     break;
+
+                case "Exception":
+                    memberGenerator.genExceptionMembers(this.methods, this.fields, objectData);
             }
         }
         else {
@@ -139,7 +142,15 @@ public class InstantiationVisitor extends Visitor {
                 ObjectData oldThisObject = interpreterVisitor.getThisObject();
                 interpreterVisitor.setThisObject(objectData);
                 interpreterVisitor.pushMethodScope(methodScope);
-                Object returnValue = node.accept(interpreterVisitor);
+                Object returnValue;
+                try {
+                    returnValue = node.accept(interpreterVisitor);
+                }
+                catch (BantamException e) {
+                    interpreterVisitor.popMethodScope();
+                    interpreterVisitor.setThisObject(oldThisObject);
+                    throw e;
+                }
                 interpreterVisitor.popMethodScope();
                 interpreterVisitor.setThisObject(oldThisObject);
                 return returnValue;

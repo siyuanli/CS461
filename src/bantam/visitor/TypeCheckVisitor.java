@@ -1270,5 +1270,57 @@ public class TypeCheckVisitor extends Visitor {
         return null;
     }
 
+    /**
+     * Visits a try stmt, creating a new scope for the body of the stmt
+     * @param node the try stmt
+     * @return null
+     */
+    public Object visit(TryStmt node) {
+        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
+        varSymbolTable.enterScope();
+        node.getStmtList().accept(this);
+        varSymbolTable.exitScope();
+        node.getCatchList().accept(this);
+        return null;
+    }
 
+    /**
+     * Visits a throw stmt, checking that it throws an Exception
+     * @param node the throw stmt
+     * @return null
+     */
+    @Override
+    public Object visit(ThrowStmt node) {
+        node.getExpr().accept(this);
+
+        if (!this.compatibleType("Exception", node.getExpr().getExprType())){
+            this.errorUtil.registerError(node.getLineNum(),
+                    "Object thrown must be an Exception.");
+        }
+        return null;
+    }
+
+    /**
+     * Visits a Catch stmt, checking that it catches an Exception and
+     * creating a new scope for the body
+     * @param node
+     * @return
+     */
+    @Override
+    public Object visit(CatchStmt node) {
+        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
+        varSymbolTable.enterScope();
+        node.getFormal().accept(this);
+
+        //TODO: Formal cannot have same name as previously defined variable/method
+        if (!this.compatibleType( "Exception", node.getFormal().getType())){
+            this.errorUtil.registerError(node.getLineNum(),
+                    "Object thrown must be an Exception.");
+        }
+
+
+        node.getStmtList().accept(this);
+        varSymbolTable.exitScope();
+        return null;
+    }
 }
