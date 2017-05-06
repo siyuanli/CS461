@@ -477,6 +477,20 @@ public class TypeCheckVisitor extends Visitor {
     }
 
     /**
+     * Registers an error if the variable, name, already exists as a local variable
+     * @param name the name of the variable
+     * @param lineNum the line number it occurs on
+     */
+    private void registerErrorIfLocalVarAlreadyDeclared(String name, int lineNum) {
+        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
+        for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > this.fieldScope; i--) {
+            if (varSymbolTable.peek(name, i) != null) {
+                this.errorUtil.registerError(lineNum, "Variable already declared");
+            }
+        }
+    }
+
+    /**
      * Check the type of the field with assignment and
      * register an error for incompatible types.
      * @param field the given field
@@ -556,15 +570,6 @@ public class TypeCheckVisitor extends Visitor {
                     "Type of variable incompatible with assignment.");
         }
         return null;
-    }
-
-    private void registerErrorIfLocalVarAlreadyDeclared(String name, int lineNum) {
-        SymbolTable varSymbolTable = this.classTreeNode.getVarSymbolTable();
-        for (int i = varSymbolTable.getCurrScopeLevel() - 1; i > this.fieldScope; i--) {
-            if (varSymbolTable.peek(name, i) != null) {
-                this.errorUtil.registerError(lineNum, "Variable already declared");
-            }
-        }
     }
 
     /**
