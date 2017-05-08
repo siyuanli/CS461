@@ -8,6 +8,9 @@ class Main{
         io.putString("Expected: 4");
         io.putString("\nActual: ").putInt(intArray[0]);
 
+        io.putString("\nExpected: 0");
+        io.putString("\nActual: ").putInt(intArray[1]);
+
         io.putString("\nExpected: 5");
         io.putString("\nArray length: ").putInt(intArray.length);
 
@@ -32,9 +35,15 @@ class Main{
         }
 
         int[] cloneArray = intArray.clone();
-        io.putString("Expected: 4");
+        io.putString("\nExpected: 4");
         io.putString("\nActual: ").putInt(cloneArray[0]);
         */
+
+        String[] stringArray = new String[8];
+        stringArray[6] = "hello";
+
+        io.putString("\nShould print hello: ").putString(stringArray[6]);
+        io.putString("\nShould print null: ").putString(stringArray[0]);
 
         io.putString("\nArray index out of bounds.");
         intArray[5] = 10;

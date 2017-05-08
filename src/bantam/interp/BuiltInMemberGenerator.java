@@ -358,6 +358,7 @@ public class BuiltInMemberGenerator {
     }
 
     public void genArrays(HashMap<String,MethodBody> methods, ObjectArrayData thisObject){
+        //TODO: should it actually have these methods? if so parser does not allow it
         this.genObjectMembers(methods, thisObject);
         methods.put("clone", new MethodBody() {
             @Override

@@ -9,7 +9,21 @@ public class ObjectArrayData extends ObjectData {
 
     public ObjectArrayData(String type, int length){
         super(type);
+
         array = new Object[length];
+
+        type = type.substring(0, type.length() - 2);
+
+        if (type.equals("int")){
+            for (int i = 0 ; i<length; i++){
+                array[i] = 0;
+            }
+        }
+        else if (type.equals("boolean")){
+            for (int i = 0 ; i<length; i++){
+                array[i] = false;
+            }
+        }
     }
 
     public int getLength(){

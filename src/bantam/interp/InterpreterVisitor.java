@@ -806,10 +806,6 @@ public class InterpreterVisitor extends Visitor{
         memberGenerator.genArrays(methods, objectArrayData);
         objectArrayData.pushMethods(methods);
 
-        for (String m : methods.keySet()){
-            System.out.println(m);
-        }
-
         return objectArrayData;
     }
 
