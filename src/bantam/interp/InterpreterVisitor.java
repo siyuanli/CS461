@@ -9,7 +9,6 @@ package bantam.interp;
 import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.visitor.Visitor;
-import com.sun.corba.se.spi.ior.ObjectKey;
 
 import java.util.*;
 
@@ -753,7 +752,7 @@ public class InterpreterVisitor extends Visitor{
             node.getStmtList().accept(this);
         }
         catch (BantamException e) {
-            this.currentException = e.getError();
+            this.currentException = e.getExceptionObject();
             node.getCatchList().accept(this);
         }
         return null;
