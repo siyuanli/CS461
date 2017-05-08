@@ -1,9 +1,10 @@
 /*
  * File: InterpreterVisitor.java
- * CS461 Project 5 First Extension
+ * CS461 Project 6 Second Extension
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/30/17
+ * Date: 5/10/17
  */
+
 package bantam.interp;
 
 import bantam.ast.*;
@@ -32,6 +33,9 @@ public class InterpreterVisitor extends Visitor{
      */
     private List<HashMap<String, Object>> localVars;
 
+    /**
+     * The last exception which was thrown in the program
+     */
     ObjectData currentException;
 
     /**
@@ -161,6 +165,13 @@ public class InterpreterVisitor extends Visitor{
         return false;
     }
 
+    /**
+     * Helper method which creates a new BantamException and a corresponding ObjectData
+     * with the given type, message, and lineNum
+     * @param type the type of the Exception
+     * @param message the Exception message
+     * @param lineNum the line number on which the exception was thrown
+     */
     private void throwBantamException(String type, String message, int lineNum){
         ObjectData error = (ObjectData) new NewExpr(lineNum,type).accept(this);
         error.setField("message", new ConstStringExpr(lineNum, message).accept(this), false);
@@ -742,10 +753,10 @@ public class InterpreterVisitor extends Visitor{
     }
 
     /**
-     * Visit a TryStmt node
+     * Visits a TryStmt node and executes the code
      *
-     * @param node the TryStmt node
-     * @return result of the visit
+     * @param node the ASTNode
+     * @return null
      */
     public Object visit(TryStmt node) {
         try {
@@ -759,10 +770,11 @@ public class InterpreterVisitor extends Visitor{
     }
 
     /**
-     * Visit a ThrowStmt node
+     * Creates and throws the exception specified by the ThrowStmt. Throws a
+     * NullPointerException if the exception is null.
      *
      * @param node the ThrowStmt node
-     * @return result of the visit
+     * @return null
      */
     public Object visit(ThrowStmt node) {
         ObjectData data = (ObjectData)node.getExpr().accept(this);
@@ -777,10 +789,10 @@ public class InterpreterVisitor extends Visitor{
     }
 
     /**
-     * Visit a CatchStmt node
+     * Catches an exception and executes the code in the body of the catch
      *
      * @param node the CatchStmt node
-     * @return result of the visit
+     * @return null
      */
     public Object visit(CatchStmt node) {
         this.getCurrentMethodScope().put(node.getFormal().getName(),this.currentException);
@@ -789,10 +801,11 @@ public class InterpreterVisitor extends Visitor{
     }
 
     /**
-     * Visit a CatchList node
+     * Determines which catch statement should catch the current exception and visits that
+     * catch. If none catch it, rethrows the exception.
      *
      * @param node the CatchList node
-     * @return result of the visit
+     * @return null
      */
     public Object visit(CatchList node) {
         for (ASTNode catchNode : node){
@@ -806,6 +819,11 @@ public class InterpreterVisitor extends Visitor{
     }
 
 
+    /**
+     * Creates and returns a new array object corresponding to this NewArrayExpr
+     * @param node the new array expression node
+     * @return the new ObjectArrayData
+     */
     public Object visit(NewArrayExpr node) {
         Integer size = (Integer)node.getSize().accept(this);
 
@@ -826,6 +844,11 @@ public class InterpreterVisitor extends Visitor{
     }
 
 
+    /**
+     * Performs the specified array assignment and returns the assigned value
+     * @param node the array assignment expression node
+     * @return the value assigned to the array
+     */
     public Object visit(ArrayAssignExpr node) {
         int index = (int)node.getIndex().accept(this);
         Object val = node.getExpr().accept(this);
@@ -857,6 +880,11 @@ public class InterpreterVisitor extends Visitor{
         return null;
     }
 
+    /**
+     * Returns the array retrieval corresponding to the specified ArrayExpr node
+     * @param node the array expression node
+     * @return the array element
+     */
     public Object visit(ArrayExpr node) {
         String refName = null;
         if (node.getRef() != null) {
