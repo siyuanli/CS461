@@ -1,0 +1,42 @@
+class Main{
+     TextIO io = new TextIO();
+
+    void main(){
+        int[] intArray = new int[5];
+        intArray[0] = 4;
+        intArray[4] = 3;
+        io.putString("Expected: 4");
+        io.putString("\nActual: ").putInt(intArray[0]);
+
+        io.putString("\nExpected: 5");
+        io.putString("\nArray length: ").putInt(intArray.length);
+
+        /*
+        intArray.toString();
+        io.putString("\nTo string ").putString(intArray.toString());
+
+
+        int[] anotherArray = new int[10];
+        if (intArray.equals(anotherArray)){
+            io.putString("\nIncorrect: They are different arrays.");
+        }
+        else{
+            io.putString("\nCorrect: They are different arrays.");
+        }
+
+        if (intArray.equals(intArray)){
+            io.putString("\nCorrect: They are the same array.");
+        }
+        else{
+            io.putString("\nIncorrect: They are different arrays.");
+        }
+
+        int[] cloneArray = intArray.clone();
+        io.putString("Expected: 4");
+        io.putString("\nActual: ").putInt(cloneArray[0]);
+        */
+
+        io.putString("\nArray index out of bounds.");
+        intArray[5] = 10;
+    }
+}

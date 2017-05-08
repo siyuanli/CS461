@@ -7,9 +7,8 @@
 
 package bantam.interp;
 
-import bantam.ast.ConstStringExpr;
-import bantam.ast.ExprList;
-import bantam.ast.NewExpr;
+import bantam.ast.*;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -352,6 +351,23 @@ public class BuiltInMemberGenerator {
                 ObjectData newObject = (ObjectData)(new NewExpr(-1,thisObject.getType()))
                         .accept(interpreterVisitor);
                 thisObject.copyFields(newObject);
+                return newObject;
+            }
+        });
+
+    }
+
+    public void genArrays(HashMap<String,MethodBody> methods, ObjectArrayData thisObject){
+        this.genObjectMembers(methods, thisObject);
+        methods.put("clone", new MethodBody() {
+            @Override
+            public Object execute(ExprList actualParams) {
+                String length = Integer.toString(thisObject.getLength());
+                ObjectArrayData newObject = (ObjectArrayData)(new NewArrayExpr(-1,
+                        thisObject.getType(), new ConstIntExpr(-1, length)))
+                        .accept(interpreterVisitor);
+                thisObject.copyFields(newObject);
+                newObject.setArray(thisObject.getArray().clone());
                 return newObject;
             }
         });

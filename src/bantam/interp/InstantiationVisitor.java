@@ -39,15 +39,6 @@ public class InstantiationVisitor extends Visitor {
      */
     public InstantiationVisitor(InterpreterVisitor interpreterVisitor, ObjectData objectData, ClassTreeNode classTreeNode){
         this.interpreterVisitor = interpreterVisitor;
-        this.initObject(objectData, classTreeNode);
-    }
-
-    /**
-     * Initilazes the given object with the fields and methods contained in ClassTreeNode
-     * @param objectData the object to be populated
-     * @param classTreeNode the ClassTreeNode corresponding to the object type
-     */
-    private void initObject(ObjectData objectData, ClassTreeNode classTreeNode){
         this.objectData = objectData;
         this.addMembers(classTreeNode);
     }

@@ -9,6 +9,8 @@ package bantam.interp;
 import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.visitor.Visitor;
+import com.sun.corba.se.spi.ior.ObjectKey;
+
 import java.util.*;
 
 /**
@@ -98,7 +100,18 @@ public class InterpreterVisitor extends Visitor{
         }
 
         boolean isLocal = this.isLocal(ref,name);
-        if(isLocal){
+
+        //if array.length
+        if (name.equals("length") && !"super".equals(ref) && !"this".equals(ref)){
+            boolean isArrayLocal = this.isLocal(null, ref);
+            if (isArrayLocal){
+                return ((ObjectArrayData)this.getCurrentMethodScope().get(ref)).getLength();
+            }
+            else{
+                return ((ObjectArrayData)this.thisObject).getLength();
+            }
+        }
+        else if(isLocal){
             return this.getCurrentMethodScope().get(name);
         }
         else{
@@ -782,4 +795,55 @@ public class InterpreterVisitor extends Visitor{
         throw (BantamException) this.currentException.getField("*e",false);
     }
 
+
+    public Object visit(NewArrayExpr node) {
+        Integer size = (Integer)node.getSize().accept(this);
+        ObjectArrayData objectArrayData = new ObjectArrayData(node.getType(), size);
+
+        //instantiate the array
+        BuiltInMemberGenerator memberGenerator = new BuiltInMemberGenerator(this);
+        HashMap<String, MethodBody> methods = new HashMap<>();
+        memberGenerator.genArrays(methods, objectArrayData);
+        objectArrayData.pushMethods(methods);
+
+        for (String m : methods.keySet()){
+            System.out.println(m);
+        }
+
+        return objectArrayData;
+    }
+
+
+    public Object visit(ArrayAssignExpr node) {
+        int index = (int)node.getIndex().accept(this);
+        Object val = node.getExpr().accept(this);
+        boolean isLocal = this.isLocal(node.getRefName(),node.getName());
+        ObjectArrayData objectArrayData;
+        if(isLocal){
+            objectArrayData = (ObjectArrayData)this.getCurrentMethodScope().get(node.getName());
+        }
+        else{
+            objectArrayData = (ObjectArrayData)this.thisObject;
+        }
+
+        if (index >= objectArrayData.getLength()){
+            //TODO: Throw exception index out of bounds
+        }
+        objectArrayData.setItem(index, val);
+
+        return null;
+    }
+
+    public Object visit(ArrayExpr node) {
+        String refName = null;
+        if (node.getRef() != null) {
+            refName = ((VarExpr)node.getRef()).getName();
+        }
+        ObjectArrayData objectArrayData = (ObjectArrayData) this.getVariableValue(refName,node.getName());
+        int index = (int)node.getIndex().accept(this);
+        if (index >= objectArrayData.getLength()){
+            //TODO: Throw exception index out of bounds
+        }
+        return objectArrayData.getItem(index);
+    }
 }
