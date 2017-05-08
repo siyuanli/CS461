@@ -208,7 +208,6 @@ public class SemanticAnalyzer {
 			}
 		}
 		if (checked.size() != this.classMap.size()){
-            System.out.println("Differnent Sizes!");
             this.errorHandler.register(2, "Illegal Tree Structure.");
         }
 	}
@@ -486,6 +485,23 @@ public class SemanticAnalyzer {
 		astNode = new Class_(-1, "<built-in class>", "ClassCastException", "Exception",
 				(MemberList) (new MemberList(-1)));
 		classMap.put("ClassCastException",
+				new ClassTreeNode(astNode, true, false, classMap));
+
+		astNode = new Class_(-1, "<built-in class>", "ArrayIndexOutOfBoundsException",
+				"Exception", (MemberList) (new MemberList(-1)));
+		classMap.put("ArrayIndexOutOfBoundsException",
                 new ClassTreeNode(astNode, true, false, classMap));
+
+		astNode = new Class_(-1, "<built-in class>", "ArraySizeException", "Exception",
+				(MemberList) (new MemberList(-1)));
+		classMap.put("ArraySizeException",
+				new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
+
+
+		astNode = new Class_(-1, "<built-in class>", "ArrayStoreException", "Exception",
+				(MemberList) (new MemberList(-1)));
+		classMap.put("ArrayStoreException",
+				new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
+
 	}
 }

@@ -27,7 +27,7 @@ public class BuiltInMemberGenerator {
     private InterpreterVisitor interpreterVisitor;
 
     /**
-     * Create a new builtin memeber generator
+     * Create a new builtin member generator
      * @param visitor the interpreter visitor
      */
     public BuiltInMemberGenerator(InterpreterVisitor visitor){

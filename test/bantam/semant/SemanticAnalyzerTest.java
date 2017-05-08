@@ -100,6 +100,7 @@ public class SemanticAnalyzerTest {
             analyzer.analyze();
         } catch (RuntimeException e) {
             thrown = true;
+            //System.out.println(analyzer.getErrorHandler().getErrorList());
             assertEquals(expectedMessage, e.getMessage());
         }
         return thrown;
@@ -768,6 +769,8 @@ public class SemanticAnalyzerTest {
         this.testValidProgram(classes + this.createMethod(
                 "Foo[] b = (Foo[])(new Bar[5]);"));
         this.testValidProgram(classes + this.createMethod(
+                "int[] b = (int[])(new int[5]);"));
+        this.testValidProgram(classes + this.createMethod(
                 "Foo b = (Foo)(new Foo());"));
 
     }
@@ -1189,5 +1192,23 @@ public class SemanticAnalyzerTest {
                 "try{ int x = 0;}" +
                 "catch(Exception e){ int d = 0; }"));
         this.testInvalidProgram(this.createMethod("throw 5;"));
+    }
+
+    /**
+     * Tests the legality of calling object methods on arrays.
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void testArrayMethods() throws Exception{
+        this.testValidProgram(this.createMethod("int[] x = new int[5]; x.toString();"));
+        this.testValidProgram(
+                this.createMethod("String[] x = new String[5]; x.toString();"));
+        this.testValidProgram(
+                this.createMethod("String[] x = new String[5]; x.equals(x);"));
+        this.testValidProgram(
+                this.createMethod("String[] x = new String[5]; x.equals(x);"));
+        this.testInvalidProgram(
+                this.createMethod("String[] x = new String[5]; x.concat(\"hi\");"));
+
     }
 }

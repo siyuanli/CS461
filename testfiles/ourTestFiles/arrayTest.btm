@@ -1,3 +1,6 @@
+class A{}
+class B extends A{}
+
 class Main{
      TextIO io = new TextIO();
 
@@ -14,7 +17,6 @@ class Main{
         io.putString("\nExpected: 5");
         io.putString("\nArray length: ").putInt(intArray.length);
 
-        /*
         intArray.toString();
         io.putString("\nTo string ").putString(intArray.toString());
 
@@ -34,10 +36,9 @@ class Main{
             io.putString("\nIncorrect: They are different arrays.");
         }
 
-        int[] cloneArray = intArray.clone();
+        int[] cloneArray = (int[])(intArray.clone());
         io.putString("\nExpected: 4");
         io.putString("\nActual: ").putInt(cloneArray[0]);
-        */
 
         String[] stringArray = new String[8];
         stringArray[6] = "hello";
@@ -45,7 +46,48 @@ class Main{
         io.putString("\nShould print hello: ").putString(stringArray[6]);
         io.putString("\nShould print null: ").putString(stringArray[0]);
 
-        io.putString("\nArray index out of bounds.");
-        intArray[5] = 10;
+        try{
+            intArray[5] = 10;
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            io.putString("\nCorrect: Caught array index out of bounds");
+        }
+
+        try{
+            int d = intArray[5];
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            io.putString("\nCorrect: Caught array index out of bounds");
+        }
+
+        try{
+            int z = intArray[-5];
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            io.putString("\nCorrect: Caught array index out of bounds");
+        }
+
+        try{
+            TextIO[] textIOArray = new TextIO[1501];
+        }
+        catch(ArraySizeException e){
+            io.putString("\nCorrect: Caught array size exception");
+        }
+
+        try{
+            TextIO[] textIOArray = new TextIO[-5];
+        }
+        catch(ArraySizeException e){
+            io.putString("\nCorrect: Caught array size exception");
+        }
+
+        try{
+            B[] b = new B[5];
+            A[] a = (A[])(b);
+            a[1] = new A();
+        }
+        catch(ArrayStoreException e){
+            io.putString("\nCorrect: Caught array store exception");
+        }
     }
 }
