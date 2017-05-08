@@ -253,12 +253,11 @@ public class TypeCheckVisitor extends Visitor {
     /**
      * Gets the return type and paramets of a method when there is a reference.
      * @param dispatchExpr The dispatch expression
-     * @param methodTable the symbol table to look up the method in
      * @return a pair consisting of the return type and a list of the parameter types
      */
-    private Pair<String, List<String>> getStringListPair(DispatchExpr dispatchExpr,
-                                                         SymbolTable methodTable) {
+    private Pair<String, List<String>> getStringListPair(DispatchExpr dispatchExpr) {
         Pair<String, List<String>> methodPair=null;
+        SymbolTable methodTable = this.classTreeNode.getMethodSymbolTable();
         Expr refExpr= dispatchExpr.getRefExpr();
         if(refExpr instanceof VarExpr && ((VarExpr)refExpr).getName().equals("this")){
             methodPair = ((Pair<String, List<String>>)methodTable
@@ -274,8 +273,12 @@ public class TypeCheckVisitor extends Visitor {
         else { //any scope
             refExpr.accept(this);
             String typeReference = refExpr.getExprType();
-            ClassTreeNode refNode = this.classTreeNode.getClassMap()
-                    .get(typeReference);
+
+            if (typeReference.endsWith("[]")){
+                typeReference = "Object";
+            }
+
+            ClassTreeNode refNode = this.classTreeNode.getClassMap().get(typeReference);
 
             if (refNode == null) { //reference does not exist
                 this.errorUtil.registerError(dispatchExpr.getLineNum(),
@@ -786,7 +789,7 @@ public class TypeCheckVisitor extends Visitor {
         if (refExpr != null){
 
             //gets the method from the correct scope
-            methodPair = getStringListPair(dispatchExpr, methodTable);
+            methodPair = getStringListPair(dispatchExpr);
         }
         else{
             methodPair = ((Pair<String, List<String>>)methodTable
@@ -941,6 +944,8 @@ public class TypeCheckVisitor extends Visitor {
      */
     @Override
     public Object visit(CastExpr castExpr){
+
+
         String type = castExpr.getType();
         boolean typeIsArray = false;
 
@@ -956,12 +961,19 @@ public class TypeCheckVisitor extends Visitor {
                     "Cannot cast to a primitive type.");
         }
         //checks if casting to a valid type
-        else if (!this.classTreeNode.getClassMap().containsKey(type)){
+        else if (!this.classTreeNode.getClassMap().containsKey(type)
+                && !type.equals("int") && !type.equals("boolean")){
             this.errorUtil.registerError(castExpr.getLineNum(), "Unknown cast type.");
         }
         castExpr.getExpr().accept(this);
 
         String exprType = castExpr.getExpr().getExprType();
+
+        if(castExpr.getType().equals(exprType)){
+            castExpr.setExprType(castExpr.getType());
+            castExpr.setUpCast(true);
+            return null;
+        }
 
         if (exprType != null){
             //deals with casting arrays

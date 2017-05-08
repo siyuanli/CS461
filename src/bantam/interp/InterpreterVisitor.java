@@ -9,6 +9,8 @@ package bantam.interp;
 import bantam.ast.*;
 import bantam.util.ClassTreeNode;
 import bantam.visitor.Visitor;
+import com.sun.corba.se.spi.ior.ObjectKey;
+
 import java.util.*;
 
 /**
@@ -98,7 +100,18 @@ public class InterpreterVisitor extends Visitor{
         }
 
         boolean isLocal = this.isLocal(ref,name);
-        if(isLocal){
+
+        //if array.length
+        if (name.equals("length") && ref != null && !"super".equals(ref) && !"this".equals(ref)){
+            boolean isArrayLocal = this.isLocal(null, ref);
+            if (isArrayLocal){
+                return ((ObjectArrayData)this.getCurrentMethodScope().get(ref)).getLength();
+            }
+            else{
+                return ((ObjectArrayData)this.thisObject).getLength();
+            }
+        }
+        else if(isLocal){
             return this.getCurrentMethodScope().get(name);
         }
         else{
@@ -128,6 +141,17 @@ public class InterpreterVisitor extends Visitor{
      */
     public boolean isAncestorOf(String type1, String type2){
         ClassTreeNode classTreeNode = this.classMap.get(type2);
+        if(type2.endsWith("[]")){
+            if(type1.equals("Object")||type2.equals(type1)){
+                return true;
+            }
+            else{
+                classTreeNode = this.classMap.get(type2.substring(0,type2.length()-2));
+                if(type1.endsWith("[]")){
+                    type1 = type1.substring(0,type1.length()-2);
+                }
+            }
+        }
         //checks the ancestors types
         while(classTreeNode!=null){
             if(classTreeNode.getName().equals(type1)){
@@ -782,4 +806,70 @@ public class InterpreterVisitor extends Visitor{
         throw (BantamException) this.currentException.getField("*e",false);
     }
 
+
+    public Object visit(NewArrayExpr node) {
+        Integer size = (Integer)node.getSize().accept(this);
+
+        if (size > 1500 || size < 0){
+            this.throwBantamException("ArraySizeException",
+                    "Size must be in range 0 to 1500.", node.getLineNum());
+        }
+
+        ObjectArrayData objectArrayData = new ObjectArrayData(node.getType(), size);
+
+        //instantiate the array
+        BuiltInMemberGenerator memberGenerator = new BuiltInMemberGenerator(this);
+        HashMap<String, MethodBody> methods = new HashMap<>();
+        memberGenerator.genArrays(methods, objectArrayData);
+        objectArrayData.pushMethods(methods);
+
+        return objectArrayData;
+    }
+
+
+    public Object visit(ArrayAssignExpr node) {
+        int index = (int)node.getIndex().accept(this);
+        Object val = node.getExpr().accept(this);
+        boolean isLocal = this.isLocal(node.getRefName(),node.getName());
+        ObjectArrayData objectArrayData;
+        if(isLocal){
+            objectArrayData = (ObjectArrayData)this.getCurrentMethodScope().get(node.getName());
+        }
+        else{
+            objectArrayData = (ObjectArrayData)this.thisObject;
+        }
+
+        String arrayType = objectArrayData.getType();
+        arrayType = arrayType.substring(0, arrayType.length()-2);
+        String exprType = node.getExpr().getExprType();
+
+        if (!arrayType.equals(exprType) && !this.isAncestorOf(arrayType, exprType)){
+            this.throwBantamException("ArrayStoreException",
+                    "Cannot assign an array element of type " + exprType +
+                            " to an array of dynamic type " + arrayType + "[].",
+                    node.getLineNum());
+        }
+        else if (index >= objectArrayData.getLength() || index < 0){
+            this.throwBantamException("ArrayIndexOutOfBoundsException",
+                    "Index " + index + " out of bounds.", node.getLineNum());
+        }
+        objectArrayData.setItem(index, val);
+
+        return null;
+    }
+
+    public Object visit(ArrayExpr node) {
+        String refName = null;
+        if (node.getRef() != null) {
+            refName = ((VarExpr)node.getRef()).getName();
+        }
+        ObjectArrayData objectArrayData =
+                (ObjectArrayData) this.getVariableValue(refName,node.getName());
+        int index = (int)node.getIndex().accept(this);
+        if (index >= objectArrayData.getLength() || index < 0){
+            this.throwBantamException("ArrayIndexOutOfBoundsException",
+                    "Index " + index + " out of bounds.", node.getLineNum());
+        }
+        return objectArrayData.getItem(index);
+    }
 }
