@@ -1,8 +1,8 @@
 /*
  * File: BuiltInMemberGenerator.java
- * CS461 Project 5 First Extension
+ * CS461 Project 6 Second Extension
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/30/17
+ * Date: 5/10/17
  */
 
 package bantam.interp;
@@ -357,10 +357,19 @@ public class BuiltInMemberGenerator {
 
     }
 
+    /**
+     * Generate the builtin methods of arrays
+     * @param methods a hashmap of methods
+     * @param thisObject the object
+     */
     public void genArrays(HashMap<String,MethodBody> methods, ObjectArrayData thisObject){
-        //TODO: should it actually have these methods? if so parser does not allow it
         this.genObjectMembers(methods, thisObject);
         methods.put("clone", new MethodBody() {
+            /**
+             * Implements the clone method of arrays that copy an array
+             * @param actualParams the parameters of the method
+             * @return the new object array
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 String length = Integer.toString(thisObject.getLength());
@@ -375,18 +384,34 @@ public class BuiltInMemberGenerator {
 
     }
 
+    /**
+     * Generate the builtin methods of Exceptions
+     * @param methods a hashmap of methods
+     * @param fields a hashmap of fields
+     * @param thisObject the object
+     */
     public void genExceptionMembers(HashMap<String,MethodBody> methods,
                                     HashMap<String,Object> fields, ObjectData thisObject) {
         BantamException e = new BantamException(thisObject.getType(),"",thisObject);
         fields.put("*e",e);
         fields.put("message",null);
         methods.put("getMessage", new MethodBody() {
+            /**
+             * Implements the getMessage method of Exceptions that gets the exception message
+             * @param actualParams the parameters of the method
+             * @return the message of the exception
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 return fields.get("message");
             }
         });
         methods.put("setMessage", new MethodBody() {
+            /**
+             * Implements the setMessage method of Exceptions that sets the exception message
+             * @param actualParams the parameters of the method
+             * @return null
+             */
             @Override
             public Object execute(ExprList actualParams) {
                 ObjectData object = (ObjectData) actualParams.get(0).accept(interpreterVisitor);

@@ -1,9 +1,10 @@
 /*
  * File: Interpreter.java
- * CS461 Project 5 First Extension
+ * CS461 Project 6 Second Extension
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/30/17
+ * Date: 5/10/17
  */
+
 /* Bantam Java Compiler and Language Toolset.
 
    Copyright (C) 2009 by Marc Corliss (corliss@hws.edu) and 

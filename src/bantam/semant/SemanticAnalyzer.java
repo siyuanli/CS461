@@ -1,8 +1,8 @@
 /*
  * File: SemanticAnalyzer.java
- * CS461 Project 4A
+ * CS461 Project 6
  * Edited by: Phoebe Hughes, Siyuan Li, Joseph Malionek,
- * Date: 4/2/17
+ * Date: 5/10/17
  */
 
 /* Bantam Java Compiler and Language Toolset.
@@ -446,7 +446,7 @@ public class SemanticAnalyzer {
 		classMap.put("Sys", new ClassTreeNode(astNode, /*built-in?*/true,
 				/*extendable?*/false, classMap));
 
-
+		// create AST node for Exception
 		astNode =
 				new Class_(-1, "<built-in class>", "Exception", "Object",
 						(MemberList) (new MemberList(-1))
@@ -467,37 +467,41 @@ public class SemanticAnalyzer {
 																new VarExpr(-1,
 																		null, "m")))))));
 
+		//create class tree node for Exception, add it to the mapping
 		classMap.put("Exception", new ClassTreeNode(astNode, /*built-in?*/true,
 				/*extendable?*/true, classMap));
 
-
+		//create AST node & class tree node for NullPointerException. then add to the mapping
 		astNode = new Class_(-1, "<built-in class>", "NullPointerException", "Exception",
 				(MemberList) (new MemberList(-1)));
 		classMap.put("NullPointerException",
                 new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
 
+		//create AST node & class tree node for DivideByZeroException. then add to the mapping
 		astNode = new Class_(-1, "<built-in class>", "DivideByZeroException", "Exception",
 				(MemberList) (new MemberList(-1)));
 		classMap.put("DivideByZeroException",
                 new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
 
-
+		//create AST node & class tree node for ClassCastException. then add to the mapping
 		astNode = new Class_(-1, "<built-in class>", "ClassCastException", "Exception",
 				(MemberList) (new MemberList(-1)));
 		classMap.put("ClassCastException",
 				new ClassTreeNode(astNode, true, false, classMap));
 
+		//create AST node & class tree node for ArrayIndexOutOfBoundsException. then add to the mapping
 		astNode = new Class_(-1, "<built-in class>", "ArrayIndexOutOfBoundsException",
 				"Exception", (MemberList) (new MemberList(-1)));
 		classMap.put("ArrayIndexOutOfBoundsException",
                 new ClassTreeNode(astNode, true, false, classMap));
 
+		//create AST node & class tree node for ArraySizeException. then add to the mapping
 		astNode = new Class_(-1, "<built-in class>", "ArraySizeException", "Exception",
 				(MemberList) (new MemberList(-1)));
 		classMap.put("ArraySizeException",
 				new ClassTreeNode(astNode, /*built-in?*/true, false, classMap));
 
-
+		//create AST node & class tree node for ArrayStoreException. then add to the mapping
 		astNode = new Class_(-1, "<built-in class>", "ArrayStoreException", "Exception",
 				(MemberList) (new MemberList(-1)));
 		classMap.put("ArrayStoreException",
