@@ -1,8 +1,8 @@
 /*
  * File: TypeCheckVisitor.java
- * CS461 Project 4A
+ * CS461 Project 6 Second Extension
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 4/2/17
+ * Date: 5/10/17
  */
 
 package bantam.visitor;
@@ -748,8 +748,8 @@ public class TypeCheckVisitor extends Visitor {
     /**
      * Checks to see if the given ArrayAssignExpr is indexed by an integer, and that the
      * types of the assignment are compatible
-     * @param arrayAssignExpr
-     * @return
+     * @param arrayAssignExpr the arrayAssignExpr node
+     * @return null
      */
     @Override
     public Object visit(ArrayAssignExpr arrayAssignExpr){
@@ -1324,8 +1324,8 @@ public class TypeCheckVisitor extends Visitor {
     /**
      * Visits a Catch stmt, checking that it catches an Exception and
      * creating a new scope for the body
-     * @param node
-     * @return
+     * @param node the CatchStmt node
+     * @return null
      */
     @Override
     public Object visit(CatchStmt node) {

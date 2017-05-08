@@ -1,8 +1,8 @@
 /*
  * File: MemberAdderVisitor.java
- * CS461 Project 3
+ * CS461 Project 6 Second Extension
  * Author: Phoebe Hughes, Siyuan Li, Joseph Malionek
- * Date: 3/11/17
+ * Date: 5/10/17
  */
 
 package bantam.visitor;
