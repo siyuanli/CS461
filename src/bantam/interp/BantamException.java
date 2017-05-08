@@ -8,7 +8,7 @@
 package bantam.interp;
 
 /**
- * A runtime exception for Bantam Java
+ * A Java runtime exception which corresponds to a Bantam Java exception in the interpreter
  */
 public class BantamException extends RuntimeException{
     /**
